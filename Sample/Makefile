@@ -2,7 +2,7 @@ SRC_DIR			?= src
 BUILD_DIR		?= build
 OBJ_DIR			:= build/obj
 MYRIAD_DIR		?= ../Engine
-MYRIAD_LIB		?= $(MYRIAD_DIR)/build/PLATFORM_DESKTOP/RELEASE/LINUX/bin
+MYRIAD_LIB		?= $(MYRIAD_DIR)/build/PLATFORM_DESKTOP/RELEASE/WINDOWS/bin
 TARGET			?= sample
 CXX				?= g++
 CFLAGS			?= -std=c++17

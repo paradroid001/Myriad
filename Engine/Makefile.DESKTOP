@@ -16,33 +16,38 @@ rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(su
 SOURCES		:=$(call rwildcard,$(SRC_DIR),*.cpp)
 OBJECTS		:=$(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(patsubst %.cpp, %.o, $(SOURCES)))
 
+ifeq ($(HOST_PLATFORM),WINDOWS)
+	LIBRARY_NAME := myriad.dll
+	COPY := copy
+	MKDIR := mkdir -p
+	RM := rm
+endif
+ifeq ($(HOST_PLATFORM),LINUX)
+	LIBRARY_NAME := libmyriad.so
+	COPY := cp
+	MKDIR := mkdir -p
+	RM := rm
+endif
+
 clean:
 	@echo "Cleaning $(BIN_DIR)"
 	@echo "Cleaning $(OBJ_DIR)"
-ifeq ($(HOST_PLATFORM),LINUX)
-	rm $(OBJ_DIR)/*
-	rm $(BIN_DIR)/*
-endif
+	$(RM) $(OBJ_DIR)/*
+	$(RM) $(BIN_DIR)/*
 	@echo "Finished cleaning."
 
 all: $(LIBRARY_NAME)
 
 $(LIBRARY_NAME): $(OBJECTS)
 	@echo "Linking on $(HOST_PLATFORM)"
-ifeq ($(HOST_PLATFORM),LINUX)
-	@mkdir -p $(BIN_DIR)
-endif
-	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(LFLAGS) -D$(TARGET_PLATFORM)
+	@$(MKDIR) $(BIN_DIR)
+#previously we had -D$(TARGET_PLATFORM) but we seem to lose this on windows,
+#and I don't know if it is needed.
+	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(LFLAGS)
 
 # Compile objects to the build directory
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-ifeq ($(HOST_PLATFORM),LINUX)
-    #@mkdir -p $(OBJ_DIR)
-    #make each subdir
-	@mkdir -p $(patsubst %.o, %, $@)
-endif
-    #$(MKDIR) $(call platformpth, $(@D))
-    #@mkdir -p $(OBJ_DIR)
+	@$(MKDIR) -p $(patsubst %.o, %, $@)
 	$(CXX) -MMD -MP -c $(CFLAGS) $< -o $@
 
 rebuild: clean all
