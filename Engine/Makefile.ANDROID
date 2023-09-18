@@ -1,0 +1,7 @@
+#
+# Android Platform
+#
+.PHONY: all
+
+all:
+	@echo "Building for Android"

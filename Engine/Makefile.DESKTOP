@@ -1,0 +1,7 @@
+#
+# Desktop Platform
+#
+.PHONY: all
+
+all:
+	@echo "Building for Desktop"
