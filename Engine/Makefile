@@ -4,17 +4,18 @@
 
 TARGET_PLATFORM			?= UNKNOWN
 HOST_PLATFORM			?= UNKNOWN
-LIBRARY_NAME			?= myriad
+LIBRARY_NAME			?= libmyriad.so
 #DEBUG or RELEASE
 BUILD_MODE				?= RELEASE
 SUB_MAKEFILE			?= UNKNOWN
+BUILD_DIR				?= build
 BIN_DIR					?= bin
 OBJ_DIR					?= obj
 INC_DIR					?= include
 SRC_DIR					?= src
 EXT_DIR					?= ext
 
-OUTPUT_DIR				?= $(BIN_DIR)/$(TARGET_PLATFORM)/$(BUILD_MODE)/$(HOST_PLATFORM)
+OUTPUT_DIR				?= $(BUILD_DIR)/$(TARGET_PLATFORM)/$(BUILD_MODE)/$(HOST_PLATFORM)
 
 # Detect Host
 # Also defines "PLATFORM_SHELL"
@@ -58,17 +59,26 @@ ifeq ($(TARGET_PLATFORM), PLATFORM_ANDROID)
 	SUB_MAKEFILE := Makefile.ANDROID
 endif
 
+clean:
+	@make -f $(SUB_MAKEFILE) $@ \
+		HOST_PLATFORM=$(HOST_PLATFORM) \
+		LIBRARY_NAME=$(LIBRARY_NAME) \
+		BUILD_MODE=$(BUILD_MODE) \
+		INC_DIR=$(INC_DIR) \
+		OUTPUT_DIR=$(OUTPUT_DIR)
 all:
 ifeq ($(SUB_MAKEFILE),UNKNOWN)	
 	@echo "No makefile to build for $(TARGET_PLATFORM)"
 else
 	@echo Building $(LIBRARY_NAME) [$(BUILD_MODE)] for $(TARGET_PLATFORM) on $(HOST_PLATFORM)
 	@echo Includes=$(INC_DIR)
+	@echo Src=$(SRC_DIR)
 	@echo Output=$(OUTPUT_DIR)
 	@make -f $(SUB_MAKEFILE) $@ \
 		HOST_PLATFORM=$(HOST_PLATFORM) \
 		LIBRARY_NAME=$(LIBRARY_NAME) \
 		BUILD_MODE=$(BUILD_MODE) \
 		INC_DIR=$(INC_DIR) \
+		SRC_DIR=$(SRC_DIR) \
 		OUTPUT_DIR=$(OUTPUT_DIR)
 endif
