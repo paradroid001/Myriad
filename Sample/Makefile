@@ -1,8 +1,11 @@
 SRC_DIR			?= src
 BUILD_DIR		?= build
-OBJ_DIR			:= build/obj
+OBJ_DIR			:= $(BUILD_DIR)/obj
 MYRIAD_DIR		?= ../Engine
-MYRIAD_LIB		?= $(MYRIAD_DIR)/build/PLATFORM_DESKTOP/RELEASE/WINDOWS/bin
+BUILD_MODE		?= RELEASE
+HOST_PLATFORM	?= LINUX
+TARGET_PLATFORM ?= PLATFORM_DESKTOP
+MYRIAD_LIB		:= $(MYRIAD_DIR)/build/$(TARGET_PLATFORM)/$(BUILD_MODE)/$(HOST_PLATFORM)/bin
 TARGET			?= sample
 CXX				?= g++
 CFLAGS			?= -std=c++17
@@ -32,6 +35,9 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo Building $@
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) -MMD -MP -c $(CFLAGS) $< -o $@
+
+clean:
+	@rm -rf build
 
 
   

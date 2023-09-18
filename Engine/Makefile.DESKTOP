@@ -26,7 +26,7 @@ ifeq ($(HOST_PLATFORM),LINUX)
 	LIBRARY_NAME := libmyriad.so
 	COPY := cp
 	MKDIR := mkdir -p
-	RM := rm
+	RM := rm -rf
 endif
 
 clean:
