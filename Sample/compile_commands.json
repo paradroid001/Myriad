@@ -1,0 +1,18 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-std=c++17",
+      "-I",
+      "../Engine/src/include",
+      "-DMYR_PLATFORM_LINUX",
+      "-o",
+      "build/obj/main.o",
+      "src/main.cpp"
+    ],
+    "directory": "/home/brad/dev/games/Myriad/Sample",
+    "file": "/home/brad/dev/games/Myriad/Sample/src/main.cpp",
+    "output": "/home/brad/dev/games/Myriad/Sample/build/obj/main.o"
+  }
+]

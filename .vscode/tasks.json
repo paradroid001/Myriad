@@ -1,0 +1,26 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Myriad Linux Desktop",
+            "type": "shell",
+            "command": "make PROJECT=Engine all",
+            "group": "build"
+        },
+        {
+            "label": "Build Sample Linux Desktop",
+            "type": "shell",
+            "command": "make PROJECT=Sample all",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Build Myriad Linux Desktop"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

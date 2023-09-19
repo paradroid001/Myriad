@@ -15,6 +15,13 @@ OBJECTS			:= $(OBJ_DIR)/main.o
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
+ifeq ($(HOST_PLATFORM),WINDOWS)
+	CFLAGS += -DMYR_PLATFORM_WINDOWS
+endif
+ifeq ($(HOST_PLATFORM),LINUX)
+	CFLAGS += -DMYR_PLATFORM_LINUX
+endif
+
 .PHONY: setup
 
 setup:

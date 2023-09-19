@@ -1,5 +1,6 @@
 #include <iostream>
-extern "C" void PrintGreeting()
+
+void PrintGreeting()
 {
     // print a greeting
     std::cout << "Hello World" << std::endl;

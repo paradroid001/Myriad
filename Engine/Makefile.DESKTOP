@@ -6,7 +6,7 @@
 CC			?= gcc
 CXX			?= g++
 LFLAGS		?= -shared
-CFLAGS		?= -std=c++17 -fPIC -I src/include
+CFLAGS		?= -std=c++17 -fPIC -I src/include -D$(TARGET_PLATFORM)
 
 BIN_DIR		:= $(OUTPUT_DIR)/bin
 OBJ_DIR		:= $(OUTPUT_DIR)/obj
@@ -17,6 +17,7 @@ SOURCES		:=$(call rwildcard,$(SRC_DIR),*.cpp)
 OBJECTS		:=$(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(patsubst %.cpp, %.o, $(SOURCES)))
 
 ifeq ($(HOST_PLATFORM),WINDOWS)
+	CFLAGS += -DMYR_PLATFORM_WINDOWS -DMYR_BUILD_DLL
 	LIBRARY_NAME := myriad.dll
 	COPY := copy
 	MKDIR := mkdir -p
@@ -41,8 +42,6 @@ all: $(LIBRARY_NAME)
 $(LIBRARY_NAME): $(OBJECTS)
 	@echo "Linking on $(HOST_PLATFORM)"
 	@$(MKDIR) $(BIN_DIR)
-#previously we had -D$(TARGET_PLATFORM) but we seem to lose this on windows,
-#and I don't know if it is needed.
 	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(LFLAGS)
 
 # Compile objects to the build directory

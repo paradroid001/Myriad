@@ -1,2 +1,4 @@
 BreakBeforeBraces: Allman
 IndentWidth: 4
+NamespaceIndentation: All
+IndentPPDirectives: BeforeHash

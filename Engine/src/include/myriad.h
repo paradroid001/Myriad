@@ -1,7 +1,9 @@
-#ifndef _MYRIAD_H_
-#define _MYRIAD_H_
+#pragma once
 
-extern "C" void PrintGreeting();
-extern "C" int myriad_entry();
+// For client applications only, not for engine to include
+#include "../core/MyrApplication.h"
+#include "stdio.h"
 
-#endif
+// --- Entry Point ---
+#include "../core/MyrEntryPoint.h"
+// -------------------
