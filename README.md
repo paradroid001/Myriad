@@ -1,6 +1,13 @@
 # Myriad
 Myriad Engine
 
+If you want debug tasks etc, copy Projects/vscode/.vscode into your .vscode
+
+## Quick Top Level Build
+`make PROJECT=Engine MODE=RELEASE`
+
+`make PROJECT=Sample MODE=DEBUG all`
+
 ### Linux Build
 
 Build myriad first, then build the sample.  
