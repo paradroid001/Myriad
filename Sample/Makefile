@@ -26,7 +26,7 @@ endif
 
 setup:
 	@echo $(CFLAGS)
-CFLAGS += -I $(MYRIAD_DIR)/src/include
+CFLAGS += -I $(MYRIAD_DIR)/src
 LFLAGS += -l myriad
 
 all: setup $(BUILD_DIR)/$(TARGET)

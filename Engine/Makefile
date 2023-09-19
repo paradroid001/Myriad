@@ -11,7 +11,7 @@ SUB_MAKEFILE			?= UNKNOWN
 BUILD_DIR				?= build
 BIN_DIR					?= bin
 OBJ_DIR					?= obj
-INC_DIR					?= include
+INC_DIR					?= .
 SRC_DIR					?= src
 EXT_DIR					?= ext
 
