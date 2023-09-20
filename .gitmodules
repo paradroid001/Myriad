@@ -1,5 +1,5 @@
 
-[submodule "Engine/src/vendor/spdlog"]
-	path = Engine/src/vendor/spdlog
+[submodule "Engine/vendor/spdlog"]
+	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
 	branch = v2.x
