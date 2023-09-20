@@ -1,11 +1,22 @@
 #pragma once
 #include "MyrApplication.h"
+#include "core/Log.h"
 
 extern Myriad::MyrApplication *Myriad::CreateApplication(); // defined in
                                                             // client.
 
 int main(int argc, char **argv)
 {
+    Myriad::Log::Init();
+    MYR_CORE_INFO("Info message");
+    MYR_CORE_TRACE("TRACE message");
+    MYR_CORE_WARN("WARN message");
+    MYR_CORE_ERROR("Inited Myriad Log");
+
+    MYR_INFO("Inited Client Log");
+    int a = 7;
+    MYR_TRACE("Test: a={0}", a);
+
     printf("Welcome to Myriad Engine\n");
     auto app = Myriad::CreateApplication();
     app->Run();

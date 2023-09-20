@@ -6,7 +6,7 @@
 CC			?= gcc
 CXX			?= g++
 LFLAGS		?= -shared
-CFLAGS		?= -std=c++17 -fPIC -I src/include -I src/vendor/spdlog/include -D$(TARGET_PLATFORM)
+CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -D$(TARGET_PLATFORM)
 
 BIN_DIR		:= $(OUTPUT_DIR)/bin
 OBJ_DIR		:= $(OUTPUT_DIR)/obj

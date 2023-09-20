@@ -1,0 +1,5 @@
+#!/bin/sh
+make PROJECT=Engine MODE=DEBUG all
+make PROJECT=Sample MODE=DEBUG clean
+make PROJECT=Sample MODE=DEBUG all
+LD_LIBRARY_PATH=Sample/build/. Sample/build/sample

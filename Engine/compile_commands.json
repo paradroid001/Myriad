@@ -1,0 +1,21 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-std=c++17",
+      "-fPIC",
+      "-I",
+      "src/include",
+      "-I",
+      "vendor/spdlog/include",
+      "-DPLATFORM_DESKTOP",
+      "-o",
+      "build/PLATFORM_DESKTOP/RELEASE/LINUX/obj/core/Log.o",
+      "src/core/Log.cpp"
+    ],
+    "directory": "/home/brad/dev/games/Myriad/Engine",
+    "file": "/home/brad/dev/games/Myriad/Engine/src/core/Log.cpp",
+    "output": "/home/brad/dev/games/Myriad/Engine/build/PLATFORM_DESKTOP/RELEASE/LINUX/obj/core/Log.o"
+  }
+]

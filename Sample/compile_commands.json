@@ -5,8 +5,10 @@
       "-c",
       "-std=c++17",
       "-I",
-      "../Engine/src/include",
+      "../Engine/vendor/spdlog/include",
       "-DMYR_PLATFORM_LINUX",
+      "-I",
+      "../Engine/src",
       "-o",
       "build/obj/main.o",
       "src/main.cpp"

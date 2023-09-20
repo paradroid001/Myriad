@@ -8,7 +8,7 @@ TARGET_PLATFORM ?= PLATFORM_DESKTOP
 MYRIAD_LIB		:= $(MYRIAD_DIR)/build/$(TARGET_PLATFORM)/$(BUILD_MODE)/$(HOST_PLATFORM)/bin
 TARGET			?= sample
 CXX				?= g++
-CFLAGS			?= -std=c++17
+CFLAGS			?= -std=c++17 -I ../Engine/vendor/spdlog/include
 LFLAGS			?= -L $(MYRIAD_LIB)
 
 OBJECTS			:= $(OBJ_DIR)/main.o
