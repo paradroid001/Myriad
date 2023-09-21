@@ -4,9 +4,24 @@ Myriad Engine
 If you want debug tasks etc, copy Projects/vscode/.vscode into your .vscode
 
 ## Quick Top Level Build
-`make PROJECT=Engine MODE=RELEASE`
+`make PROJECT=Engine TARGET_OS=windows all`
 
-`make PROJECT=Sample MODE=DEBUG all`
+`make PROJECT=Sample TARGET_OS=windows all`
+
+You can also pass:  
+TARGET_ARCH (default=x86_64)  
+TARGET_OS (default=linux, options=windows,linux)  
+RELEASE_PLATFORM (default=Desktop, options=Desktop,Web,Android)  
+BUILD_MODE (default=Release, options=Debug,Release)  
+
+zig is now used as the default compiler (`zig c++ -target $(TARGET_ARCH)-$(TARGET-OS)`)
+If you really want to use g++, you can pass CXX=g++
+This is useful for generating compile_commands.json via bear:
+cd Sample
+`bear -- make CXX=g++ all`
+
+
+The below instructions are now out of date.  
 
 ### Linux Build
 
