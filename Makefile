@@ -7,42 +7,46 @@
 # Detect Host
 # Also defines "PLATFORM_SHELL"
 ifeq ($(OS),Windows_NT)
-	HOST_PLATFORM = WINDOWS
+	BUILD_OS = windows
 	ifndef PLATFORM_SHELL
 		PLATFORM_SHELL = cmd
 	endif
 else
 	UNAMEOS = $(shell uname)
 	ifeq ($(UNAMEOS),Linux)
-		HOST_PLATFORM = LINUX
+		BUILD_OS = linux
 	endif
 	ifeq ($(UNAMEOS),FreeBSD)
-		HOST_PLATFORM = BSD
+		BUILD_OS = BSD
 	endif
 	ifeq ($(UNAMEOS),OpenBSD)
-		HOST_PLATFORM = BSD
+		BUILD_OS = BSD
 	endif
 	ifeq ($(UNAMEOS),NetBSD)
-		HOST_PLATFORM = BSD
+		BUILD_OS = BSD
 	endif
 	ifeq ($(UNAMEOS),DragonFly)
-		HOST_PLATFORM = BSD
+		BUILD_OS = BSD
 	endif
 	ifeq ($(UNAMEOS),Darwin)
-		HOST_PLATFORM = OSX
+		BUILD_OS = macosx
 	endif
 	ifndef PLATFORM_SHELL
 		PLATFORM_SHELL = sh
 	endif
 endif
 
-# Other options: PLATFORM_WEB, PLATFORM_ANDROID
-TARGET_PLATFORM ?= PLATFORM_DESKTOP
+# Other options: Desktop, Web. Android
+RELEASE_PLATFORM ?= Desktop
+TARGET_ARCH		 ?= x86_64
+TARGET_OS		 ?= linux
 PROJECT ?= Engine
-MODE    ?= RELEASE
-CONFIG = HOST_PLATFORM=$(HOST_PLATFORM) \
+MODE    ?= Release
+CONFIG = TARGET_ARCH=$(TARGET_ARCH) \
+		 TARGET_OS=$(TARGET_OS) \
+		 BUILD_OS=$(BUILD_OS) \
 		 PLATFORM_SHELL=$(PLATFORM_SHELL) \
-		 TARGET_PLATFORM=$(TARGET_PLATFORM) \
+		 RELEASE_PLATFORM=$(RELEASE_PLATFORM) \
 		 BUILD_MODE=$(MODE)
 
 

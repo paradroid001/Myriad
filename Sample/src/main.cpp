@@ -1,11 +1,15 @@
+#include "main.h"
 #include <myriad.h>
 
-class Sample : public Myriad::MyrApplication
+Sample::Sample() {}
+Sample::~Sample() {}
+
+void Sample::Run()
 {
-  public:
-    Sample() {}
-    ~Sample() {}
-};
+    while (true)
+    {
+    }
+}
 
 Myriad::MyrApplication *Myriad::CreateApplication()
 {

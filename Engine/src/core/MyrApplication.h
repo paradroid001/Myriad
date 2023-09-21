@@ -9,7 +9,7 @@ namespace Myriad
         MyrApplication();
         virtual ~MyrApplication();
 
-        void Run();
+        virtual void Run();
     };
 
     // Clients of the shared library use this to create their application.

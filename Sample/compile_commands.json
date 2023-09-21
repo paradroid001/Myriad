@@ -10,11 +10,11 @@
       "-I",
       "../Engine/src",
       "-o",
-      "build/obj/main.o",
+      "build/obj/Desktop/Release/x86_64-linux/main.o",
       "src/main.cpp"
     ],
     "directory": "/home/brad/dev/games/Myriad/Sample",
     "file": "/home/brad/dev/games/Myriad/Sample/src/main.cpp",
-    "output": "/home/brad/dev/games/Myriad/Sample/build/obj/main.o"
+    "output": "/home/brad/dev/games/Myriad/Sample/build/obj/Desktop/Release/x86_64-linux/main.o"
   }
 ]
