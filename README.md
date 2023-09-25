@@ -4,9 +4,21 @@ Myriad Engine
 If you want debug tasks etc, copy Projects/vscode/.vscode into your .vscode
 
 ## Quick Top Level Build
-`make PROJECT=Engine TARGET_OS=windows all`
 
+Easiest is to build and bring up the docker container with the build environment:  
+- Build: cd docker && docker build -t myriad_build .
+- Run (from root): source run_docker.sh
+
+Default compiler is Zig, but this seems to produce binaries that want the SO in a specific location. Using g++ fixes this on Linux:  
+
+`make PROJECT=Engine TARGET_OS=linux CXX=g++ all`
+`make PROJECT=Sample TARGET_OS=linux CXX=g++ all`
+
+Building cross compile for Windows can use zig just fine:
+
+`make PROJECT=Engine TARGET_OS=windows all`
 `make PROJECT=Sample TARGET_OS=windows all`
+
 
 You can also pass:  
 TARGET_ARCH (default=x86_64)  

@@ -5,7 +5,7 @@
 TARGET_ARCH				?= x86_64
 # Valid choices linux, windows, macosx
 TARGET_OS				?= linux
-TARGET_PLATFORM			?= $(TARGET_ARCH)-$(TARGET_OS)
+TARGET_PLATFORM			?= $(TARGET_ARCH)-$(TARGET_OS)-$(TARGET_LIBC)
 # Valid choices are Desktop, Web, Android
 RELEASE_PLATFORM		?= Desktop
 # The host os that we are building on (tools like rm, etc)
@@ -57,5 +57,6 @@ else
 		BUILD_OS=$(BUILD_OS) \
 		BUILD_MODE=$(BUILD_MODE) \
 		SRC_DIR=$(SRC_DIR) \
-		OUTPUT_DIR=$(OUTPUT_DIR)
+		OUTPUT_DIR=$(OUTPUT_DIR) \
+		BUILD_DIR=$(BUILD_DIR)
 endif

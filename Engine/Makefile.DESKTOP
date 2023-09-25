@@ -3,9 +3,9 @@
 #
 .PHONY: all clean rebuild
 
-CC			?= gcc
+#CC			?= gcc
 #CXX			?= g++
-CXX			?= zig -target $(TARGET_PLATFORM)
+CXX			= zig c++ -target $(TARGET_PLATFORM)
 LFLAGS		?= -shared
 CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -D$(TARGET_PLATFORM)
 
@@ -20,11 +20,14 @@ OBJECTS		:=$(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(patsubst %.cpp, %.o, $(SOURC
 ifeq ($(TARGET_OS),windows)
     CFLAGS += -DMYR_PLATFORM_WINDOWS -DMYR_BUILD_DLL
     LIBRARY_NAME = myriad.dll
+	LFLAGS += -Wl,--out-implib,$(BIN_DIR)/myriad.lib 
 endif
 ifeq ($(TARGET_OS),linux)
     CFLAGS += -DMYR_PLATFORM_LINUX
     LIBRARY_NAME = libmyriad.so
 endif
+
+CFLAGS +=  -Wl,-soname,$(LIBRARY_NAME)
 
 ifeq ($(BUILD_OS),windows)
     COPY = copy
