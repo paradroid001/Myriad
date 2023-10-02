@@ -11,7 +11,7 @@ LIB_DIR		:= $(OUTPUT_DIR)/lib
 #CC			?= gcc
 #CXX			?= g++
 CXX			= zig c++ -target $(TARGET_PLATFORM)
-CC			= zig cc -target $(TARGET_PLATFORM)
+#CC			= zig cc -target $(TARGET_PLATFORM)
 
 LFLAGS		?= -shared -l raylib -L$(BIN_DIR)
 CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -I vendor/raylib/src -D$(TARGET_PLATFORM)
