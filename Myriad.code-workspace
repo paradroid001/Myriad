@@ -6,10 +6,7 @@
 	],
 	"settings": {
 		"files.associations": {
-			"Makefile.DESKTOP": "makefile",
-			"Makefile.ANDROID": "makefile",
-			"Makefile.WEB": "makefile",
-
+			"Makefile.*": "makefile"
 		}
 	}
 }

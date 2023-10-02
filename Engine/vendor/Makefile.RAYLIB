@@ -1,0 +1,36 @@
+#
+# Myriad Project: Raylib Makefile
+#
+# Expects:
+# BUILD_OS=windows|linux|macosx (default=linux)
+# TARGET_OS=windows|linux|macosx (default=linux)
+# PLATFORM=TARGET_DESKTOP|TARGET_WEB_TARGET_ANDROID (default = TARGET_DESKTOP)
+# BIN_DIR= 
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+PLATFORM 				?= PLATFORM_DESKTOP
+
+ifeq ($(TARGET_OS),windows)
+	LFLAGS 			+= -Wl,--allow-multiple-definition -pthread -lopengl32 -lgdi32 -lwinmm -mwindows -static -static-libgcc -static-libstdc++
+endif
+
+ifeq ($(TARGET_OS),linux)
+	CFLAGS			+= -I/usr/include/X11
+	LFLAGS			+= -l GL -l m -l pthread -l dl -l rt -l X11
+endif
+
+ifeq ($(TARGET_OS),macosx)
+	LFLAGS 			+= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
+endif
+
+
+
+.PHONY: all clean
+
+all:
+	@mkdir -p $(BIN_DIR)
+	@echo BIN_DIR is $(BIN_DIR) and resolves to $(realpath $(BIN_DIR))
+	@echo Building Raylib on $(BUILD_OS) for $(TARGET_OS) to $(realpath $(BIN_DIR))
+	$(MAKE) -C raylib/src PLATFORM=$(PLATFORM) RAYLIB_RELEASE_PATH=$(realpath $(BIN_DIR))
+
+clean:
+	@make -C raylib/src clean PLATFORM=$(PLATFORM) -e 

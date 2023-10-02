@@ -8,7 +8,6 @@ namespace Myriad
       public:
         MyrApplication();
         virtual ~MyrApplication();
-
         virtual void Run();
     };
 

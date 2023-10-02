@@ -42,6 +42,7 @@ clean:
 		INC_DIR=$(INC_DIR) \
 		OUTPUT_DIR=$(OUTPUT_DIR)
 all:
+
 ifeq ($(SUB_MAKEFILE),UNKNOWN)	
 	@echo "No makefile to build for $(RELEASE_PLATFORM)"
 else
@@ -49,7 +50,21 @@ else
 	@echo Includes=$(INC_DIR)
 	@echo Src=$(SRC_DIR)
 	@echo Output=$(OUTPUT_DIR)
-	@make -f $(SUB_MAKEFILE) $@ \
+endif
+ifeq ($(BEAR),1)
+	bear -- make -f $(SUB_MAKEFILE) $@ \
+		TARGET_ARCH=$(TARGET_ARCH) \
+		TARGET_OS=$(TARGET_OS) \
+		TARGET_PLATFORM=$(TARGET_PLATFORM) \
+		RELEASE_PLATFORM=$(RELEASE_PLATFORM) \
+		BUILD_OS=$(BUILD_OS) \
+		BUILD_MODE=$(BUILD_MODE) \
+		SRC_DIR=$(SRC_DIR) \
+		OUTPUT_DIR=$(OUTPUT_DIR) \
+		BUILD_DIR=$(BUILD_DIR) \
+		CXX=g++
+else
+	make -f $(SUB_MAKEFILE) $@ \
 		TARGET_ARCH=$(TARGET_ARCH) \
 		TARGET_OS=$(TARGET_OS) \
 		TARGET_PLATFORM=$(TARGET_PLATFORM) \

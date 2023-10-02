@@ -1,17 +1,21 @@
 #
 # Desktop Release Platform
 #
-.PHONY: all clean rebuild
+.PHONY: all clean rebuild dep
 
-#CC			?= gcc
-#CXX			?= g++
-CXX			= zig c++ -target $(TARGET_PLATFORM)
-LFLAGS		?= -shared
-CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -D$(TARGET_PLATFORM)
 
 BIN_DIR		:= $(OUTPUT_DIR)/bin
 OBJ_DIR		:= $(OUTPUT_DIR)/obj
 LIB_DIR		:= $(OUTPUT_DIR)/lib
+
+#CC			?= gcc
+#CXX			?= g++
+CXX			= zig c++ -target $(TARGET_PLATFORM)
+CC			= zig cc -target $(TARGET_PLATFORM)
+
+LFLAGS		?= -shared -l raylib -L$(BIN_DIR)
+CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -I vendor/raylib/src -D$(TARGET_PLATFORM)
+
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 SOURCES		:=$(call rwildcard,$(SRC_DIR),*.cpp)
@@ -47,7 +51,11 @@ clean:
 	$(RM) $(BIN_DIR)/*
 	@echo "Finished cleaning."
 
-all: $(LIBRARY_NAME)
+dep:
+	@echo Making Raylib with TARGET_OS=$(TARGET_OS) BIN_DIR=$(BIN_DIR)
+	$(MAKE) -C vendor -f Makefile.RAYLIB CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="../$(BIN_DIR)" all
+
+all: dep $(LIBRARY_NAME)
 
 $(LIBRARY_NAME): $(OBJECTS)
 	@echo "Linking $(LIBRARY_NAME) for $(TARGET_PLATFORM) on $(BUILD_OS)"

@@ -3,3 +3,6 @@
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
 	branch = v2.x
+[submodule "Engine/vendor/raylib"]
+	path = Engine/vendor/raylib
+	url = https://github.com/raysan5/raylib

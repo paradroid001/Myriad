@@ -12,9 +12,10 @@ MYRIAD_DIR			?= ../Engine
 MYRIAD_LIB			:= $(MYRIAD_DIR)/build/$(VARIANT_PATH)/bin
 TARGET				?= sample
 CXX					= zig c++ -target $(TARGET_PLATFORM)
-CFLAGS				?= -std=c++17 -I ../Engine/vendor/spdlog/include
+CFLAGS				?= -std=c++17 -I ../Engine/vendor/spdlog/include -I ../Engine/vendor/raylib/src
+#LFLAGS				+= -L.
 #LFLAGS				+= -L $(MYRIAD_LIB)
-OBJECTS				:= $(OBJ_DIR)/main.o
+OBJECTS				:= $(OBJ_DIR)/main.o $(OBJ_DIR)/Dot.o
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 

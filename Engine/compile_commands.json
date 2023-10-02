@@ -1,7 +1,7 @@
 [
   {
     "arguments": [
-      "/usr/bin/g++",
+      "/usr/bin/x86_64-linux-gnu-g++-10",
       "-c",
       "-std=c++17",
       "-fPIC",
@@ -9,13 +9,148 @@
       "src/include",
       "-I",
       "vendor/spdlog/include",
-      "-DPLATFORM_DESKTOP",
+      "-I",
+      "vendor/raylib/src",
+      "-Dx86_64-linux-gnu",
+      "-DMYR_PLATFORM_LINUX",
+      "src/core/Camera.cpp",
       "-o",
-      "build/PLATFORM_DESKTOP/RELEASE/LINUX/obj/core/Log.o",
-      "src/core/Log.cpp"
+      "build/Desktop/Release/x86_64-linux-gnu/obj/core/Camera.o"
     ],
-    "directory": "/home/brad/dev/games/Myriad/Engine",
-    "file": "/home/brad/dev/games/Myriad/Engine/src/core/Log.cpp",
-    "output": "/home/brad/dev/games/Myriad/Engine/build/PLATFORM_DESKTOP/RELEASE/LINUX/obj/core/Log.o"
+    "directory": "/myriad/Engine",
+    "file": "/myriad/Engine/src/core/Camera.cpp",
+    "output": "/myriad/Engine/build/Desktop/Release/x86_64-linux-gnu/obj/core/Camera.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "-std=c++17",
+      "-fPIC",
+      "-I",
+      "src/include",
+      "-I",
+      "vendor/spdlog/include",
+      "-I",
+      "vendor/raylib/src",
+      "-Dx86_64-linux-gnu",
+      "-DMYR_PLATFORM_LINUX",
+      "src/core/GameObject.cpp",
+      "-o",
+      "build/Desktop/Release/x86_64-linux-gnu/obj/core/GameObject.o"
+    ],
+    "directory": "/myriad/Engine",
+    "file": "/myriad/Engine/src/core/GameObject.cpp",
+    "output": "/myriad/Engine/build/Desktop/Release/x86_64-linux-gnu/obj/core/GameObject.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "-std=c++17",
+      "-fPIC",
+      "-I",
+      "src/include",
+      "-I",
+      "vendor/spdlog/include",
+      "-I",
+      "vendor/raylib/src",
+      "-Dx86_64-linux-gnu",
+      "-DMYR_PLATFORM_LINUX",
+      "src/core/Log.cpp",
+      "-o",
+      "build/Desktop/Release/x86_64-linux-gnu/obj/core/Log.o"
+    ],
+    "directory": "/myriad/Engine",
+    "file": "/myriad/Engine/src/core/Log.cpp",
+    "output": "/myriad/Engine/build/Desktop/Release/x86_64-linux-gnu/obj/core/Log.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "-std=c++17",
+      "-fPIC",
+      "-I",
+      "src/include",
+      "-I",
+      "vendor/spdlog/include",
+      "-I",
+      "vendor/raylib/src",
+      "-Dx86_64-linux-gnu",
+      "-DMYR_PLATFORM_LINUX",
+      "src/core/MyrApplication.cpp",
+      "-o",
+      "build/Desktop/Release/x86_64-linux-gnu/obj/core/MyrApplication.o"
+    ],
+    "directory": "/myriad/Engine",
+    "file": "/myriad/Engine/src/core/MyrApplication.cpp",
+    "output": "/myriad/Engine/build/Desktop/Release/x86_64-linux-gnu/obj/core/MyrApplication.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "-std=c++17",
+      "-fPIC",
+      "-I",
+      "src/include",
+      "-I",
+      "vendor/spdlog/include",
+      "-I",
+      "vendor/raylib/src",
+      "-Dx86_64-linux-gnu",
+      "-DMYR_PLATFORM_LINUX",
+      "src/core/Transform.cpp",
+      "-o",
+      "build/Desktop/Release/x86_64-linux-gnu/obj/core/Transform.o"
+    ],
+    "directory": "/myriad/Engine",
+    "file": "/myriad/Engine/src/core/Transform.cpp",
+    "output": "/myriad/Engine/build/Desktop/Release/x86_64-linux-gnu/obj/core/Transform.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "-std=c++17",
+      "-fPIC",
+      "-I",
+      "src/include",
+      "-I",
+      "vendor/spdlog/include",
+      "-I",
+      "vendor/raylib/src",
+      "-Dx86_64-linux-gnu",
+      "-DMYR_PLATFORM_LINUX",
+      "src/core/Window.cpp",
+      "-o",
+      "build/Desktop/Release/x86_64-linux-gnu/obj/core/Window.o"
+    ],
+    "directory": "/myriad/Engine",
+    "file": "/myriad/Engine/src/core/Window.cpp",
+    "output": "/myriad/Engine/build/Desktop/Release/x86_64-linux-gnu/obj/core/Window.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "-std=c++17",
+      "-fPIC",
+      "-I",
+      "src/include",
+      "-I",
+      "vendor/spdlog/include",
+      "-I",
+      "vendor/raylib/src",
+      "-Dx86_64-linux-gnu",
+      "-DMYR_PLATFORM_LINUX",
+      "src/core/core.cpp",
+      "-o",
+      "build/Desktop/Release/x86_64-linux-gnu/obj/core/core.o"
+    ],
+    "directory": "/myriad/Engine",
+    "file": "/myriad/Engine/src/core/core.cpp",
+    "output": "/myriad/Engine/build/Desktop/Release/x86_64-linux-gnu/obj/core/core.o"
   }
 ]

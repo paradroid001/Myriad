@@ -13,6 +13,19 @@ RUN apt-get update -yqq && \
     file \
     vim
 
+
+#libx11-dev .................   for X11/Xlib.h
+#mesa-common-dev........        for GL/glx.h
+#libglu1-mesa-dev .....         for GL/glu.h
+#libxrandr-dev ...........      for X11/extensions/Xrandr.h
+#libxi-dev ...................  for X11/extensions/XInput.h
+
+# dev dependency packages
+RUN apt-get install -yq libx11-dev \
+    mesa-common-dev \
+    libglu1-mesa-dev \
+    xorg-dev
+
 RUN groupadd -g 1000 myriad
 RUN useradd -u 1000 -g myriad -ms /bin/bash myriad
 USER myriad
