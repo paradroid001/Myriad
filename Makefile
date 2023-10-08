@@ -43,7 +43,8 @@ TARGET_OS		 ?= linux
 TARGET_LIBC		 ?= gnu
 PROJECT ?= Engine
 MODE    ?= Release
-CONFIG = TARGET_ARCH=$(TARGET_ARCH) \
+
+#CONFIG = TARGET_ARCH=$(TARGET_ARCH) \
 		 TARGET_OS=$(TARGET_OS) \
 		 TARGET_LIBC=$(TARGET_LIBC) \
 		 BUILD_OS=$(BUILD_OS) \
@@ -52,10 +53,16 @@ CONFIG = TARGET_ARCH=$(TARGET_ARCH) \
 		 BUILD_MODE=$(MODE)
 
 
-.PHONY: all clean
-
+.PHONY: all clean cleanlibs
+#Adding export so that all vars propagate to the submakefiles.
+export
 all:
-	cd $(PROJECT) && make $(CONFIG) all
+	make -C $(PROJECT) all
+
+cleanlibs:
+	make -C $(PROJECT) cleanlibs
+#	cd $(PROJECT) && make $(CONFIG) cleanlibs
 
 clean:
-	cd $(PROJECT) && make $(CONFIG) clean
+	make -C $(PROJECT) clean
+#	cd $(PROJECT) && make $(CONFIG) clean

@@ -6,3 +6,6 @@
 [submodule "Engine/vendor/raylib"]
 	path = Engine/vendor/raylib
 	url = https://github.com/raysan5/raylib
+[submodule "Engine/vendor/Remotery"]
+	path = Engine/vendor/Remotery
+	url = https://github.com/Celtoys/Remotery.git

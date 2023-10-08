@@ -2,27 +2,31 @@
 #include "Component.h"
 #include "core.h"
 
-namespace myriad
+namespace Myriad
 {
-    Transform::Transform() : Component() { SetPosition(0, 0, 0); };
-    Transform::Transform(Vector3 position) : Component()
+    Transform::Transform() : Myriad::Component() { SetPosition(0, 0, 0); };
+    Transform::Transform(Vector3 position) : Myriad::Component()
     {
         this->SetPosition(position.x, position.y, position.z);
     }
+
     Transform::~Transform(){};
+
     void Transform::SetPosition(float x, float y, float z)
     {
         this->_position.x = x;
         this->_position.y = y;
         this->_position.z = z;
     }
+
     void Transform::SetRotation(float x, float y, float z, float w)
     {
         // TODO implement me
     }
+
     void Transform::SetScale(float x, float y, float z)
     {
         // TODO implement me
     }
 
-} // namespace myriad
+} // namespace Myriad

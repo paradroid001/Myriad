@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __LOG_H_
+#define __LOG_H_
+
 #include "core.h"
 #include "spdlog/spdlog.h"
 #include <memory>
@@ -29,7 +31,9 @@ namespace Myriad
 #define MYR_CORE_INFO(...) ::Myriad::Log::GetCoreLogger()->info(__VA_ARGS__)
 #define MYR_CORE_ERROR(...) ::Myriad::Log::GetCoreLogger()->error(__VA_ARGS__)
 
-#define MYR_TRACE(...) ::Myriad::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define MYR_TRACE(...) ::Myriad::Log::GetClientLogger()->trace(__VA_ARGS__)
 #define MYR_WARN(...) ::Myriad::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define MYR_INFO(...) ::Myriad::Log::GetClientLogger()->info(__VA_ARGS__)
 #define MYR_ERROR(...) ::Myriad::Log::GetClientLogger()->error(__VA_ARGS__)
+
+#endif

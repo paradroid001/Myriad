@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __MYRAPPLICATION_H_
+#define __MYRAPPLICATION_H_
+
 #include "core.h"
 
 namespace Myriad
@@ -15,3 +17,5 @@ namespace Myriad
     MyrApplication *CreateApplication();
 
 } // namespace Myriad
+
+#endif

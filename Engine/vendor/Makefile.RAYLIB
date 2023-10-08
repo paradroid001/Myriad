@@ -27,10 +27,9 @@ endif
 .PHONY: all clean
 
 all:
-	@mkdir -p $(BIN_DIR)
 	@echo BIN_DIR is $(BIN_DIR) and resolves to $(realpath $(BIN_DIR))
 	@echo Building Raylib on $(BUILD_OS) for $(TARGET_OS) to $(realpath $(BIN_DIR))
-	$(MAKE) -C raylib/src PLATFORM=$(PLATFORM) RAYLIB_RELEASE_PATH=$(realpath $(BIN_DIR))
+	$(MAKE) -C raylib/src PLATFORM=$(PLATFORM) RAYLIB_RELEASE_PATH=$(BIN_DIR)
 
 clean:
 	@make -C raylib/src clean PLATFORM=$(PLATFORM) -e 

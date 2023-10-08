@@ -15,13 +15,31 @@ LIBRARY_NAME			?= libmyriad.so
 BUILD_MODE				?= Release
 SUB_MAKEFILE			?= UNKNOWN
 BUILD_DIR				?= build
-BIN_DIR					?= bin
-OBJ_DIR					?= obj
-INC_DIR					?= .
 SRC_DIR					?= src
-EXT_DIR					?= ext
-
 OUTPUT_DIR				?= $(BUILD_DIR)/$(RELEASE_PLATFORM)/$(BUILD_MODE)/$(TARGET_PLATFORM)
+BIN_DIR					:= $(OUTPUT_DIR)/bin
+OBJ_DIR					:= $(OUTPUT_DIR)/obj
+LIB_DIR					:= $(OUTPUT_DIR)/lib
+
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+SOURCES		:=$(call rwildcard,$(SRC_DIR),*.cpp)
+OBJECTS		:=$(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(patsubst %.cpp, %.o, $(SOURCES)))
+
+
+ifeq ($(BUILD_OS),windows)
+    COPY = copy
+    MKDIR = mkdir -p
+    RM = rm -rf
+endif
+ifeq ($(BUILD_OS),linux)
+    COPY = cp
+    MKDIR = mkdir -p
+    RM = rm -rf
+endif
+
+#valid values true, false
+USE_REMOTERY=false
+
 
 ifeq ($(RELEASE_PLATFORM), Desktop)
 	SUB_MAKEFILE := Makefile.DESKTOP
@@ -33,14 +51,28 @@ ifeq ($(RELEASE_PLATFORM), Android)
 	SUB_MAKEFILE := Makefile.ANDROID
 endif
 
+.PHONY: clean cleanlibs all
+export
 clean:
-	@make -f $(SUB_MAKEFILE) $@ \
+	@make -f $(SUB_MAKEFILE) $@
+#	@make -f $(SUB_MAKEFILE) $@ \
 		TARGET_PLATFORM=$(TARGET_PLATFORM) \
 		RELEASE_PLATFORM=$(RELEASE_PLATFORM) \
 		BUILD_OS=$(BUILD_OS) \
 		BUILD_MODE=$(BUILD_MODE) \
 		INC_DIR=$(INC_DIR) \
 		OUTPUT_DIR=$(OUTPUT_DIR)
+
+cleanlibs:
+	@make -f $(SUB_MAKEFILE) $@
+#	@make -f $(SUB_MAKEFILE) $@ \
+		TARGET_PLATFORM=$(TARGET_PLATFORM) \
+		RELEASE_PLATFORM=$(RELEASE_PLATFORM) \
+		BUILD_OS=$(BUILD_OS) \
+		BUILD_MODE=$(BUILD_MODE) \
+		INC_DIR=$(INC_DIR) \
+		OUTPUT_DIR=$(OUTPUT_DIR)
+
 all:
 
 ifeq ($(SUB_MAKEFILE),UNKNOWN)	
@@ -52,7 +84,8 @@ else
 	@echo Output=$(OUTPUT_DIR)
 endif
 ifeq ($(BEAR),1)
-	bear -- make -f $(SUB_MAKEFILE) $@ \
+	bear -- make -f $(SUB_MAKEFILE) $@
+#	bear -- make -f $(SUB_MAKEFILE) $@ \
 		TARGET_ARCH=$(TARGET_ARCH) \
 		TARGET_OS=$(TARGET_OS) \
 		TARGET_PLATFORM=$(TARGET_PLATFORM) \
@@ -64,7 +97,8 @@ ifeq ($(BEAR),1)
 		BUILD_DIR=$(BUILD_DIR) \
 		CXX=g++
 else
-	make -f $(SUB_MAKEFILE) $@ \
+	make -f $(SUB_MAKEFILE) $@
+#	make -f $(SUB_MAKEFILE) $@ \
 		TARGET_ARCH=$(TARGET_ARCH) \
 		TARGET_OS=$(TARGET_OS) \
 		TARGET_PLATFORM=$(TARGET_PLATFORM) \

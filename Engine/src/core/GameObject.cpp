@@ -1,14 +1,14 @@
 #include "GameObject.h"
-#include "../../vendor/raylib/src/raylib.h"
+// #include "MyrEntryPoint.h"
 #include "core.h"
 #include <iostream>
 
-namespace myriad
+namespace Myriad
 {
     GameObject::GameObject()
     {
-        _ptransform = new Transform();
-        Component *c = (Component *)_ptransform;
+        _ptransform = new Myriad::Transform();
+        Myriad::Component *c = (Myriad::Component *)_ptransform;
         AddComponent(*c);
         name = "DefaultName";
     }
@@ -16,15 +16,18 @@ namespace myriad
     {
         std::cout << "Destructor for GameObject[" << name << "]" << std::endl;
     }
-    int GameObject::AddComponent(Component c)
+    int GameObject::AddComponent(Myriad::Component c)
     {
         components.push_front(c);
         return 0;
     }
 
-    int GameObject::RemoveComponent(Component c) { return 0; }
+    int GameObject::RemoveComponent(Myriad::Component c) { return 0; }
 
-    Transform GameObject::GetTransform() { return *_ptransform; }
+    Myriad::Transform *const GameObject::GetTransform()
+    {
+        return (Transform *const)_ptransform;
+    }
 
     std::string GameObject::GetName() { return name; }
 
@@ -35,12 +38,15 @@ namespace myriad
 
     void GameObject::Update()
     {
-        // override me
+        //   override me
     }
+
     void GameObject::Draw()
     {
+#if MYRIAD_RENDERER == RAYLIB
         // override me
         DrawCircle(_ptransform->position().x, _ptransform->position().y, 20,
                    GREEN);
+#endif
     }
-} // namespace myriad
+} // namespace Myriad

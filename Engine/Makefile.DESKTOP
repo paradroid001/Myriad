@@ -1,30 +1,20 @@
 #
 # Desktop Release Platform
 #
-.PHONY: all clean rebuild dep
-
-
-BIN_DIR		:= $(OUTPUT_DIR)/bin
-OBJ_DIR		:= $(OUTPUT_DIR)/obj
-LIB_DIR		:= $(OUTPUT_DIR)/lib
 
 #CC			?= gcc
 #CXX			?= g++
-CXX			= zig c++ -target $(TARGET_PLATFORM)
-#CC			= zig cc -target $(TARGET_PLATFORM)
+CXX			:= zig c++ -target $(TARGET_PLATFORM)
+#CC			:= zig cc -target $(TARGET_PLATFORM)
+CC			:= gcc
 
-LFLAGS		?= -shared -l raylib -L$(BIN_DIR)
+LFLAGS		?= -shared
 CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -I vendor/raylib/src -D$(TARGET_PLATFORM)
-
-
-rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
-SOURCES		:=$(call rwildcard,$(SRC_DIR),*.cpp)
-OBJECTS		:=$(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(patsubst %.cpp, %.o, $(SOURCES)))
 
 ifeq ($(TARGET_OS),windows)
     CFLAGS += -DMYR_PLATFORM_WINDOWS -DMYR_BUILD_DLL
     LIBRARY_NAME = myriad.dll
-	LFLAGS += -Wl,--out-implib,$(BIN_DIR)/myriad.lib 
+    LFLAGS += -Wl,--out-implib,$(BIN_DIR)/myriad.lib 
 endif
 ifeq ($(TARGET_OS),linux)
     CFLAGS += -DMYR_PLATFORM_LINUX
@@ -32,17 +22,20 @@ ifeq ($(TARGET_OS),linux)
 endif
 
 CFLAGS +=  -Wl,-soname,$(LIBRARY_NAME)
+LFLAGS +=  -l raylib -L$(BIN_DIR)
 
-ifeq ($(BUILD_OS),windows)
-    COPY = copy
-    MKDIR = mkdir -p
-    RM = rm -rf
+# Optimise for size with Clang flags: -g0 -Os -s 
+ifeq ($(BUILD_MODE),Release)
+#	CFLAGS += -Os -s -g0
+#	LFLAGS += -Os -s -g0
 endif
-ifeq ($(BUILD_OS),linux)
-    COPY = cp
-    MKDIR = mkdir -p
-    RM = rm -rf
+ifeq ($(BUILD_MODE),Debug)
+	CFLAGS += -O0 -g
+	LFLAGS += -O0 -g
 endif
+
+
+.PHONY: all clean rebuild dep setup cleanlibs
 
 clean:
 	@echo "Cleaning $(BIN_DIR)"
@@ -51,16 +44,44 @@ clean:
 	$(RM) $(BIN_DIR)/*
 	@echo "Finished cleaning."
 
+setup:
+	@$(MKDIR) $(OBJ_DIR)
+	@$(MKDIR) $(BIN_DIR)
+
+cleanlibs:
+	$(MAKE) -C vendor -f Makefile.RAYLIB CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="$(realpath $(BIN_DIR))" clean
+	rm $(OBJ_DIR)/Remotery.o
 dep:
 	@echo Making Raylib with TARGET_OS=$(TARGET_OS) BIN_DIR=$(BIN_DIR)
-	$(MAKE) -C vendor -f Makefile.RAYLIB CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="../$(BIN_DIR)" all
+	$(MAKE) -C vendor -f Makefile.RAYLIB CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="$(realpath $(BIN_DIR))" all
 
-all: dep $(LIBRARY_NAME)
+REMOTERY_FLAGS = -Ivendor/Remotery/lib
+
+ifeq ($(TARGET_OS),linux)
+    REMOTERY_FLAGS += -pthread -lm
+endif
+ifeq ($(TARGET_OS),windows)
+# when linking for windows, add in  libws2_32.a libwinmm.a
+    REMOTERY_FLAGS  += -lwinmm -lws2_32
+#    LFLAGS 		    += -Wl,--allow-multiple-definition -pthread -lopengl32 -lgdi32 -lwinmm -mwindows -static -static-libgcc -static-libstdc++
+endif
+
+ifeq ($(USE_REMOTERY),true)
+	@echo --- ---
+	@echo "Making Remotery (-c means keep it as an object)"
+	$(CXX) vendor/Remotery/lib/Remotery.c -c -o $(OBJ_DIR)/Remotery.o $(REMOTERY_FLAGS)
+endif
+
+all: setup dep $(LIBRARY_NAME)
 
 $(LIBRARY_NAME): $(OBJECTS)
 	@echo "Linking $(LIBRARY_NAME) for $(TARGET_PLATFORM) on $(BUILD_OS)"
 	@$(MKDIR) $(BIN_DIR)
-	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(LFLAGS)
+ifeq ($(USE_REMOTERY),true)
+	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(OBJ_DIR)/Remotery.o $(LFLAGS)
+else
+	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(CFLAGS) $(LFLAGS)
+endif
 
 # Compile objects to the build directory
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -68,4 +89,4 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(MKDIR) $(dir $@)
 	$(CXX) -MMD -MP -c $(CFLAGS) $< -o $@
 
-rebuild: clean all
+rebuild: clean cleanlibs all

@@ -2,7 +2,7 @@
 #include "GameObject.h"
 #include "core.h"
 
-namespace myriad
+namespace Myriad
 {
     Component::Component(){};
     Component::~Component(){};
@@ -14,4 +14,4 @@ namespace myriad
     void Component::Exec(){};
     void Component::OnEnable(){};
     void Component::OnDisable(){};
-} // namespace myriad
+} // namespace Myriad

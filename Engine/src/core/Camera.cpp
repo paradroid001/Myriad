@@ -1,9 +1,10 @@
 #include "Camera.h"
 #include "GameObject.h"
-// #include "raylib.h"
+#include "Types2D.h"
+#include "Types3D.h"
 #include <list>
 
-namespace myriad
+namespace Myriad
 {
     using std::list;
     Camera::Camera() { this->backgroundColour = (MyrColour)BLACK; }
@@ -14,25 +15,26 @@ namespace myriad
         this->backgroundColour = c;
     }
 
-    void Camera::Draw(std::list<myriad::GameObject> *drawlist)
+    void Camera::Draw(std::list<Myriad::GameObject *> *drawlist)
     {
         BeginDrawing();
         ClearBackground((Color)(this->backgroundColour));
-        Vector2 v;
+        Myriad::Vector2 v;
         v.x = 200;
         v.y = 200;
+#if MYR_RENDERER == RAYLIB
         DrawCircleV(v, 20, YELLOW);
-
+#endif
         if (drawlist != NULL)
         {
-            std::list<GameObject>::iterator it;
+            std::list<GameObject *>::iterator it;
             for (it = drawlist->begin(); it != drawlist->end(); ++it)
             {
-                it->Draw();
+                (*it)->Draw();
             }
         }
 
         EndDrawing();
     }
 
-} // namespace myriad
+} // namespace Myriad

@@ -5,9 +5,9 @@
 
 // class GameObject;
 
-namespace myriad
+namespace Myriad
 {
-    class Component
+    class MYR_API Component
     {
       public:
         Component();
@@ -25,5 +25,5 @@ namespace myriad
         bool _enabled;
         // GameObject *_gameObject;
     };
-} // namespace myriad
+} // namespace Myriad
 #endif

@@ -1,6 +1,8 @@
-#pragma once
+#ifndef __MYRENTRYPOINT_H_
+#define __MYRENTRYPOINT_H_
+
+#include "Log.h"
 #include "MyrApplication.h"
-#include "core/Log.h"
 
 extern Myriad::MyrApplication *Myriad::CreateApplication(); // defined in
                                                             // client.
@@ -23,3 +25,5 @@ int main(int argc, char **argv)
     delete app;
     return 0;
 }
+
+#endif

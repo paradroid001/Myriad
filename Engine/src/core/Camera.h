@@ -1,10 +1,12 @@
 #ifndef __CAMERA_H_
 #define __CAMERA_H_
-// #include "GameObject.h"
+#include "MyriadConfig.h"
 #include "core.h"
-#include "raylib.h" //for the color typedef
+// #include "raylib.h" //for the color typedef
+
 #include <list>
-namespace myriad
+
+namespace Myriad
 {
     class GameObject;
     typedef Color MyrColour;
@@ -15,10 +17,10 @@ namespace myriad
         Camera();
         ~Camera();
         void SetBackgroundColour(MyrColour c);
-        void Draw(std::list<myriad::GameObject> *drawlist);
+        void Draw(std::list<Myriad::GameObject *> *drawlist);
 
       private:
         MyrColour backgroundColour;
     };
-} // namespace myriad
+} // namespace Myriad
 #endif

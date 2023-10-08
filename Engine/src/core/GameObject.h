@@ -1,6 +1,11 @@
 #ifndef __GAMEOBJECT_H_
 #define __GAMEOBJECT_H_
-#include "../../vendor/raylib/src/raylib.h" //for vector2 etc
+
+// Include the config
+#include "MyriadConfig.h"
+// The rest
+
+// #include "../../vendor/raylib/src/raylib.h" //for vector2 etc
 #include "Component.h"
 // class Component;
 
@@ -9,17 +14,17 @@
 #include <list>
 #include <string>
 
-namespace myriad
+namespace Myriad
 {
     class MYR_API GameObject
     {
       public:
         GameObject();
-        ~GameObject();
-        int AddComponent(Component c);
-        int RemoveComponent(Component c);
+        virtual ~GameObject();
+        int AddComponent(Myriad::Component c);
+        int RemoveComponent(Myriad::Component c);
         // template<> Component GetComponent<Component>();
-        Transform GetTransform();
+        Transform *const GetTransform();
         std::string GetName();
         void SetName(const char *newname);
         virtual void Update();
@@ -28,8 +33,8 @@ namespace myriad
       protected:
         std::list<Component> components;
         std::string name;
-        Transform *_ptransform;
+        Myriad::Transform *_ptransform;
     };
-} // namespace myriad
+} // namespace Myriad
 
 #endif

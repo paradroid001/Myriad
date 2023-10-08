@@ -3,7 +3,7 @@
 
 #include "core.h"
 
-namespace myriad
+namespace Myriad
 {
     class MYR_API Window
     {
@@ -15,6 +15,6 @@ namespace myriad
         bool ShouldClose();
         void Close();
     };
-} // namespace myriad
+} // namespace Myriad
 
 #endif
