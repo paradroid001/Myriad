@@ -28,16 +28,30 @@ namespace Myriad
             // File system?
             // Network?
             // Audio?
-        } enum EventCategory
+        };
+
+        enum EventCategory
         {
             None = 0,
             Engine = BIT(0),
             Input = BIT(1),
             Keyboard = BIT(2),
             Mouse = BIT(3),
-        }
+        };
 
-        class Event
+        class IEvent
+        {
+        };
+
+        template <class T> class Event : public IEvent
+        {
+          public:
+            void Call();
+            static void Register();
+            static void Unregister();
+        };
+
+        /*class Event
         {
             virtual EventType GetEventType() const = 0;
             virtual const char *GetName() const = 0;
@@ -46,6 +60,7 @@ namespace Myriad
             {
                 return GetCategoryFlags() & category;
             }
-        }
+        };
+        */
     } // namespace Event
 } // namespace Myriad
