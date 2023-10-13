@@ -2,6 +2,7 @@
 #define __MYRIAD_H_
 
 // For client applications only, not for engine to include
+#include "Events/Event.h"
 #include "core/Camera.h"
 #include "core/Component.h"
 #include "core/GameObject.h"

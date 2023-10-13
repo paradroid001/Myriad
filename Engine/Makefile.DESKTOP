@@ -9,7 +9,7 @@ CC			:= zig cc -target $(TARGET_PLATFORM)
 #CC			:= gcc
 
 LFLAGS		?= -shared
-CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -I vendor/raylib/src -D$(TARGET_PLATFORM)
+CFLAGS		?= -std=c++17 -fPIC -I src -I vendor/spdlog/include -I vendor/raylib/src -D$(TARGET_PLATFORM)
 
 ifeq ($(TARGET_OS),windows)
     CFLAGS += -DMYR_PLATFORM_WINDOWS -DMYR_BUILD_DLL

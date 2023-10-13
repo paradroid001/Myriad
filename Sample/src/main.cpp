@@ -1,13 +1,15 @@
 #include <cstdlib> //rand
 #include <list>
-
-#include "Dot.h"
-// #include "Remotery.h"
-#include "main.h"
-
 #include <myriad.h>
 // Entry Point
 #include <core/MyrEntryPoint.h>
+
+#include "Dot.h"
+#include "core/Log.h"
+#include "main.h"
+// #include "Remotery.h"
+
+#include "TestEvent.h"
 
 Sample::Sample() {}
 Sample::~Sample() {}
@@ -20,6 +22,16 @@ void Sample::Run()
     MYR_TRACE("Set FPS");
     w->Init(800, 600, "Hello");
     MYR_TRACE("Inited windows");
+
+    // Test Event instantiation.
+    Myriad::Events::EventCallback<Sample> *callback =
+        new Myriad::Events::EventCallback(this, &Sample::EventHandler);
+    TestEvent::Register(*callback);
+    TestEvent *e = new TestEvent();
+    e->somedata1 = 100;
+    e->somedata2 = 200;
+
+    e->Call();
 
     camera = new Myriad::Camera();
     pObjects = new std::list<Myriad::GameObject *>();
@@ -70,6 +82,11 @@ void Sample::Draw()
     // rmt_BeginCPUSample(Draw, RMTSF_Aggregate);
     camera->Draw(pObjects);
     // rmt_EndCPUSample();
+}
+
+void Sample::EventHandler(TestEvent e)
+{
+    MYR_TRACE("Event was handled! {0}, {1]}", e.somedata1, e.somedata2);
 }
 
 Myriad::MyrApplication *Myriad::CreateApplication()
