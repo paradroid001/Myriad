@@ -1,5 +1,14 @@
 #include "Window.h"
-#include "MyriadConfig.h"
+
+#ifdef MYRIAD_INTERNAL
+    #include "MyriadConfig.h"
+#else
+// fwd declare the functions we use.
+void InitWindow(int width, int height, const char *title);
+void SetTargetFPS(int fps);
+bool WindowShouldClose();
+void CloseWindow();
+#endif
 // #include "raylib.h"
 
 namespace Myriad

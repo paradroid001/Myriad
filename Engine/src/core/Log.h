@@ -1,12 +1,19 @@
 #ifndef __LOG_H_
 #define __LOG_H_
 
+// #include "MyriadConfig.h"
 #include "core.h"
 #include "spdlog/spdlog.h"
 #include <memory>
 
 namespace Myriad
 {
+    // class MYR_API Logger
+    //{
+    //     template <typename... Args>
+    //     virtual void trace(format_string_t<Args...> fmt, Args &&...args) = 0;
+    // }
+
     class MYR_API Log
     {
       public:

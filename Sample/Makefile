@@ -40,8 +40,8 @@ ifeq ($(TARGET_OS),linux)
 endif
 
 CFLAGS += -I $(MYRIAD_DIR)/src $(INCLUDES)
-#LFLAGS += -L $(BUILD_DIR)/$(VARIANT_PATH) -L.
-LFLAGS += -L.
+LFLAGS += -L $(BUILD_DIR)/$(VARIANT_PATH) -L.
+#LFLAGS += -L.
 
 
 .PHONY: setup all clean cleanlibs
@@ -57,7 +57,7 @@ all: setup $(BUILD_DIR)/$(TARGET)
 $(BUILD_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)/$(VARIANT_PATH)
 	@cp $(MYRIAD_LIB)/* $(BUILD_DIR)/$(VARIANT_PATH)
-	@cp $(MYRIAD_LIB)/* .
+#	@cp $(MYRIAD_LIB)/* .
 	$(CXX) -o $(BUILD_DIR)/$(VARIANT_PATH)/$(TARGET) $(OBJECTS) $(LFLAGS)
 	
 

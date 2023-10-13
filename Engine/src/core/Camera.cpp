@@ -7,7 +7,8 @@
 namespace Myriad
 {
     using std::list;
-    Camera::Camera() { this->backgroundColour = (MyrColour)BLACK; }
+    Camera::Camera() { this->backgroundColour = (MyrColour){0, 0, 0, 255}; }
+
     Camera::~Camera() {}
 
     void Camera::SetBackgroundColour(MyrColour c)
@@ -18,7 +19,13 @@ namespace Myriad
     void Camera::Draw(std::list<Myriad::GameObject *> *drawlist)
     {
         BeginDrawing();
-        ClearBackground((Color)(this->backgroundColour));
+        Color c;
+        c.r = backgroundColour.r;
+        c.g = backgroundColour.g;
+        c.b = backgroundColour.b;
+        c.a = backgroundColour.a;
+
+        ClearBackground(c);
         Myriad::Vector2 v;
         v.x = 200;
         v.y = 200;

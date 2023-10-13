@@ -1,8 +1,6 @@
 #ifndef __GAMEOBJECT_H_
 #define __GAMEOBJECT_H_
 
-// Include the config
-#include "MyriadConfig.h"
 // The rest
 
 // #include "../../vendor/raylib/src/raylib.h" //for vector2 etc
@@ -29,6 +27,7 @@ namespace Myriad
         void SetName(const char *newname);
         virtual void Update();
         virtual void Draw();
+        virtual void DrawCircleShape(float x, float y, float r, MyrColour c);
 
       protected:
         std::list<Component> components;

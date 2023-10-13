@@ -45,6 +45,6 @@ void Dot::Update()
 
 void Dot::Draw()
 {
-    DrawCircle(_ptransform->position().x, _ptransform->position().y, 20,
-               colour);
+    DrawCircleShape(_ptransform->position().x, _ptransform->position().y, 20,
+                    colour);
 }

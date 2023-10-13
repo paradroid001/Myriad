@@ -15,4 +15,16 @@
 // Bitshift macro
 #define BIT(x) (1 << x)
 
+namespace Myriad
+{
+    class MyrColour
+    {
+      public:
+        unsigned char r;
+        unsigned char g;
+        unsigned char b;
+        unsigned char a;
+    };
+} // namespace Myriad
+
 #endif

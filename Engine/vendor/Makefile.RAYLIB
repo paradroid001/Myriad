@@ -8,20 +8,32 @@
 # BIN_DIR= 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 PLATFORM 				?= PLATFORM_DESKTOP
+CUSTOM_CFLAGS			= 
 
 ifeq ($(TARGET_OS),windows)
 	LFLAGS 			+= -Wl,--allow-multiple-definition -pthread -lopengl32 -lgdi32 -lwinmm -mwindows -static -static-libgcc -static-libstdc++
+#so this stops us getting errors trying to include X11.h 	
+	PLATFORM_OS = WINDOWS
 endif
 
 ifeq ($(TARGET_OS),linux)
-	CFLAGS			+= -I/usr/include/X11
 	LFLAGS			+= -l GL -l m -l pthread -l dl -l rt -l X11
+	CUSTOM_CFLAGS	+= -I/usr/include -I/usr/include/x86_64-linux-gnu
 endif
 
 ifeq ($(TARGET_OS),macosx)
 	LFLAGS 			+= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 endif
 
+# Optimise for size with Clang flags: -g0 -Os -s 
+ifeq ($(BUILD_MODE),Release)
+	CUSTOM_CFLAGS += -Os -s -g0
+	LFLAGS += -Os -s -g0
+endif
+ifeq ($(BUILD_MODE),Debug)
+	CUSTOM_CFLAGS += -O0 -g
+	LFLAGS += -O0 -g
+endif
 
 
 .PHONY: all clean
@@ -29,7 +41,15 @@ endif
 all:
 	@echo BIN_DIR is $(BIN_DIR) and resolves to $(realpath $(BIN_DIR))
 	@echo Building Raylib on $(BUILD_OS) for $(TARGET_OS) to $(realpath $(BIN_DIR))
-	$(MAKE) -C raylib/src PLATFORM=$(PLATFORM) RAYLIB_RELEASE_PATH=$(BIN_DIR)
-
+ifeq ($(TARGET_OS),windows)
+#This is a hack to rename object files from .obj to .o
+#For windows cros compiles, from a clean build this may mean
+#you need to make twice, as the first one will fail
+	if [ -f raylib/src/rcore.obj ]; then ./rename_objects.sh; fi;
+	@make -C raylib/src PLATFORM=$(PLATFORM) RAYLIB_RELEASE_PATH=$(BIN_DIR) CUSTOM_CFLAGS="$(CUSTOM_CFLAGS)"
+else
+	@make -C raylib/src PLATFORM=$(PLATFORM) RAYLIB_RELEASE_PATH=$(BIN_DIR) CUSTOM_CFLAGS="$(CUSTOM_CFLAGS)"
+endif
 clean:
-	@make -C raylib/src clean PLATFORM=$(PLATFORM) -e 
+	@make -C raylib/src clean PLATFORM=$(PLATFORM) -e
+	@rm raylib/src/*.obj 

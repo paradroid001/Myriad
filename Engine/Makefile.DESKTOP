@@ -5,8 +5,8 @@
 #CC			?= gcc
 #CXX			?= g++
 CXX			:= zig c++ -target $(TARGET_PLATFORM)
-#CC			:= zig cc -target $(TARGET_PLATFORM)
-CC			:= gcc
+CC			:= zig cc -target $(TARGET_PLATFORM)
+#CC			:= gcc
 
 LFLAGS		?= -shared
 CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -I vendor/raylib/src -D$(TARGET_PLATFORM)
@@ -14,20 +14,20 @@ CFLAGS		?= -std=c++17 -fPIC -I src/include -I vendor/spdlog/include -I vendor/ra
 ifeq ($(TARGET_OS),windows)
     CFLAGS += -DMYR_PLATFORM_WINDOWS -DMYR_BUILD_DLL
     LIBRARY_NAME = myriad.dll
-    LFLAGS += -Wl,--out-implib,$(BIN_DIR)/myriad.lib 
+    LFLAGS += -Wl,--out-implib,$(BIN_DIR)/myriad.lib -static-libgcc -lopengl32 -lgdi32 -lwinmm
 endif
 ifeq ($(TARGET_OS),linux)
     CFLAGS += -DMYR_PLATFORM_LINUX
     LIBRARY_NAME = libmyriad.so
 endif
 
-CFLAGS +=  -Wl,-soname,$(LIBRARY_NAME)
+CFLAGS +=  -Wl,-soname,$(LIBRARY_NAME) -DMYRIAD_INTERNAL
 LFLAGS +=  -l raylib -L$(BIN_DIR)
 
 # Optimise for size with Clang flags: -g0 -Os -s 
 ifeq ($(BUILD_MODE),Release)
-#	CFLAGS += -Os -s -g0
-#	LFLAGS += -Os -s -g0
+	CFLAGS += -Os -s -g0
+	LFLAGS += -Os -s -g0
 endif
 ifeq ($(BUILD_MODE),Debug)
 	CFLAGS += -O0 -g
