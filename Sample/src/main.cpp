@@ -5,11 +5,14 @@
 #include <core/MyrEntryPoint.h>
 
 #include "Dot.h"
+#include "TestEvent.h"
 #include "core/Log.h"
 #include "main.h"
 // #include "Remotery.h"
 
-#include "TestEvent.h"
+// #include "TestEvent.h"
+#include "Events/MulticastDelegate.h"
+#include <functional>
 
 Sample::Sample() {}
 Sample::~Sample() {}
@@ -24,14 +27,30 @@ void Sample::Run()
     MYR_TRACE("Inited windows");
 
     // Test Event instantiation.
-    Myriad::Events::EventCallback<Sample> *callback =
-        new Myriad::Events::EventCallback(this, &Sample::EventHandler);
-    TestEvent::Register(*callback);
-    TestEvent *e = new TestEvent();
-    e->somedata1 = 100;
-    e->somedata2 = 200;
+    // Myriad::Events::EventCallback<Sample> *callback =
+    //    new Myriad::Events::EventCallback<Sample>(this,
+    //    &Sample::EventHandler);
+    // TestEvent::Register(*callback);
+    // TestEvent *e = new TestEvent();
+    // e->somedata1 = 100;
+    // e->somedata2 = 200;
+    // e->Call();
+    // std::function<void(Sample &, TestEvent)> handler = &Sample::EventHandler;
 
-    e->Call();
+    // Myriad::Events::EventCallback<Sample> *c =
+    //     new Myriad::Events::EventCallback<Sample>(&Sample::EventHandler);
+    TestEvent *t = new TestEvent();
+    t->somedata1 = 100;
+    t->somedata2 = 200;
+    // SA::multicast_delegate<void(TestEvent)> md;
+    // md += SA::delegate<void(TestEvent)>::create<Sample,
+    // &Sample::EventHandler>(
+    //    this);
+    // md(t);
+
+    // TestEvent::Register(
+    //     SA::delegate<void(TestEvent)>::create<Sample, &Sample::EventHandler>(
+    //         this));
 
     camera = new Myriad::Camera();
     pObjects = new std::list<Myriad::GameObject *>();
@@ -86,7 +105,7 @@ void Sample::Draw()
 
 void Sample::EventHandler(TestEvent e)
 {
-    MYR_TRACE("Event was handled! {0}, {1]}", e.somedata1, e.somedata2);
+    MYR_TRACE("Event was handled! {0}, {1}", e.somedata1, e.somedata2);
 }
 
 Myriad::MyrApplication *Myriad::CreateApplication()

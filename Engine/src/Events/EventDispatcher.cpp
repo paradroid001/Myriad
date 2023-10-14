@@ -1,4 +1,3 @@
-#include "Event.h"
 #include "Events/Event.h"
 #include <map>
 #include <string>
@@ -7,6 +6,7 @@ namespace Myriad
 {
     namespace Events
     {
+
         // private constructor
         EventDispatcher::EventDispatcher()
         {
@@ -45,5 +45,6 @@ namespace Myriad
                 (*_pRegistrants)[str_typename]->Call(e);
             }
         }
+
     } // namespace Events
 } // namespace Myriad

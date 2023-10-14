@@ -1,7 +1,10 @@
 #ifndef __EVENT_H_
 #define __EVENT_H_
 
+#include "Events/Delegate.h"
+#include "Events/MulticastDelegate.h"
 #include "core/core.h"
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -47,23 +50,27 @@ namespace Myriad
 
         class MYR_API IEvent
         {
+          public:
+            IEvent(){};
         };
 
         class MYR_API IEventCallback
         {
           public:
-            virtual void operator()(IEvent) = 0;
-            virtual bool operator==(IEventCallback *other) = 0;
+            virtual SA::delegate<void(IEvent)> Callback() = 0;
+            // virtual void operator()(IEvent) = 0;
+            // virtual bool operator==(IEventCallback *other) = 0;
         };
 
-        template <typename T>
-        class MYR_API EventCallback : public IEventCallback
+        template <class T> class MYR_API EventCallback : public IEventCallback
         {
           public:
-            EventCallback(T *instance, void (T::*function)(IEvent e))
-                : instance(instance), function(function)
+            EventCallback(SA::delegate<void(T)> callback) : callback(callback)
             {
             }
+            // implement the virtual member
+            SA::delegate<void(IEvent)> Callback() { return callback; }
+            /*
             virtual void operator()(IEvent e) override
             {
                 (instance->*function)(e);
@@ -79,14 +86,13 @@ namespace Myriad
                 return (this->function == otherEventCallback->function) &&
                        (this->instance == otherEventCallback->instance);
             }
-
+            */
           private:
-            void (T::*function)();
-            T *instance;
+            SA::delegate<void(T)> callback;
         };
 
         // This is essentially the equivalent of a delegate.
-        typedef std::vector<IEventCallback *> CallbackArray;
+        // typedef std::vector<IEventCallback *> CallbackArray;
 
         class MYR_API IEventContainer
         {
@@ -96,15 +102,19 @@ namespace Myriad
             virtual void Remove(IEventCallback d) = 0;
         };
 
-        template <class T> class MYR_API EventContainer : public IEventContainer
+        template <class T> class MYR_API EventContainer
         {
           public:
-            void Call(IEvent e);
+            void Call(T e);
             void Add(EventCallback<T> d);
             void Remove(EventCallback<T> d);
 
           private:
-            CallbackArray events;
+            // CallbackArray events;
+            // std::function<void(T)> callback
+            // typedef std::vector<std::function<void(T)>> CallbackArray;
+            // std::vector<std::function<void(T)>> events;
+            SA::multicast_delegate<void(T)> events;
         };
 
         class MYR_API EventDispatcher
@@ -122,10 +132,11 @@ namespace Myriad
             template <class T> void Call(IEvent e);
         };
 
-        template <class T> class MYR_API Event : public Myriad::Events::IEvent
+        template <class T> class MYR_API Event : public IEvent
         {
           public:
-            virtual void Call();
+            Event<T>() : IEvent(){};
+            virtual void Call() = 0;
             static void Register(EventCallback<T> handler);
             static void Unregister(EventCallback<T> handler);
         };
