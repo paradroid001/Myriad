@@ -5,6 +5,8 @@
 #include <core/MyrEntryPoint.h>
 
 #include "Dot.h"
+#include "Events/Delegate.h"
+#include "Events/Event.h"
 #include "TestEvent.h"
 #include "core/Log.h"
 #include "main.h"
@@ -21,7 +23,7 @@ void Sample::Run()
 {
     Myriad::Window *w = new Myriad::Window();
     MYR_TRACE("Made window class");
-    w->SetFPS(30);
+    w->SetFPS(60);
     MYR_TRACE("Set FPS");
     w->Init(800, 600, "Hello");
     MYR_TRACE("Inited windows");
@@ -48,14 +50,34 @@ void Sample::Run()
     //    this);
     // md(t);
 
-    // TestEvent::Register(
-    //     SA::delegate<void(TestEvent)>::create<Sample, &Sample::EventHandler>(
-    //         this));
+    SA::delegate<void(TestEvent)> d;
+    auto cbfunc = decltype(d)::create<Sample, &Sample::EventHandler>(this);
+
+    Myriad::Events::EventCallback<TestEvent> *testeventcb =
+        new Myriad::Events::EventCallback<TestEvent>(cbfunc);
+    MYR_INFO("Callback is {0}", sizeof(testeventcb->callback));
+
+    Myriad::Events::EventDispatcher::Instance().Register(cbfunc);
+
+    // Myriad::Events::EventCallback<TestEvent> *cb =
+    //     new Myriad::Events::EventCallback<TestEvent>(
+    //         SA::delegate<void(TestEvent)>::create<Sample,
+    //                                               &Sample::EventHandler>(this));
+
+    // Myriad::Events::EventContainer<TestEvent> *testeventcontainer =
+    //     new Myriad::Events::EventContainer<TestEvent>();
+
+    //(*testeventcontainer).Add(*testeventcb);
+    // testeventcontainer->Call(*t);
+
+    // TestEvent::Register(*testeventcb);
+
+    //(*t).Call();
 
     camera = new Myriad::Camera();
     pObjects = new std::list<Myriad::GameObject *>();
 
-    for (int i = 0; i < 600; i++)
+    for (int i = 0; i < 1000; i++)
     {
         Dot *dot = new Dot();
         Myriad::Transform *const t = dot->GetTransform();

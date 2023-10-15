@@ -1,5 +1,9 @@
-#include "Events/Event.h"
+#ifndef __EVENTCONTAINER_HPP_
+#define __EVENTCONTAINER_HPP_
+
+// #include "Events/Event.h"
 #include "core/Log.h"
+#include <iostream>
 #include <vector>
 
 namespace Myriad
@@ -7,7 +11,7 @@ namespace Myriad
     namespace Events
     {
 
-        template <class T> void EventContainer<T>::Call(T e)
+        template <class T> void EventContainer<T>::Call(IEvent e)
         {
             /*
             if (events.size() != 0)
@@ -19,9 +23,11 @@ namespace Myriad
                 }
             }
             */
-            events(e); // call the multicast delegate
+            // events(e); // call the multicast delegate
+            std::cout << "Here I have to somehow call the delegate."
+                      << std::endl;
         }
-        template <class T> void EventContainer<T>::Add(EventCallback<T> d)
+        template <class T> void EventContainer<T>::Add(IEventCallback d)
         {
             /*
             CallbackArray::iterator position =
@@ -36,9 +42,11 @@ namespace Myriad
                 events.push_back(d);
             }
             */
-            events += d.Callback();
+            // events += d.callback; // d.Callback();
+            EventCallback<T> ecb = static_cast<EventCallback<T>>(d);
+            events += ecb.callback;
         }
-        template <class T> void EventContainer<T>::Remove(EventCallback<T> d)
+        template <class T> void EventContainer<T>::Remove(IEventCallback d)
         {
             /*
             CallbackArray::iterator position =
@@ -53,7 +61,10 @@ namespace Myriad
                 events.erase(position);
             }
             */
-            events -= d.Callback();
+            // events -= d.callback; // d.Callback();
+            EventCallback<T> ecb = static_cast<EventCallback<T>>(d);
+            events -= ecb.callback;
         }
     } // namespace Events
 } // namespace Myriad
+#endif

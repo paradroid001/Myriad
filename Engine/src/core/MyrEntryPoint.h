@@ -1,6 +1,7 @@
 #ifndef __MYRENTRYPOINT_H_
 #define __MYRENTRYPOINT_H_
 
+#include "Events/Event.h"
 #include "Log.h"
 #include "MyrApplication.h"
 
@@ -19,6 +20,8 @@ int main(int argc, char **argv)
     MYR_INFO("Inited Client Log");
     int a = 7;
     MYR_TRACE("Test: a={0}", a);
+
+    Myriad::Events::EventDispatcher::Instance();
 
     auto app = Myriad::CreateApplication();
     app->Run();

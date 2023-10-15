@@ -1,13 +1,13 @@
 #ifndef __EVENT_H_
-#define __EVENT_H_
+    #define __EVENT_H_
 
-#include "Events/Delegate.h"
-#include "Events/MulticastDelegate.h"
-#include "core/core.h"
-#include <functional>
-#include <map>
-#include <string>
-#include <vector>
+    #include "Events/Delegate.h"
+    #include "Events/MulticastDelegate.h"
+    #include "core/core.h"
+    #include <functional>
+    #include <map>
+    #include <string>
+    #include <vector>
 
 namespace Myriad
 {
@@ -54,12 +54,18 @@ namespace Myriad
             IEvent(){};
         };
 
+        class MYR_API EventDescriptor
+        {
+          public:
+            void *event;
+        };
+
         class MYR_API IEventCallback
         {
           public:
-            virtual SA::delegate<void(IEvent)> Callback() = 0;
-            // virtual void operator()(IEvent) = 0;
-            // virtual bool operator==(IEventCallback *other) = 0;
+            // virtual SA::delegate<void(IEvent)> Callback() = 0;
+            //  virtual void operator()(IEvent) = 0;
+            //  virtual bool operator==(IEventCallback *other) = 0;
         };
 
         template <class T> class MYR_API EventCallback : public IEventCallback
@@ -68,8 +74,9 @@ namespace Myriad
             EventCallback(SA::delegate<void(T)> callback) : callback(callback)
             {
             }
+            SA::delegate<void(T)> callback;
             // implement the virtual member
-            SA::delegate<void(IEvent)> Callback() { return callback; }
+            // SA::delegate<void(IEvent)> Callback() { return callback; }
             /*
             virtual void operator()(IEvent e) override
             {
@@ -87,8 +94,6 @@ namespace Myriad
                        (this->instance == otherEventCallback->instance);
             }
             */
-          private:
-            SA::delegate<void(T)> callback;
         };
 
         // This is essentially the equivalent of a delegate.
@@ -102,12 +107,14 @@ namespace Myriad
             virtual void Remove(IEventCallback d) = 0;
         };
 
-        template <class T> class MYR_API EventContainer
+        template <class T> class MYR_API EventContainer : public IEventCallback
         {
           public:
-            void Call(T e);
-            void Add(EventCallback<T> d);
-            void Remove(EventCallback<T> d);
+            EventContainer(){};
+            ~EventContainer(){};
+            void Call(IEvent e);
+            void Add(IEventCallback d);
+            void Remove(IEventCallback d);
 
           private:
             // CallbackArray events;
@@ -121,24 +128,24 @@ namespace Myriad
         {
           private:
             EventDispatcher();
-            static EventDispatcher *_instance;
-            std::map<std::string, IEventContainer *> *_pRegistrants;
+            inline static EventDispatcher *_instance = NULL;
+            std::map<std::string, SA::multicast_delegate *> *_pRegistrants;
 
           public:
             ~EventDispatcher();
             static EventDispatcher &Instance();
-            template <class T> void Register(EventCallback<T> handler);
-            template <class T> void Unregister(EventCallback<T> handler);
+            template <class T> void Register(SA::delegate<void(T)> handler);
+            template <class T> void Unregister(SA::delegate<void(T)> handler);
             template <class T> void Call(IEvent e);
         };
 
-        template <class T> class MYR_API Event : public IEvent
+        class MYR_API Event : public IEvent
         {
           public:
-            Event<T>() : IEvent(){};
-            virtual void Call() = 0;
-            static void Register(EventCallback<T> handler);
-            static void Unregister(EventCallback<T> handler);
+            Event() : IEvent(){};
+            template <class T> void Call();
+            template <class T> static void Register(EventCallback<T> handler);
+            template <class T> static void Unregister(EventCallback<T> handler);
         };
 
         /*class Event
@@ -156,3 +163,7 @@ namespace Myriad
 } // namespace Myriad
 
 #endif
+
+#include "Events/Event.hpp"
+#include "Events/EventContainer.hpp"
+#include "Events/EventDispatcher.hpp"

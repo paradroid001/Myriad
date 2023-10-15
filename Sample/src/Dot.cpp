@@ -7,8 +7,8 @@
 
 Dot::Dot() : GameObject()
 {
-    MYR_WARN("Dot Constructor");
-    // Initial movement
+    // MYR_WARN("Dot Constructor");
+    //  Initial movement
     movement.x = rand() % 6 - 3;
     movement.y = rand() % 6 - 3;
     if (movement.x < 0)
@@ -45,6 +45,6 @@ void Dot::Update()
 
 void Dot::Draw()
 {
-    DrawCircleShape(_ptransform->position().x, _ptransform->position().y, 20,
+    DrawCircleShape(_ptransform->position().x, _ptransform->position().y, 2,
                     colour);
 }
