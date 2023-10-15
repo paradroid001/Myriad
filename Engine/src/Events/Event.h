@@ -1,169 +1,129 @@
 #ifndef __EVENT_H_
-    #define __EVENT_H_
+#define __EVENT_H_
 
-    #include "Events/Delegate.h"
-    #include "Events/MulticastDelegate.h"
-    #include "core/core.h"
-    #include <functional>
-    #include <map>
-    #include <string>
-    #include <vector>
+#include <functional>
+#include <list>
+#include <map>
+#include <typeindex>
+#include <typeinfo>
 
 namespace Myriad
 {
     namespace Events
     {
-        //"Scoped" enum: stronger type enforcing, no leaked names.
-        enum class EventType
-        {
-            None = 0,
+        class Event; // fwd declare
 
-            WindowResize,
-            WindowMove,
-            WindowClose,
-
-            KeyPress,
-            KeyRelease,
-
-            MouseButtonPress,
-            MouseButtonRelease,
-            MouseMove,
-            MouseScroll,
-
-            EngineRender,
-            EngineTick,
-            EngineUpdate
-
-            // File system?
-            // Network?
-            // Audio?
-        };
-
-        enum EventCategory
-        {
-            None = 0,
-            Engine = BIT(0),
-            Input = BIT(1),
-            Keyboard = BIT(2),
-            Mouse = BIT(3),
-        };
-
-        class MYR_API IEvent
+        class IEventCallback
         {
           public:
-            IEvent(){};
-        };
-
-        class MYR_API EventDescriptor
-        {
-          public:
-            void *event;
-        };
-
-        class MYR_API IEventCallback
-        {
-          public:
-            // virtual SA::delegate<void(IEvent)> Callback() = 0;
-            //  virtual void operator()(IEvent) = 0;
-            //  virtual bool operator==(IEventCallback *other) = 0;
-        };
-
-        template <class T> class MYR_API EventCallback : public IEventCallback
-        {
-          public:
-            EventCallback(SA::delegate<void(T)> callback) : callback(callback)
-            {
-            }
-            SA::delegate<void(T)> callback;
-            // implement the virtual member
-            // SA::delegate<void(IEvent)> Callback() { return callback; }
-            /*
-            virtual void operator()(IEvent e) override
-            {
-                (instance->*function)(e);
-            }
-
-            virtual bool operator==(IEventCallback *other) override
-            {
-                EventCallback *otherEventCallback =
-                    dynamic_cast<EventCallback>(other);
-                if (otherEventCallback == nullptr)
-                    return false;
-
-                return (this->function == otherEventCallback->function) &&
-                       (this->instance == otherEventCallback->instance);
-            }
-            */
-        };
-
-        // This is essentially the equivalent of a delegate.
-        // typedef std::vector<IEventCallback *> CallbackArray;
-
-        class MYR_API IEventContainer
-        {
-          public:
-            virtual void Call(IEvent e) = 0;
-            virtual void Add(IEventCallback d) = 0;
-            virtual void Remove(IEventCallback d) = 0;
-        };
-
-        template <class T> class MYR_API EventContainer : public IEventCallback
-        {
-          public:
-            EventContainer(){};
-            ~EventContainer(){};
-            void Call(IEvent e);
-            void Add(IEventCallback d);
-            void Remove(IEventCallback d);
+            void exec(Event *evnt) { call(evnt); }
 
           private:
-            // CallbackArray events;
-            // std::function<void(T)> callback
-            // typedef std::vector<std::function<void(T)>> CallbackArray;
-            // std::vector<std::function<void(T)>> events;
-            SA::multicast_delegate<void(T)> events;
+            virtual void call(Event *evnt) = 0;
         };
 
-        class MYR_API EventDispatcher
-        {
-          private:
-            EventDispatcher();
-            inline static EventDispatcher *_instance = NULL;
-            std::map<std::string, SA::multicast_delegate *> *_pRegistrants;
-
-          public:
-            ~EventDispatcher();
-            static EventDispatcher &Instance();
-            template <class T> void Register(SA::delegate<void(T)> handler);
-            template <class T> void Unregister(SA::delegate<void(T)> handler);
-            template <class T> void Call(IEvent e);
-        };
-
-        class MYR_API Event : public IEvent
+        template <class T, class EventType>
+        class EventCallback : public IEventCallback
         {
           public:
-            Event() : IEvent(){};
-            template <class T> void Call();
-            template <class T> static void Register(EventCallback<T> handler);
-            template <class T> static void Unregister(EventCallback<T> handler);
-        };
+            typedef void (T::*MemberFunction)(EventType *);
+            EventCallback(T *instance, MemberFunction memberFunction)
+                : instance{instance}, memberFunction{memberFunction} {};
 
-        /*class Event
-        {
-            virtual EventType GetEventType() const = 0;
-            virtual const char *GetName() const = 0;
-            virtual int GetCategoryFlags() const = 0;
-            inline bool IsInCategory(EventCategory category)
+            void call(Event *evnt)
             {
-                return GetCategoryFlags() & category;
+                // cast to correct type and call member fn
+                (instance->*memberFunction)(static_cast<EventType *>(evnt));
             }
+
+          private:
+            // ptr to instance
+            T *instance;
+            // prt to member function (typedef is a pointer)
+            MemberFunction memberFunction;
         };
-        */
+
+        typedef std::list<IEventCallback *> HandlerList;
+
+        class EventDispatcher
+        {
+          public:
+            static EventDispatcher *Instance()
+            {
+                if (_instance == NULL)
+                {
+                    _instance = new EventDispatcher();
+                }
+                return _instance;
+            }
+
+            template <typename EventType> void publish(EventType *evnt)
+            {
+                // Here, instead of checking typeid(EventType), we
+                // check the typeid of the dereferenced event pointer, *evnt.
+                // This is because we call publish from the base Event class
+                // Emit(), so EventType is always Event/PEvent. Dereferencing
+                // the pointer forces evaluation of the polymorphic type.
+                // Was: = subscribers[typeid(EventType)];
+                HandlerList *handlers = subscribers[typeid(*evnt)];
+
+                if (handlers == nullptr)
+                {
+                    return;
+                }
+
+                for (auto &handler : *handlers)
+                {
+                    if (handler != nullptr)
+                    {
+                        handler->exec(evnt);
+                    }
+                }
+            }
+
+            template <class T, class EventType>
+            void subscribe(T *instance, void (T::*memberFunction)(EventType *))
+            {
+                HandlerList *handlers = subscribers[typeid(EventType)];
+
+                // First time initialization
+                if (handlers == nullptr)
+                {
+                    handlers = new HandlerList();
+                    // std::cout << "Subscriber Type was "
+                    //           << typeid(EventType).name() << std::endl;
+                    // std::cout << "Subscriber Hash was "
+                    //           << typeid(EventType).hash_code() << std::endl;
+                    subscribers[typeid(EventType)] = handlers;
+                }
+
+                handlers->push_back(
+                    new EventCallback<T, EventType>(instance, memberFunction));
+            }
+
+          private:
+            inline static EventDispatcher *_instance;
+            EventDispatcher(){};
+            std::map<std::type_index, HandlerList *> subscribers;
+        };
+
+        class Event //: public IEvent
+        {
+          public:
+            template <class T, class EventType>
+            static void Register(T *instance,
+                                 void (T::*memberFunction)(EventType *))
+            {
+                EventDispatcher::Instance()->subscribe(instance,
+                                                       memberFunction);
+            };
+            static void Unregister(){};
+            void Emit() { EventDispatcher::Instance()->publish(this); };
+
+          protected:
+            virtual ~Event(){};
+        };
     } // namespace Events
 } // namespace Myriad
 
 #endif
-
-#include "Events/Event.hpp"
-#include "Events/EventContainer.hpp"
-#include "Events/EventDispatcher.hpp"

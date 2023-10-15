@@ -5,16 +5,12 @@
 #include <core/MyrEntryPoint.h>
 
 #include "Dot.h"
-#include "Events/Delegate.h"
-#include "Events/Event.h"
 #include "TestEvent.h"
-#include "core/Log.h"
+// #include "core/Log.h"
 #include "main.h"
 // #include "Remotery.h"
 
 // #include "TestEvent.h"
-#include "Events/MulticastDelegate.h"
-#include <functional>
 
 Sample::Sample() {}
 Sample::~Sample() {}
@@ -28,51 +24,11 @@ void Sample::Run()
     w->Init(800, 600, "Hello");
     MYR_TRACE("Inited windows");
 
-    // Test Event instantiation.
-    // Myriad::Events::EventCallback<Sample> *callback =
-    //    new Myriad::Events::EventCallback<Sample>(this,
-    //    &Sample::EventHandler);
-    // TestEvent::Register(*callback);
-    // TestEvent *e = new TestEvent();
-    // e->somedata1 = 100;
-    // e->somedata2 = 200;
-    // e->Call();
-    // std::function<void(Sample &, TestEvent)> handler = &Sample::EventHandler;
-
-    // Myriad::Events::EventCallback<Sample> *c =
-    //     new Myriad::Events::EventCallback<Sample>(&Sample::EventHandler);
     TestEvent *t = new TestEvent();
     t->somedata1 = 100;
     t->somedata2 = 200;
-    // SA::multicast_delegate<void(TestEvent)> md;
-    // md += SA::delegate<void(TestEvent)>::create<Sample,
-    // &Sample::EventHandler>(
-    //    this);
-    // md(t);
 
-    SA::delegate<void(TestEvent)> d;
-    auto cbfunc = decltype(d)::create<Sample, &Sample::EventHandler>(this);
-
-    Myriad::Events::EventCallback<TestEvent> *testeventcb =
-        new Myriad::Events::EventCallback<TestEvent>(cbfunc);
-    MYR_INFO("Callback is {0}", sizeof(testeventcb->callback));
-
-    Myriad::Events::EventDispatcher::Instance().Register(cbfunc);
-
-    // Myriad::Events::EventCallback<TestEvent> *cb =
-    //     new Myriad::Events::EventCallback<TestEvent>(
-    //         SA::delegate<void(TestEvent)>::create<Sample,
-    //                                               &Sample::EventHandler>(this));
-
-    // Myriad::Events::EventContainer<TestEvent> *testeventcontainer =
-    //     new Myriad::Events::EventContainer<TestEvent>();
-
-    //(*testeventcontainer).Add(*testeventcb);
-    // testeventcontainer->Call(*t);
-
-    // TestEvent::Register(*testeventcb);
-
-    //(*t).Call();
+    TestEvent::Register(this, &Sample::EventHandler);
 
     camera = new Myriad::Camera();
     pObjects = new std::list<Myriad::GameObject *>();
@@ -92,12 +48,20 @@ void Sample::Run()
     // rmt_CreateGlobalInstance(&rmt);
     // rmt_BindOpenGL();
 
+    int counter = 0;
+
     while (!w->ShouldClose())
     {
         this->Update();
         // rmt_BeginOpenGLSample(UnscopedSample);
         this->Draw();
         // rmt_EndOpenGLSample();
+        counter += 1;
+        if (counter > 60)
+        {
+            counter = 0;
+            t->Emit();
+        }
     }
     w->Close();
     delete w;
@@ -125,9 +89,9 @@ void Sample::Draw()
     // rmt_EndCPUSample();
 }
 
-void Sample::EventHandler(TestEvent e)
+void Sample::EventHandler(TestEvent *e)
 {
-    MYR_TRACE("Event was handled! {0}, {1}", e.somedata1, e.somedata2);
+    MYR_TRACE("Event was handled! {0}, {1}", e->somedata1, e->somedata2);
 }
 
 Myriad::MyrApplication *Myriad::CreateApplication()
