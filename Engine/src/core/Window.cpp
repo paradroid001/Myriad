@@ -9,7 +9,6 @@ void SetTargetFPS(int fps);
 bool WindowShouldClose();
 void CloseWindow();
 #endif
-// #include "raylib.h"
 
 namespace Myriad
 {

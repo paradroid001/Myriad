@@ -1,11 +1,15 @@
 #ifndef __EVENT_H_
 #define __EVENT_H_
 
-#include <functional>
-#include <list>
-#include <map>
-#include <typeindex>
-#include <typeinfo>
+#ifdef USE_STL_PCH
+    #include "stl.h.gch"
+#else
+    #include <functional>
+    #include <list>
+    #include <map>
+    #include <typeindex>
+    #include <typeinfo>
+#endif
 
 namespace Myriad
 {

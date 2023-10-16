@@ -1,11 +1,9 @@
 #ifndef __TYPES3D_H_
 #define __TYPES3D_H_
 
-// #ifdef MYRIAD_INTERNAL
 #include "MyriadConfig.h"
 #include "core.h"
 
-// #include <raylib.h>
 namespace Myriad
 {
     class MYR_API Vector3

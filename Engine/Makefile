@@ -52,7 +52,10 @@ ifeq ($(RELEASE_PLATFORM), Android)
 endif
 
 .PHONY: clean cleanlibs all
+
+#this line means all env variables / make flags are exported to subshells.
 export
+
 clean:
 	@make -f $(SUB_MAKEFILE) $@
 #	@make -f $(SUB_MAKEFILE) $@ \

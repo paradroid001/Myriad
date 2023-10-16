@@ -53,9 +53,14 @@ MODE    ?= Release
 		 BUILD_MODE=$(MODE)
 
 
-.PHONY: all clean cleanlibs
+.PHONY: all clean cleanlibs docs
+
 #Adding export so that all vars propagate to the submakefiles.
 export
+
+docs:
+	doxygen myriad_doxygen.config
+
 all:
 	make -C $(PROJECT) all
 

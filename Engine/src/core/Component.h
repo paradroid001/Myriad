@@ -1,9 +1,7 @@
 #ifndef __COMPONENT_H_
 #define __COMPONENT_H_
-// #include "GameObject.h"
-#include "core.h"
 
-// class GameObject;
+#include "core.h"
 
 namespace Myriad
 {

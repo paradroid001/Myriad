@@ -36,6 +36,11 @@ RUN tar xf zig-linux-x86_64-0.12.0-dev.464+a63a1c5cb.tar.xz
 RUN ln -s zig-linux-x86_64-0.12.0-dev.464+a63a1c5cb zig
 ENV PATH="/home/myriad/zig:$PATH"
 
+RUN wget https://www.doxygen.nl/files/doxygen-1.9.8.linux.bin.tar.gz
+RUN tar xf doxygen-1.9.8.linux.bin.tar.gz
+RUN ln -s doxygen-1.9.8 doxygen
+ENV PATH="/home/myriad/doxygen/bin:$PATH"
+
 WORKDIR /myriad
 CMD ["tail","-f","/dev/forever"]
 

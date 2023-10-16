@@ -1,10 +1,10 @@
 #ifndef __LOG_H_
 #define __LOG_H_
 
-// #include "MyriadConfig.h"
+#include <memory>
+
 #include "core.h"
 #include "spdlog/spdlog.h"
-#include <memory>
 
 namespace Myriad
 {

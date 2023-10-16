@@ -1,10 +1,10 @@
 #ifndef __CAMERA_H_
 #define __CAMERA_H_
+
+#include <list>
 // don't #include "MyriadConfig.h" for now
 #include "core.h"
 // #include "raylib.h" //for the color typedef
-
-#include <list>
 
 namespace Myriad
 {

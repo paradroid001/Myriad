@@ -1,16 +1,20 @@
 #ifndef __GAMEOBJECT_H_
 #define __GAMEOBJECT_H_
 
+#ifdef USE_STL_PCH
+    #include "stl.h.gch"
+#else
+    #include <list>
+    #include <string>
+#endif
+
 // The rest
 
 // #include "../../vendor/raylib/src/raylib.h" //for vector2 etc
 #include "Component.h"
 // class Component;
-
 #include "Transform.h"
 #include "core.h"
-#include <list>
-#include <string>
 
 namespace Myriad
 {

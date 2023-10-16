@@ -1,6 +1,6 @@
 #ifndef __TRANSFORM_H_
 #define __TRANSFORM_H_
-// #include "../../vendor/raylib/src/raylib.h" //quaternion
+
 #include "Component.h"
 #include "Types3D.h"
 #include "core.h"

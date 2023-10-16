@@ -7,6 +7,7 @@
 CXX			:= zig c++ -target $(TARGET_PLATFORM)
 CC			:= zig cc -target $(TARGET_PLATFORM)
 #CC			:= gcc
+PRECOMPILED_STL := src/stl-$(TARGET_ARCH)-$(TARGET_OS)-$(TARGET_LIBC).pch
 
 LFLAGS		?= -shared
 CFLAGS		?= -std=c++17 -fPIC -I src -I vendor/spdlog/include -I vendor/raylib/src -D$(TARGET_PLATFORM)
@@ -18,6 +19,7 @@ ifeq ($(TARGET_OS),windows)
 endif
 ifeq ($(TARGET_OS),linux)
     CFLAGS += -DMYR_PLATFORM_LINUX
+#	 -DUSE_STL_PCH -H
     LIBRARY_NAME = libmyriad.so
 endif
 
@@ -54,6 +56,7 @@ cleanlibs:
 dep:
 	@echo Making Raylib with TARGET_OS=$(TARGET_OS) BIN_DIR=$(BIN_DIR)
 	$(MAKE) -C vendor -f Makefile.RAYLIB CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="$(realpath $(BIN_DIR))" all
+	
 
 REMOTERY_FLAGS = -Ivendor/Remotery/lib
 
@@ -72,7 +75,13 @@ ifeq ($(USE_REMOTERY),true)
 	$(CXX) vendor/Remotery/lib/Remotery.c -c -o $(OBJ_DIR)/Remotery.o $(REMOTERY_FLAGS)
 endif
 
-all: setup dep $(LIBRARY_NAME)
+#precompiled headers target, only rebuild if necessary
+#these args must mirror the c++ build line.
+#NOTE this version will only work with zig/CLANG
+$(PRECOMPILED_STL):
+	$(CXX) -c -o $(PRECOMPILED_STL) src/stl.hh -MMD -MP $(CFLAGS)
+
+all: setup dep $(PRECOMPILED_STL) $(LIBRARY_NAME)
 
 $(LIBRARY_NAME): $(OBJECTS)
 	@echo "Linking $(LIBRARY_NAME) for $(TARGET_PLATFORM) on $(BUILD_OS)"
@@ -87,6 +96,6 @@ endif
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Building $@"
 	$(MKDIR) $(dir $@)
-	$(CXX) -MMD -MP -c $(CFLAGS) $< -o $@
+	$(CXX) -MMD -MP -c -use-pch $(PRECOMPILED_STL) $(CFLAGS) $< -o $@
 
 rebuild: clean cleanlibs all

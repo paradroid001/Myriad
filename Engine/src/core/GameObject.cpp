@@ -1,7 +1,11 @@
+#ifdef USE_STL_PCH
+    #include "stl.h.gch"
+#else
+    #include <iostream>
+#endif
+
 #include "GameObject.h"
-// #include "MyrEntryPoint.h"
 #include "core.h"
-#include <iostream>
 // Include the config
 #include "MyriadConfig.h"
 

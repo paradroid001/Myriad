@@ -17,6 +17,10 @@
 
 namespace Myriad
 {
+    /**
+     * A class for representation of colours as
+     * four 8 bit integer values, or 32 bit RGBA
+     */
     class MyrColour
     {
       public:
