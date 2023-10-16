@@ -77,9 +77,12 @@ endif
 
 #precompiled headers target, only rebuild if necessary
 #these args must mirror the c++ build line.
-#NOTE this version will only work with zig/CLANG
+# NOTE this version will only work with CLANG, but we are commenting it out because
+# Zig apparently doesn't care about pch: https://github.com/ziglang/zig/issues/3495#issuecomment-545206964
+# G++ would possibly need a slightly different line.
 $(PRECOMPILED_STL):
-	$(CXX) -c -o $(PRECOMPILED_STL) src/stl.hh -MMD -MP $(CFLAGS)
+	@echo "Zig doesn't care about precompiled headers, not generating"
+#	$(CXX) -c -o $(PRECOMPILED_STL) src/stl.hh -MMD -MP $(CFLAGS)
 
 all: setup dep $(PRECOMPILED_STL) $(LIBRARY_NAME)
 
@@ -96,6 +99,8 @@ endif
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Building $@"
 	$(MKDIR) $(dir $@)
-	$(CXX) -MMD -MP -c -use-pch $(PRECOMPILED_STL) $(CFLAGS) $< -o $@
+#if we were using precompiled headers this line would be
+#	$(CXX) -c $(CFLAGS) -include-pch $(PRECOMPILED_STL) -MMD -MP $< -o $@
+	$(CXX) -c -MMD -MP $(CFLAGS) $< -o $@
 
 rebuild: clean cleanlibs all

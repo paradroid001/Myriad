@@ -54,12 +54,10 @@ MODE    ?= Release
 
 
 .PHONY: all clean cleanlibs docs
+default: all
 
 #Adding export so that all vars propagate to the submakefiles.
 export
-
-docs:
-	doxygen myriad_doxygen.config
 
 all:
 	make -C $(PROJECT) all
@@ -71,3 +69,6 @@ cleanlibs:
 clean:
 	make -C $(PROJECT) clean
 #	cd $(PROJECT) && make $(CONFIG) clean
+
+docs:
+	doxygen myriad_doxygen.config

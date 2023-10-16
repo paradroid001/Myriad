@@ -1,5 +1,3 @@
-// Commonly used stl files which
-// should be compiled into a pch/gch
 #include <functional>
 #include <iostream>
 #include <list>
