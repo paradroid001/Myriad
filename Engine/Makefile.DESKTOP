@@ -52,11 +52,13 @@ setup:
 
 cleanlibs:
 	$(MAKE) -C vendor -f Makefile.RAYLIB CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="$(realpath $(BIN_DIR))" clean
+	$(MAKE) -C vendor -f Makefile.FLECS CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="$(realpath $(BIN_DIR))" clean
 	rm $(OBJ_DIR)/Remotery.o
 dep:
 	@echo Making Raylib with TARGET_OS=$(TARGET_OS) BIN_DIR=$(BIN_DIR)
 	$(MAKE) -C vendor -f Makefile.RAYLIB CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="$(realpath $(BIN_DIR))" all
-	
+	@echo Making FLECS with TARGET_OS=$(TARGET_OS) BIN_DIR=$(BIN_DIR)
+	$(MAKE) -C vendor -f Makefile.FLECS CC="$(CC)" TARGET_OS=$(TARGET_OS) BIN_DIR="$(realpath $(BIN_DIR))" all
 
 REMOTERY_FLAGS = -Ivendor/Remotery/lib
 
@@ -90,9 +92,9 @@ $(LIBRARY_NAME): $(OBJECTS)
 	@echo "Linking $(LIBRARY_NAME) for $(TARGET_PLATFORM) on $(BUILD_OS)"
 	@$(MKDIR) $(BIN_DIR)
 ifeq ($(USE_REMOTERY),true)
-	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(OBJ_DIR)/Remotery.o $(LFLAGS)
+	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(OBJ_DIR)/flecs.o $(OBJ_DIR)/Remotery.o $(LFLAGS)
 else
-	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(CFLAGS) $(LFLAGS)
+	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(OBJ_DIR)/flecs.o $(CFLAGS) $(LFLAGS)
 endif
 
 # Compile objects to the build directory

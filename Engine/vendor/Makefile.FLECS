@@ -1,0 +1,38 @@
+#
+# Myriad Project: Raylib Makefile
+#
+# Instructions from Flecs github are:
+# 
+#    If it is a C++ project, make sure to compile flecs.c as C code, for example by using gcc/clang instead of g++/clang++.
+#    If you are building on Windows and you're not using the Microsoft Visual Studio compiler, make sure to add -lWs2_32 to the end(!) of the linker command. The socket API is used for connecting to Flecs explorer.
+#    When compiling Flecs with gcc/clang, add -std=gnu99 to the compiler command. This ensures that addons that rely on time & socket functions are compiled correctly.
+#    C++ files that use Flecs must be compiled with -std=c++0x (C++11) or higher.
+
+#for flecs.h which is in directory flecs
+CFLAGS += -std=gnu99 -Iflecs
+
+# Optimise for size with Clang flags: -g0 -Os -s 
+ifeq ($(BUILD_MODE),Release)
+	CFLAGS += -Os -s -g0
+	LFLAGS += -Os -s -g0
+endif
+ifeq ($(BUILD_MODE),Debug)
+	CFLAGS += -O0 -g
+	LFLAGS += -O0 -g
+endif
+
+#I don't think we need this here, we need this when we link the 
+#project that uses flecs
+ifeq ($(TARGET_OS),windows)
+	LFLAGS		+= -lWs2_32
+endif
+
+.PHONY: all clean
+default: clean
+export
+
+clean:
+	@rm $(BIN_DIR)/flecs.o
+
+all:
+	$(CC) flecs/flecs.c -c -o ../$(OBJ_DIR)/flecs.o $(CFLAGS)

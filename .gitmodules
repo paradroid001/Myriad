@@ -9,3 +9,6 @@
 [submodule "Engine/vendor/Remotery"]
 	path = Engine/vendor/Remotery
 	url = https://github.com/Celtoys/Remotery.git
+[submodule "Engine/vendor/flecs"]
+	path = Engine/vendor/flecs
+	url = https://github.com/SanderMertens/flecs.git
