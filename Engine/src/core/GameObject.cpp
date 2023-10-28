@@ -1,3 +1,4 @@
+#include "Transform.h"
 #ifdef USE_STL_PCH
     #include "stl.h.gch"
 #else
@@ -9,23 +10,28 @@
 // Include the config
 #include "MyriadConfig.h"
 
+#include "Entities/EntityManager.h"
+
 namespace Myriad
 {
     GameObject::GameObject()
     {
+        std::cout << "Creating GameObject" << std::endl;
+        entity = Myriad::Entities::EntityManager::Instance()->World().entity();
+
+        _internalData.gameObject = this;
+        entity.add<GameObjectData>();
+        entity.set<GameObjectData>(_internalData);
+
         _ptransform = new Myriad::Transform();
-        Myriad::Component *c = (Myriad::Component *)_ptransform;
-        AddComponent(*c);
+        AddComponent<TransformData>(_ptransform, _ptransform->Data());
+
         name = "DefaultName";
+        // entity.set()
     }
     GameObject::~GameObject()
     {
         std::cout << "Destructor for GameObject[" << name << "]" << std::endl;
-    }
-    int GameObject::AddComponent(Myriad::Component c)
-    {
-        components.push_front(c);
-        return 0;
     }
 
     int GameObject::RemoveComponent(Myriad::Component c) { return 0; }

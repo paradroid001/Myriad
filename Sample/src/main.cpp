@@ -118,19 +118,22 @@ void Sample::Run()
     camera = new Myriad::Camera();
     pObjects = new std::list<Myriad::GameObject *>();
 
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 10; i++)
     {
-        Dot *dot = new Dot(world);
+        Dot *dot = new Dot();
         Myriad::Transform *const t = dot->GetTransform();
         t->SetPosition(rand() % 800, rand() % 600, 0);
 
-        dot->Entity().set<Position>({t->position().x, t->position().y});
+        std::cout << dot->Entity().type().str() << std::endl;
+
+        // dot->Entity().set<Position>({t->position().x, t->position().y});
 
         pObjects->push_front(dot);
     }
 
     // System declaration
 
+    /*
     flecs::system sys = world.system<Position, Velocity>("Move").each(
         [](Position &p, Velocity &v)
         {
@@ -152,6 +155,8 @@ void Sample::Run()
             // std::cout << "Draw" << std::endl;
         });
 
+    */
+
     // Create the main instance of Remotery.
     // You need only do this once per program.
     // Remotery *rmt;
@@ -162,9 +167,9 @@ void Sample::Run()
 
     while (!w->ShouldClose())
     {
-        // this->Update();
+        this->Update();
         //  rmt_BeginOpenGLSample(UnscopedSample);
-        // this->Draw();
+        this->Draw();
         //  rmt_EndOpenGLSample();
         counter += 1;
         if (counter > 60)
@@ -173,13 +178,13 @@ void Sample::Run()
             t->Emit();
         }
 
-        sys.run();
-        BeginDrawing();
-        ClearBackground({0, 0, 0, 0});
-        renderdots.run();
-        EndDrawing();
-        // stats for the ecs monitor
-        // world.progress();
+        // sys.run();
+        // BeginDrawing();
+        // ClearBackground({0, 0, 0, 0});
+        // renderdots.run();
+        // EndDrawing();
+        //  stats for the ecs monitor
+        //  world.progress();
     }
     w->Close();
     delete w;
@@ -203,7 +208,7 @@ void Sample::Update()
 void Sample::Draw()
 {
     // rmt_BeginCPUSample(Draw, RMTSF_Aggregate);
-    camera->Draw(pObjects);
+    camera->Draw(); // pObjects);
     // rmt_EndCPUSample();
 }
 

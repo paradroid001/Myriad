@@ -5,6 +5,14 @@
 
 namespace Myriad
 {
+
+    class Component; // fwd
+    typedef struct
+    {
+        bool enabled;
+        Component *component;
+    } ComponentData;
+
     class MYR_API Component
     {
       public:
@@ -19,9 +27,13 @@ namespace Myriad
         void OnEnable();
         void OnDisable();
 
+        virtual ComponentData *Data() { return &_data; };
+
       private:
         bool _enabled;
         // GameObject *_gameObject;
+      protected:
+        ComponentData _data;
     };
 } // namespace Myriad
 #endif

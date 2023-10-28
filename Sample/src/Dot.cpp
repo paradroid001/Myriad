@@ -1,21 +1,17 @@
 #include "Dot.h"
-// #include "core/Camera.h"
-// #include "core/Log.h"
-// #include "myriad.h"
-// #include "raylib.h"
+#include "myriad.h"
 #include <cstdlib> //ramd
 
-Dot::Dot(flecs::world &w) : GameObject()
+Dot::Dot() : Myriad::GameObject()
 {
-    this->e = w.entity();
     // MYR_WARN("Dot Constructor");
     //  Initial movement
     movement.x = rand() % 6 - 3;
     movement.y = rand() % 6 - 3;
 
-    this->e.add<Velocity>();
-    this->e.set<Velocity>({movement.x, movement.y});
-    this->e.add<Position>();
+    // this->e.add<Velocity>();
+    // this->e.set<Velocity>({movement.x, movement.y});
+    // this->e.add<Position>();
 
     if (movement.x < 0)
     {
@@ -25,6 +21,9 @@ Dot::Dot(flecs::world &w) : GameObject()
     {
         colour = (Myriad::MyrColour){230, 41, 55, 255};
     }
+
+    Myriad::Renderer *r = new Myriad::Renderer();
+    AddComponent<Myriad::RendererData>(r, r->Data());
 }
 Dot::~Dot() { MYR_WARN("Dot Destructor"); }
 

@@ -7,6 +7,13 @@
 
 namespace Myriad
 {
+    struct TransformData : ComponentData
+    {
+        Myriad::Vector3 position;
+        Myriad::Quaternion rotation;
+        Myriad::Vector3 scale;
+    };
+
     class MYR_API Transform : public Myriad::Component
     {
       public:
@@ -15,19 +22,25 @@ namespace Myriad
         ~Transform();
 
         // Getters
-        const Myriad::Vector3 &position() const { return _position; }
-        const Myriad::Quaternion &rotation() const { return _rotation; }
-        const Myriad::Vector3 &scale() const { return _scale; }
+        const Myriad::Vector3 &position() const
+        {
+            return _internalData.position;
+        }
+        const Myriad::Quaternion &rotation() const
+        {
+            return _internalData.rotation;
+        }
+        const Myriad::Vector3 &scale() const { return _internalData.scale; }
 
         // Setters
         void SetPosition(float x, float y, float z);
         void SetRotation(float x, float y, float z, float w);
         void SetScale(float x, float y, float z);
 
-      private:
-        Myriad::Vector3 _position;
-        Myriad::Quaternion _rotation;
-        Myriad::Vector3 _scale;
+        virtual ComponentData *Data() { return &_internalData; }
+
+      protected:
+        class TransformData _internalData;
     };
 } // namespace Myriad
 #endif

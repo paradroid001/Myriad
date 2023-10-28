@@ -49,7 +49,6 @@ LFLAGS += -L $(BUILD_DIR)/$(VARIANT_PATH) -L.
 setup:
 	@echo $(CXX)
 	@echo $(CFLAGS)
-    
 
 all: setup $(BUILD_DIR)/$(TARGET)
 

@@ -14,9 +14,9 @@ namespace Myriad
 
     void Transform::SetPosition(float x, float y, float z)
     {
-        this->_position.x = x;
-        this->_position.y = y;
-        this->_position.z = z;
+        this->_internalData.position.x = x;
+        this->_internalData.position.y = y;
+        this->_internalData.position.z = z;
     }
 
     void Transform::SetRotation(float x, float y, float z, float w)

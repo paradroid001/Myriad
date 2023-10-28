@@ -8,11 +8,10 @@
 class Dot : public Myriad::GameObject
 {
   public:
-    Dot(flecs::world &w);
+    Dot();
     ~Dot();
     void Draw() override;
     void Update() override;
-    flecs::entity &Entity() { return e; };
 
   private:
     Myriad::Vector3 movement;

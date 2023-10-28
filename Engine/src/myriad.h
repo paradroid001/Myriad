@@ -8,6 +8,7 @@
 #include "core/GameObject.h"
 #include "core/Log.h"
 #include "core/MyrApplication.h"
+#include "core/Renderer.h"
 #include "core/Transform.h"
 #include "core/Types3D.h"
 #include "core/Window.h"
