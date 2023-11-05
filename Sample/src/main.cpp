@@ -9,6 +9,10 @@
 #include "core/Log.h"
 #include <core/MyrEntryPoint.h>
 
+#include "SceneDots.cpp"
+#include "SceneMenu.cpp"
+#include "core/Transform.h"
+
 #include "main.h"
 // #include "Remotery.h"
 #include "raylib.h"
@@ -20,11 +24,20 @@ Sample::~Sample() {}
 
 void Sample::Run()
 {
+    screenWidth = 800;
+    screenHeight = 600;
+
+    menuScene = new SampleMenuScene("Menu");
+    menuScene->SetSceneID(0);
+    dotsScene = new SampleDotsScene("Dots");
+    dotsScene->SetSceneID(1);
+    currentScene = menuScene;
+
     Myriad::Window *w = new Myriad::Window();
     MYR_TRACE("Made window class");
     w->SetFPS(60);
     MYR_TRACE("Set FPS");
-    w->Init(800, 600, "Hello");
+    w->Init(screenWidth, screenHeight, "Hello");
     MYR_TRACE("Inited windows");
 
     TestEvent *t = new TestEvent();
@@ -118,7 +131,7 @@ void Sample::Run()
     camera = new Myriad::Camera();
     pObjects = new std::list<Myriad::GameObject *>();
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 10000; i++)
     {
         Dot *dot = new Dot();
         Myriad::Transform *const t = dot->GetTransform();
@@ -126,13 +139,17 @@ void Sample::Run()
 
         std::cout << dot->Entity().type().str() << std::endl;
 
-        // dot->Entity().set<Position>({t->position().x, t->position().y});
+        auto dot_e = dot->Entity();
+        // set the position of each dot.
+        Myriad::ComponentData *p_cd = t->Data();
+        Myriad::TransformData *p_td =
+            static_cast<Myriad::TransformData *>(p_cd);
+        dot_e.set<Myriad::TransformData>(*(p_td));
 
         pObjects->push_front(dot);
     }
 
     // System declaration
-
     /*
     flecs::system sys = world.system<Position, Velocity>("Move").each(
         [](Position &p, Velocity &v)
@@ -154,7 +171,6 @@ void Sample::Run()
             DrawCircle(p.x, p.y, 2, GREEN);
             // std::cout << "Draw" << std::endl;
         });
-
     */
 
     // Create the main instance of Remotery.
@@ -164,14 +180,17 @@ void Sample::Run()
     // rmt_BindOpenGL();
 
     int counter = 0;
+    framesCounter = 0;
+    
 
     while (!w->ShouldClose())
     {
         this->Update();
-        //  rmt_BeginOpenGLSample(UnscopedSample);
+        //   rmt_BeginOpenGLSample(UnscopedSample);
         this->Draw();
-        //  rmt_EndOpenGLSample();
+        //   rmt_EndOpenGLSample();
         counter += 1;
+        framesCounter += 1;
         if (counter > 60)
         {
             counter = 0;
@@ -183,8 +202,8 @@ void Sample::Run()
         // ClearBackground({0, 0, 0, 0});
         // renderdots.run();
         // EndDrawing();
-        //  stats for the ecs monitor
-        //  world.progress();
+        //   stats for the ecs monitor
+        //   world.progress();
     }
     w->Close();
     delete w;
@@ -196,20 +215,107 @@ void Sample::Run()
 
 void Sample::Update()
 {
-    // rmt_BeginCPUSample(Update, RMTSF_Aggregate);
+    switch (currentScene->GetSceneID())
+    {
+    case 0:
+    {
+        // display a menu?
+        if (framesCounter > 120)
+        {
+            currentScene = dotsScene;
+        }
+        break;
+    }
+    case 1:
+    {
+        if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
+        {
+            currentScene = menuScene;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    /* We no longer want to update game objects like this
+    //rmt_BeginCPUSample(Update, RMTSF_Aggregate);
     std::list<Myriad::GameObject *>::iterator it;
     for (it = pObjects->begin(); it != pObjects->end(); ++it)
     {
         (*it)->Update();
     }
     // rmt_EndCPUSample();
+    */
+
+    currentScene->RunScene();
 }
 
 void Sample::Draw()
 {
-    // rmt_BeginCPUSample(Draw, RMTSF_Aggregate);
+    currentScene->DrawScene();
+    // Wait until we know how to handle cameras...
+    /*
+    rmt_BeginCPUSample(Draw, RMTSF_Aggregate);
     camera->Draw(); // pObjects);
-    // rmt_EndCPUSample();
+    rmt_EndCPUSample();
+    */
+
+    /*
+    Color backgroundColour = {0, 0, 0, 255};
+    BeginDrawing();
+    Color c;
+    c.r = backgroundColour.r;
+    c.g = backgroundColour.g;
+    c.b = backgroundColour.b;
+    c.a = backgroundColour.a;
+    ClearBackground(c);
+    */
+
+    /*
+    switch (currentScene)
+    {
+    case LOGO:
+    {
+        // TODO: Draw LOGO screen here!
+        DrawText("LOGO SCREEN", 20, 20, 40, LIGHTGRAY);
+        DrawText("WAIT for 2 SECONDS...", 290, 220, 20, GRAY);
+    }
+    break;
+    case TITLE:
+    {
+        // TODO: Draw TITLE screen here!
+        DrawRectangle(0, 0, screenWidth, screenHeight, GREEN);
+        DrawText("TITLE SCREEN", 20, 20, 40, DARKGREEN);
+        DrawText("PRESS ENTER or TAP to JUMP to GAMEPLAY SCREEN", 120, 220, 20,
+                 DARKGREEN);
+    }
+    break;
+    case GAMEPLAY:
+    {
+        // TODO: Draw GAMEPLAY screen here!
+        DrawRectangle(0, 0, screenWidth, screenHeight, PURPLE);
+        DrawText("GAMEPLAY SCREEN", 20, 20, 40, MAROON);
+        DrawText("PRESS ENTER or TAP to JUMP to ENDING SCREEN", 130, 220, 20,
+                 MAROON);
+    }
+    break;
+    case ENDING:
+    {
+        // TODO: Draw ENDING screen here!
+        DrawRectangle(0, 0, screenWidth, screenHeight, BLUE);
+        DrawText("ENDING SCREEN", 20, 20, 40, DARKBLUE);
+        DrawText("PRESS ENTER or TAP to RETURN to TITLE SCREEN", 120, 220, 20,
+                 DARKBLUE);
+    }
+    break;
+    default:
+        break;
+    }
+    */
+    
+    //EndDrawing();
+    
 }
 
 void Sample::EventHandler(TestEvent *e)

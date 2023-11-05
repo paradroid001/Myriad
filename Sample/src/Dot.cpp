@@ -1,6 +1,8 @@
 #include "Dot.h"
+#include "core/Transform.h"
 #include "myriad.h"
 #include <cstdlib> //ramd
+#include <iostream>
 
 Dot::Dot() : Myriad::GameObject()
 {
@@ -46,10 +48,18 @@ void Dot::Update()
     }
 
     this->_ptransform->SetPosition(v.x + movement.x, v.y + movement.y, 0);
+
+    Myriad::TransformData td = {
+        true, this->_ptransform, this->_ptransform->position(),
+        this->_ptransform->rotation(), this->_ptransform->scale()};
+
+    // try to force the entities to move?
+    this->Entity().set<Myriad::TransformData>(td);
+    // std::cout << "Moved" << std::endl;
 }
 
 void Dot::Draw()
 {
-    DrawCircleShape(_ptransform->position().x, _ptransform->position().y, 2,
-                    colour);
+    // DrawCircleShape(_ptransform->position().x, _ptransform->position().y, 2,
+    //                 colour);
 }

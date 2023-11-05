@@ -30,8 +30,16 @@ class Sample : public Myriad::MyrApplication
 
     void EventHandler(TestEvent *e);
 
+  protected:
     std::list<Myriad::GameObject *> *pObjects;
     Myriad::Camera *camera;
+    int screenHeight;
+    int screenWidth;
+    int framesCounter;
+
+    Myriad::Scene::Scene *menuScene;
+    Myriad::Scene::Scene *dotsScene;
+    Myriad::Scene::Scene *currentScene;
 };
 
 #endif

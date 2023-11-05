@@ -1,12 +1,13 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"files.associations": {
-			"Makefile.*": "makefile"
-		}
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.associations": {
+      "Makefile.*": "makefile"
+    },
+    "dotnet.defaultSolution": "disable"
+  }
 }

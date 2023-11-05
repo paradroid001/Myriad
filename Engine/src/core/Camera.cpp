@@ -47,7 +47,7 @@ namespace Myriad
                                  //           transform_data.position.x,
                                  //           transform_data.position.y);
                                  DrawCircle(transform_data.position.x,
-                                            transform_data.position.y, 20,
+                                            transform_data.position.y, 2,
                                             {255, 128, 0, 255});
                              });
     }
