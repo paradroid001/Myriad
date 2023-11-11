@@ -5,11 +5,13 @@
 #include <myriad.h>
 // Entry Point
 #include "Dot.h"
+#include "Entities/EntityManager.h"
 #include "TestEvent.h"
 #include "core/Log.h"
 #include <core/MyrEntryPoint.h>
 
 #include "SceneDots.cpp"
+#include "SceneGameOver.cpp"
 #include "SceneMenu.cpp"
 #include "core/Transform.h"
 
@@ -18,6 +20,18 @@
 #include "raylib.h"
 
 #include "flecs.h"
+
+struct Position
+{
+    float x;
+    float y;
+};
+
+struct Velocity
+{
+    float x;
+    float y;
+};
 
 Sample::Sample() {}
 Sample::~Sample() {}
@@ -31,6 +45,8 @@ void Sample::Run()
     menuScene->SetSceneID(0);
     dotsScene = new SampleDotsScene("Dots");
     dotsScene->SetSceneID(1);
+    gameOverScene = new SampleGameOverScene("GameOver");
+    gameOverScene->SetSceneID(2);
     currentScene = menuScene;
 
     Myriad::Window *w = new Myriad::Window();
@@ -129,8 +145,9 @@ void Sample::Run()
     world.import <flecs::monitor>();
 
     camera = new Myriad::Camera();
-    pObjects = new std::list<Myriad::GameObject *>();
+    // pObjects = new std::list<Myriad::GameObject *>();
 
+    /*
     for (int i = 0; i < 10000; i++)
     {
         Dot *dot = new Dot();
@@ -148,6 +165,7 @@ void Sample::Run()
 
         pObjects->push_front(dot);
     }
+    */
 
     // System declaration
     /*
@@ -181,7 +199,6 @@ void Sample::Run()
 
     int counter = 0;
     framesCounter = 0;
-    
 
     while (!w->ShouldClose())
     {
@@ -204,6 +221,8 @@ void Sample::Run()
         // EndDrawing();
         //   stats for the ecs monitor
         //   world.progress();
+
+        // Myriad::Entities::EntityManager::Instance()->World().progress();
     }
     w->Close();
     delete w;
@@ -217,20 +236,31 @@ void Sample::Update()
 {
     switch (currentScene->GetSceneID())
     {
-    case 0:
+    case 0: // menu
     {
         // display a menu?
         if (framesCounter > 120)
         {
             currentScene = dotsScene;
+            currentScene->LoadScene();
         }
         break;
     }
-    case 1:
+    case 1: // dots
+    {
+        if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
+        {
+            currentScene = gameOverScene;
+            currentScene->LoadScene();
+        }
+        break;
+    }
+    case 2: // gameover
     {
         if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
         {
             currentScene = menuScene;
+            currentScene->LoadScene();
         }
         break;
     }
@@ -313,9 +343,8 @@ void Sample::Draw()
         break;
     }
     */
-    
-    //EndDrawing();
-    
+
+    // EndDrawing();
 }
 
 void Sample::EventHandler(TestEvent *e)

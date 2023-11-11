@@ -1,8 +1,6 @@
 #ifndef __SAMPLEMENUSCENE_H_
 #define __SAMPLEMENUSCENE_H_
 
-#include "Scene/Scene.h"
-#include "core/core.h"
 #include "myriad.h"
 #include "raylib.h"
 

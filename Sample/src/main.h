@@ -7,17 +7,6 @@
 #include "flecs.h"
 #include <myriad.h>
 
-struct Position
-{
-    float x;
-    float y;
-};
-struct Velocity
-{
-    float x;
-    float y;
-};
-
 class Sample : public Myriad::MyrApplication
 {
   public:
@@ -39,6 +28,7 @@ class Sample : public Myriad::MyrApplication
 
     Myriad::Scene::Scene *menuScene;
     Myriad::Scene::Scene *dotsScene;
+    Myriad::Scene::Scene *gameOverScene;
     Myriad::Scene::Scene *currentScene;
 };
 

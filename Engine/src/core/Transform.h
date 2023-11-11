@@ -40,7 +40,7 @@ namespace Myriad
         virtual ComponentData *Data() { return &_internalData; }
 
       protected:
-        class TransformData _internalData;
+        TransformData _internalData;
     };
 } // namespace Myriad
 #endif
