@@ -22,16 +22,18 @@ namespace Myriad
       public:
         GameObject();
         virtual ~GameObject();
-        template <typename U>
 
-        // This needs to be inlined, or you get linking errors
-        inline int AddComponent(Component *c, ComponentData *d)
+        // This needs to be inlined in the header, or you get linking errors
+        template <typename U>
+        inline int AddComponent(Component *c) //, ComponentData *d)
         {
             entity.add<U>(); //  add this component type to the entity?
-            ComponentData *pd = d;
+            ComponentData *pd = c->Data();
             U *castObj = static_cast<U *>(pd);
             entity.set<U>(*castObj);
 
+            // The component now has a game object
+            c->SetGameObject(this);
             components.push_front(*c);
             return 0;
         }
@@ -50,7 +52,7 @@ namespace Myriad
         GameObjectData *Data() { return &_internalData; }
 
       protected:
-        class GameObjectData _internalData;
+        GameObjectData _internalData;
         Myriad::Entities::Entity entity;
 
         std::list<Component> components;

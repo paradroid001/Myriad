@@ -7,10 +7,11 @@ namespace Myriad
 {
 
     class Component; // fwd
+    class GameObject;
     typedef struct
     {
         bool enabled;
-        Component *component;
+        Component *pcomponent;
     } ComponentData;
 
     class MYR_API Component
@@ -27,13 +28,27 @@ namespace Myriad
         void OnEnable();
         void OnDisable();
 
-        virtual ComponentData *Data() { return &_data; };
+        inline void SetGameObject(GameObject *pgo)
+        {
+            _pgameObject = pgo;
+        }; // TODO: not if already assigned?
 
-      private:
-        bool _enabled;
-        // GameObject *_gameObject;
+        // TODO: not if already assigned?
+        // TODO what about making this pure virtual and forcing defininition in
+        // decendents? At least the first part, then people can't forget to call
+        // it.in constructor
+        virtual void SetComponentData(ComponentData *data)
+        {
+            _pdata = data;
+            _pdata->pcomponent = this;
+        }
+
+        virtual ComponentData *Data() { return _pdata; };
+
       protected:
-        ComponentData _data;
+        ComponentData *_pdata;
+        bool _enabled;
+        GameObject *_pgameObject;
     };
 } // namespace Myriad
 #endif

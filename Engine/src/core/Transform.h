@@ -24,23 +24,23 @@ namespace Myriad
         // Getters
         const Myriad::Vector3 &position() const
         {
-            return _internalData.position;
+            return _transformData.position;
         }
         const Myriad::Quaternion &rotation() const
         {
-            return _internalData.rotation;
+            return _transformData.rotation;
         }
-        const Myriad::Vector3 &scale() const { return _internalData.scale; }
+        const Myriad::Vector3 &scale() const { return _transformData.scale; }
 
         // Setters
         void SetPosition(float x, float y, float z);
         void SetRotation(float x, float y, float z, float w);
         void SetScale(float x, float y, float z);
 
-        virtual ComponentData *Data() { return &_internalData; }
+        // virtual ComponentData *Data() { return &_internalData; }
 
       protected:
-        TransformData _internalData;
+        TransformData _transformData;
     };
 } // namespace Myriad
 #endif

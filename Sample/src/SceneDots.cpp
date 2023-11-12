@@ -17,16 +17,21 @@ struct VelocityData : Myriad::ComponentData
 class DotVelocity : public Myriad::Component
 {
   public:
-    DotVelocity() : Myriad::Component() { SetVelocity(0, 0); };
+    DotVelocity() : Myriad::Component()
+    {
+        SetComponentData(&_velocityData);
+        SetVelocity(0, 0);
+    };
     // DotVelocity(float _x, float _y){};
     inline void SetVelocity(float _x, float _y)
     {
-        this->_internalData.x = _x;
-        this->_internalData.y = _y;
+        this->_velocityData.x = _x;
+        this->_velocityData.y = _y;
+        // this->_internalData =
     }
 
   protected:
-    VelocityData _internalData;
+    VelocityData _velocityData;
 };
 
 class SampleDotsScene : public Myriad::Scene::Scene
@@ -51,9 +56,11 @@ void SampleDotsScene::LoadScene()
     pObjects = new std::list<Myriad::GameObject *>();
     bgColour = {0, 0, 0, 255};
 
+    std::cout << "Creating Dots" << std::endl;
     for (int i = 0; i < 1000; i++)
     {
         Dot *dot = new Dot();
+
         Myriad::Transform *const t = dot->GetTransform();
         t->SetPosition(rand() % 800, rand() % 600, 0);
 
@@ -68,16 +75,26 @@ void SampleDotsScene::LoadScene()
         dot_e.set<Myriad::TransformData>(*(p_td));
 
         DotVelocity *v = new DotVelocity();
+        v->SetVelocity((rand() % 4) - 2, (rand() % 4) - 2);
+        VelocityData *vd = static_cast<VelocityData *>(v->Data());
+        //   VelocityData *vd = new VelocityData();
+        dot->AddComponent<VelocityData>(v);
+        // std::cout << "veldata:" << vd->x << ", " << vd->y << std::endl;
+        // dot_e.set<VelocityData>(*vd);
+
         // v->SetVelocity(-1, -1);
-        //  VelocityData *vd = new VelocityData();
-        dot->AddComponent<VelocityData>(v, v->Data());
+        //  dot_e.set<VelocityData>(*(static_cast<VelocityData *>(v->Data())));
+
         // v->SetVelocity((rand() % 2) - 1, (rand() % 2) - 1);
         // v->SetVelocity(1, 2);
         // dot_e.set<VelocityData>(*(static_cast<VelocityData *>(v->Data())));
+
+        /*
         VelocityData vdata;
         vdata.x = (rand() % 4) - 2;
         vdata.y = (rand() % 4) - 2;
         dot_e.set<VelocityData>(vdata);
+        */
         // pObjects->push_front(dot);
     }
 
@@ -110,14 +127,16 @@ void SampleDotsScene::LoadScene()
         renderdots =
             Myriad::Entities::EntityManager::Instance()
                 ->World()
-                .system<Myriad::TransformData>("Render")
+                .system<Myriad::TransformData, Myriad::RendererData>("Render")
                 .each(
-                    [](const Myriad::TransformData &t) -> void
+                    [](const Myriad::TransformData &t,
+                       const Myriad::RendererData &r) -> void
                     {
                         // DrawCircleShape(p.x, p.y, 2, {100, 200, 0,
                         // 255});
-                        DrawCircle(t.position.x, t.position.y, 2, GREEN);
+                        // DrawCircle(t.position.x, t.position.y, 2, GREEN);
                         // std::cout << "Draw" << std::endl;
+                        ((Myriad::Renderer *)r.pcomponent)->Draw(t);
                     });
     }
     inited = true;

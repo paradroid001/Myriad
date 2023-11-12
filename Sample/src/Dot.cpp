@@ -1,5 +1,5 @@
 #include "Dot.h"
-#include "core/Transform.h"
+// #include "core/Transform.h"
 #include "myriad.h"
 #include <cstdlib> //ramd
 #include <iostream>
@@ -24,8 +24,10 @@ Dot::Dot() : Myriad::GameObject()
         colour = (Myriad::MyrColour){230, 41, 55, 255};
     }
 
+    std::cout << "Adding Renderer" << std::endl;
     Myriad::Renderer *r = new Myriad::Renderer();
-    AddComponent<Myriad::RendererData>(r, r->Data());
+    AddComponent<Myriad::RendererData>(r); //, r->Data());
+    std::cout << "Finished creating dot" << std::endl;
 }
 Dot::~Dot() { MYR_WARN("Dot Destructor"); }
 

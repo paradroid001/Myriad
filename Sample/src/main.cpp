@@ -230,6 +230,9 @@ void Sample::Run()
     // rmt_UnbindOpenGL();
     // rmt_DestroyGlobalInstance(rmt);
     MYR_TRACE("Cleaned up and quit");
+    std::string input;
+    std::cin >> input;
+    MYR_TRACE("Finished");
 }
 
 void Sample::Update()

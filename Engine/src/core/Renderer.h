@@ -6,7 +6,7 @@
 namespace Myriad
 {
     // fwd declare transform;
-    class Transform;
+    struct TransformData;
 
     struct RendererData : ComponentData
     {
@@ -15,11 +15,23 @@ namespace Myriad
     class Renderer : public Myriad::Component
     {
       public:
-        virtual void Draw(Transform t);
-        ComponentData *Data() { return &_internalData; }
+        Renderer() : Myriad::Component()
+        {
+            // TODO this is unsatisfactory because
+            // I am loathe to set renderdaya here,
+            // since inheriting classes will then
+            // reset over the top. See the other note
+            // about making SetComponentData pure
+            // protected virtual, and then inheriting classes
+            // are forced to implement and it gives the most
+            // derived implementation during construction.
+            SetComponentData(&_renderData);
+        };
+        virtual void Draw(TransformData t);
+        // ComponentData *Data() { return &_internalData; }
 
       protected:
-        class RendererData _internalData;
+        RendererData _renderData;
     };
 } // namespace Myriad
 

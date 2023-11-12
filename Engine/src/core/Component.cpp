@@ -4,7 +4,9 @@
 
 namespace Myriad
 {
-    Component::Component(){};
+    Component::Component(){
+
+    };
     Component::~Component(){};
 
     void Component::Init(){};

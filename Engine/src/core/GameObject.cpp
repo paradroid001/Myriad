@@ -20,14 +20,18 @@ namespace Myriad
         entity = Myriad::Entities::EntityManager::Instance()->World().entity();
 
         _internalData.gameObject = this;
-        entity.add<GameObjectData>();
-        entity.set<GameObjectData>(_internalData);
+        // Do we really need to add GameObjectData to the entity?
+        //  entity.add<GameObjectData>();
+        //  entity.set<GameObjectData>(_internalData);
 
+        std::cout << "Gameobject is adding transform" << std::endl;
         _ptransform = new Myriad::Transform();
-        AddComponent<TransformData>(_ptransform, _ptransform->Data());
+        AddComponent<TransformData>(_ptransform); //, _ptransform->Data());
+        std::cout << "Finished adding transform" << std::endl;
 
         name = "DefaultName";
         // entity.set()
+        std::cout << "Finished creating GameObject" << std::endl;
     }
     GameObject::~GameObject()
     {

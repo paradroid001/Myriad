@@ -1,9 +1,8 @@
 #include "core/Renderer.h"
 #include "core/Transform.h"
-
 #include "raylib.h"
 
-void Myriad::Renderer::Draw(Myriad::Transform t)
+void Myriad::Renderer::Draw(Myriad::TransformData t)
 {
-    DrawCircle(t.position().x, t.position().y, 5, {100, 50, 0, 255});
+    DrawCircle(t.position.x, t.position.y, 5, {100, 50, 0, 255});
 }
