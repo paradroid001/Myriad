@@ -1,6 +1,10 @@
 #include "core/Renderer.h"
 #include "core/Transform.h"
-#include "raylib.h"
+
+// Only include raylib if we're building internally.
+#ifdef MYRIAD_INTERNAL
+    #include "raylib.h"
+#endif
 
 void Myriad::Renderer::Draw(Myriad::TransformData t)
 {

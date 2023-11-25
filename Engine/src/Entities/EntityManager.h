@@ -1,6 +1,7 @@
 #ifndef __ENTITYMANAGER_H_
 #define __ENTITYMANAGER_H_
 
+#include "../core/core.h"
 #include "flecs.h"
 
 namespace Myriad
@@ -10,7 +11,7 @@ namespace Myriad
         typedef flecs::world World;
         typedef flecs::entity Entity;
 
-        class EntityManager
+        class MYR_API EntityManager
         {
           public:
             virtual ~EntityManager(){};

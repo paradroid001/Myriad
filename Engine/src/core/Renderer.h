@@ -12,7 +12,7 @@ namespace Myriad
     {
     };
 
-    class Renderer : public Myriad::Component
+    class MYR_API Renderer : public Myriad::Component
     {
       public:
         Renderer() : Myriad::Component()

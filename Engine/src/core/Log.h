@@ -4,6 +4,12 @@
 #include <memory>
 
 #include "core.h"
+
+#if defined(_WIN32)
+    #define NOGDI  // All GDI defines and routines
+    #define NOUSER // All USER defines and routines
+#endif
+
 #include "spdlog/spdlog.h"
 
 namespace Myriad

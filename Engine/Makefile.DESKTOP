@@ -16,6 +16,8 @@ ifeq ($(TARGET_OS),windows)
     CFLAGS += -DMYR_PLATFORM_WINDOWS -DMYR_BUILD_DLL
     LIBRARY_NAME = myriad.dll
     LFLAGS += -Wl,--out-implib,$(BIN_DIR)/myriad.lib -static-libgcc -lopengl32 -lgdi32 -lwinmm
+#this is for flecs	
+    LFLAGS += -lws2_32
 endif
 ifeq ($(TARGET_OS),linux)
     CFLAGS += -DMYR_PLATFORM_LINUX
@@ -23,7 +25,8 @@ ifeq ($(TARGET_OS),linux)
     LIBRARY_NAME = libmyriad.so
 endif
 
-CFLAGS +=  -Wl,-soname,$(LIBRARY_NAME) -DMYRIAD_INTERNAL
+# The last flag is for flecs
+CFLAGS +=  -Wl,-soname,$(LIBRARY_NAME) -DMYRIAD_INTERNAL -Dflecs_EXPORTS
 LFLAGS +=  -l raylib -L$(BIN_DIR)
 
 # Optimise for size with Clang flags: -g0 -Os -s 

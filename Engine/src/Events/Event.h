@@ -10,6 +10,7 @@
     #include <typeindex>
     #include <typeinfo>
 #endif
+#include "../core/core.h"
 
 namespace Myriad
 {
@@ -17,7 +18,7 @@ namespace Myriad
     {
         class Event; // fwd declare
 
-        class IEventCallback
+        class MYR_API IEventCallback
         {
           public:
             void exec(Event *evnt) { call(evnt); }
@@ -27,7 +28,7 @@ namespace Myriad
         };
 
         template <class T, class EventType>
-        class EventCallback : public IEventCallback
+        class MYR_API EventCallback : public IEventCallback
         {
           public:
             typedef void (T::*MemberFunction)(EventType *);
@@ -49,7 +50,7 @@ namespace Myriad
 
         typedef std::list<IEventCallback *> HandlerList;
 
-        class EventDispatcher
+        class MYR_API EventDispatcher
         {
           public:
             static EventDispatcher *Instance()
@@ -111,7 +112,7 @@ namespace Myriad
             std::map<std::type_index, HandlerList *> subscribers;
         };
 
-        class Event //: public IEvent
+        class MYR_API Event //: public IEvent
         {
           public:
             template <class T, class EventType>

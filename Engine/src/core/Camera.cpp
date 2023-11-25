@@ -6,7 +6,8 @@
 
 #include "Entities/EntityManager.h"
 #include "core/GameObject.h"
-#include "core/Log.h"
+// Don't include Log here. It causes all sorts of link errors.
+//  #include "core/Log.h"
 #include "core/Renderer.h"
 #include "core/Transform.h"
 #include "core/Types2D.h"

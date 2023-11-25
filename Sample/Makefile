@@ -16,9 +16,23 @@ CFLAGS				?= -std=c++17
 INCLUDES			?= -I../Engine/vendor/spdlog/include -I../Engine/vendor/raylib/src -I../Engine/vendor/Remotery/lib -I../Engine/vendor/flecs
 #LFLAGS				+= -L.
 #LFLAGS				+= -L $(MYRIAD_LIB)
-OBJECTS				:= $(OBJ_DIR)/main.o $(OBJ_DIR)/Dot.o
+OBJECTS				:= $(OBJ_DIR)/main.o $(OBJ_DIR)/Dot.o# $(OBJ_DIR)/flecs.o
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+
+CFLAGS += -I $(MYRIAD_DIR)/src $(INCLUDES) -Dflecs_EXPORTS
+LFLAGS += -L $(BUILD_DIR)/$(VARIANT_PATH) -L.
+#LFLAGS += -L.
+
+ifeq ($(TARGET_OS),windows)
+	CFLAGS += -DMYR_PLATFORM_WINDOWS
+	LFLAGS += -l myriad
+#	LFLAGS += $(BUILD_DIR)/$(VARIANT_PATH)/myriad.dll
+endif
+ifeq ($(TARGET_OS),linux)
+	CFLAGS += -DMYR_PLATFORM_LINUX
+	LFLAGS += -l myriad
+endif
 
 # Optimise for size with Clang flags: -g0 -Os -s 
 ifeq ($(BUILD_MODE),Release)
@@ -29,20 +43,6 @@ ifeq ($(BUILD_MODE),Debug)
 	CFLAGS += -O0 -g
 	LFLAGS += -O0 -g
 endif
-
-ifeq ($(TARGET_OS),windows)
-	CFLAGS += -DMYR_PLATFORM_WINDOWS
-	LFLAGS += -l myriad
-endif
-ifeq ($(TARGET_OS),linux)
-	CFLAGS += -DMYR_PLATFORM_LINUX
-	LFLAGS += -l myriad
-endif
-
-CFLAGS += -I $(MYRIAD_DIR)/src $(INCLUDES)
-LFLAGS += -L $(BUILD_DIR)/$(VARIANT_PATH) -L.
-#LFLAGS += -L.
-
 
 .PHONY: setup all clean cleanlibs
 

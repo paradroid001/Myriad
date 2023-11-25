@@ -1,6 +1,8 @@
 #ifndef __SCENEMANAGER_H_
 #define __SCENEMANAGER_H_
 
+#include "../core/core.h"
+
 namespace Myriad
 {
     namespace Scene
@@ -9,7 +11,7 @@ namespace Myriad
         {
         };
 
-        class SceneManager
+        class MYR_API SceneManager
         {
           public:
             virtual ~SceneManager(){};
