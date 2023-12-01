@@ -28,6 +28,7 @@ class Sample : public Myriad::MyrApplication
 
     Myriad::Scene::Scene *menuScene;
     Myriad::Scene::Scene *dotsScene;
+    Myriad::Scene::Scene *fpsScene;
     Myriad::Scene::Scene *gameOverScene;
     Myriad::Scene::Scene *currentScene;
 };

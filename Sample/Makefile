@@ -26,12 +26,13 @@ LFLAGS += -L $(BUILD_DIR)/$(VARIANT_PATH) -L.
 
 ifeq ($(TARGET_OS),windows)
 	CFLAGS += -DMYR_PLATFORM_WINDOWS
-	LFLAGS += -l myriad
+	LFLAGS += -lmyriad -lraylib -lgdi32 -lws2_32 -lwinmm
+#	LFLAGS += -l myriad -lraylib -lopengl32 -lgdi32 -lwinmm -lws2_32
 #	LFLAGS += $(BUILD_DIR)/$(VARIANT_PATH)/myriad.dll
 endif
 ifeq ($(TARGET_OS),linux)
 	CFLAGS += -DMYR_PLATFORM_LINUX
-	LFLAGS += -l myriad
+	LFLAGS += -l myriad -lraylib
 endif
 
 # Optimise for size with Clang flags: -g0 -Os -s 

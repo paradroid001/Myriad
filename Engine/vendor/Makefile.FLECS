@@ -9,7 +9,7 @@
 #    C++ files that use Flecs must be compiled with -std=c++0x (C++11) or higher.
 
 #for flecs.h which is in directory flecs
-CFLAGS += -std=gnu99 -Iflecs -Dflecs_EXPORTS
+CFLAGS += -std=gnu99 -Iflecs -Dflecs_EXPORTS -fPIC
 
 # Optimise for size with Clang flags: -g0 -Os -s 
 ifeq ($(BUILD_MODE),Release)

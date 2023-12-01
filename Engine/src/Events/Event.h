@@ -27,8 +27,9 @@ namespace Myriad
             virtual void call(Event *evnt) = 0;
         };
 
+        // may not need dllexport here..
         template <class T, class EventType>
-        class MYR_API EventCallback : public IEventCallback
+        class EventCallback : public IEventCallback
         {
           public:
             typedef void (T::*MemberFunction)(EventType *);
@@ -107,7 +108,7 @@ namespace Myriad
             }
 
           private:
-            inline static EventDispatcher *_instance;
+            inline static /*__declspec(dllexport)*/ EventDispatcher *_instance;
             EventDispatcher(){};
             std::map<std::type_index, HandlerList *> subscribers;
         };

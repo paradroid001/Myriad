@@ -7,7 +7,7 @@
 class SampleMenuScene : public Myriad::Scene::Scene
 {
   public:
-    SampleMenuScene(const char* name) : Myriad::Scene::Scene(name){};
+    SampleMenuScene(const char *name) : Myriad::Scene::Scene(name){};
     void LoadScene() override;
     void RunScene() override;
     void DrawScene() override;
@@ -23,13 +23,16 @@ void SampleMenuScene::LoadScene()
     framesCounter = 0;
 }
 
-void SampleMenuScene::RunScene() { 
-  MYR_TRACE("Running menu scene, adding to framecounter");
-  framesCounter += 1;
-  }
+void SampleMenuScene::RunScene()
+{
+    MYR_TRACE("Running menu scene, adding to framecounter");
+    framesCounter += 1;
+}
 
 void SampleMenuScene::DrawScene()
 {
+    MYR_TRACE("Drawing menu scene");
+
     int screenWidth = 800;
     int screenHeight = 600;
 
@@ -46,6 +49,7 @@ void SampleMenuScene::DrawScene()
     DrawText("Wait to enter DOTS screen", 120, 220, 20, DARKBLUE);
 
     EndDrawing();
+    MYR_TRACE("Finished Drawing menu scene");
 }
 
 #endif

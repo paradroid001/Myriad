@@ -11,6 +11,7 @@
 #include <core/MyrEntryPoint.h>
 
 #include "SceneDots.cpp"
+#include "SceneFPS.cpp"
 #include "SceneGameOver.cpp"
 #include "SceneMenu.cpp"
 #include "core/Transform.h"
@@ -45,8 +46,10 @@ void Sample::Run()
     menuScene->SetSceneID(0);
     dotsScene = new SampleDotsScene("Dots");
     dotsScene->SetSceneID(1);
+    fpsScene = new SampleFPSScene("FPS");
+    fpsScene->SetSceneID(2);
     gameOverScene = new SampleGameOverScene("GameOver");
-    gameOverScene->SetSceneID(2);
+    gameOverScene->SetSceneID(3);
     currentScene = menuScene;
 
     Myriad::Window *w = new Myriad::Window();
@@ -60,7 +63,7 @@ void Sample::Run()
     t->somedata1 = 100;
     t->somedata2 = 200;
 
-    TestEvent::Register(this, &Sample::EventHandler);
+    // TestEvent::Register(this, &Sample::EventHandler);
 
     flecs::world world;
     auto e = world.entity("Carl");
@@ -211,7 +214,7 @@ void Sample::Run()
         if (counter > 60)
         {
             counter = 0;
-            t->Emit();
+            // t->Emit();
         }
 
         // sys.run();
@@ -253,12 +256,21 @@ void Sample::Update()
     {
         if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
         {
+            currentScene = fpsScene;
+            currentScene->LoadScene();
+        }
+        break;
+    }
+    case 2:
+    {
+        if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
+        {
             currentScene = gameOverScene;
             currentScene->LoadScene();
         }
         break;
     }
-    case 2: // gameover
+    case 3: // gameover
     {
         if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
         {
