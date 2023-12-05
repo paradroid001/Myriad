@@ -76,6 +76,7 @@ void SampleDotsScene::LoadScene()
 
         DotVelocity *v = new DotVelocity();
         v->SetVelocity((rand() % 4) - 2, (rand() % 4) - 2);
+        // v->SetVelocity(0, 0);
         VelocityData *vd = static_cast<VelocityData *>(v->Data());
         //   VelocityData *vd = new VelocityData();
         dot->AddComponent<VelocityData>(v);

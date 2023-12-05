@@ -1,5 +1,11 @@
 ## Myriad TODO ##
 
+### 20231203 ###
+So making the FPS ECS scene, the API for a programmer to add game objects,
+and create data structures/components for rendering, etc is quite complex, and probably needs to be simpler. Also creating the systems is pretty rough and involves interfacing directly with flecs. I'm not sure if there's a way to not have to involve flecs directly without either replicating the API (messy?) or simplifying it - which I can see coming back to bite me when I want/need to do something very custom in some scene.
+
+Also it segfaults like crazy.
+
 ### 20231015 ###
 -[ ] Add Doxygen support
 -[ ] Add a Test directory and unit tests

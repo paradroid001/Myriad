@@ -7,9 +7,9 @@ namespace Myriad
 {
     namespace Scene
     {
-        class Scene
-        {
-        };
+        // class Scene
+        //{
+        // };
 
         class MYR_API SceneManager
         {
@@ -30,7 +30,7 @@ namespace Myriad
           private:
             SceneManager() {}
             inline static Myriad::Scene::SceneManager *_instance = NULL;
-        }
+        };
     } // namespace Scene
 } // namespace Myriad
 

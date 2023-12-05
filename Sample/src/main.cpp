@@ -5,16 +5,17 @@
 #include <myriad.h>
 // Entry Point
 #include "Dot.h"
-#include "Entities/EntityManager.h"
+// #include "Entities/EntityManager.h"
 #include "TestEvent.h"
-#include "core/Log.h"
+// #include "core/Log.h"
 #include <core/MyrEntryPoint.h>
 
 #include "SceneDots.cpp"
 #include "SceneFPS.cpp"
+#include "SceneFPSECS.cpp"
 #include "SceneGameOver.cpp"
 #include "SceneMenu.cpp"
-#include "core/Transform.h"
+// #include "core/Transform.h"
 
 #include "main.h"
 // #include "Remotery.h"
@@ -48,8 +49,10 @@ void Sample::Run()
     dotsScene->SetSceneID(1);
     fpsScene = new SampleFPSScene("FPS");
     fpsScene->SetSceneID(2);
+    fpsecsScene = new SampleFPSECSScene("FPSECS");
+    fpsecsScene->SetSceneID(3);
     gameOverScene = new SampleGameOverScene("GameOver");
-    gameOverScene->SetSceneID(3);
+    gameOverScene->SetSceneID(4);
     currentScene = menuScene;
 
     Myriad::Window *w = new Myriad::Window();
@@ -265,12 +268,21 @@ void Sample::Update()
     {
         if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
         {
+            currentScene = fpsecsScene;
+            currentScene->LoadScene();
+        }
+        break;
+    }
+    case 3:
+    {
+        if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
+        {
             currentScene = gameOverScene;
             currentScene->LoadScene();
         }
         break;
     }
-    case 3: // gameover
+    case 4: // gameover
     {
         if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
         {

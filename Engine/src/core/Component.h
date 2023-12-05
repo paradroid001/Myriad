@@ -8,6 +8,7 @@ namespace Myriad
 
     class Component; // fwd
     class GameObject;
+
     typedef struct
     {
         bool enabled;

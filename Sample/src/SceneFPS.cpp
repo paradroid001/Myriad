@@ -1,8 +1,8 @@
 #ifndef __SAMPLEFPSSCENE_H_
 #define __SAMPLEFPSSCENE_H_
-#include "Scene/Scene.h"
-#include "SceneGameOver.cpp"
-#include "core/GameObject.h"
+// #include "Scene/Scene.h"
+// #include "SceneGameOver.cpp"
+// #include "core/GameObject.h"
 #include "myriad.h"
 
 #include "raylib.h"
