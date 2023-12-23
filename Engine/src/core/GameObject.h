@@ -5,7 +5,9 @@
 #include <string>
 
 #include "Component.h"
-#include "Entities/EntityManager.h"
+// Don't include entity manager
+// #include "Entities/EntityManager.h"
+#include "GameObjectBase.h"
 #include "Transform.h"
 #include "core.h"
 
@@ -17,12 +19,13 @@ namespace Myriad
         GameObject *gameObject;
     };
 
-    class MYR_API GameObject
+    class MYR_API GameObject : public GameObjectBase
     {
       public:
         GameObject();
         virtual ~GameObject();
 
+        /* THE OLD WAY
         // This needs to be inlined in the header, or you get linking errors
         template <typename U>
         inline int AddComponent(Component *c) //, ComponentData *d)
@@ -37,25 +40,35 @@ namespace Myriad
             components.push_front(*c);
             return 0;
         }
+        */
 
-        // int AddComponent(Component *c);
-        //  int AddComponent(Myriad::Component c);
-        int RemoveComponent(Component c);
-        // template<> Component GetComponent<Component>();
-        Transform *const GetTransform();
-        std::string GetName();
-        void SetName(const char *newname);
-        virtual void Update();
-        virtual void Draw();
-        virtual void DrawCircleShape(float x, float y, float r, MyrColour c);
-        Myriad::Entities::Entity &Entity() { return entity; };
-        GameObjectData *Data() { return &_internalData; }
+        void AddComponent(ComponentBase *c);
+        void RemoveComponent(ComponentBase *c);
+        int GetNumChildren();
+        GameObjectBase **GetChildren();
+        GameObjectBase *GetChild(int i);
+        int AddChild(GameObjectBase *child);
+        int RemoveChild(GameObjectBase *child);
+        int RemoveChildn(int n);
+        void Enable();
+        void Disable();
+        void OnEnable();
+        void OnDisable();
+        // Transform *const GetTransform();
+        // std::string GetName();
+        // void SetName(const char *newname);
+
+        // virtual void Update();
+        // virtual void Draw();
+        // virtual void DrawCircleShape(float x, float y, float r, MyrColour c);
+        // Myriad::Entities::Entity &Entity() { return entity; };
+        // GameObjectData *Data() { return &_internalData; }
 
       protected:
-        GameObjectData _internalData;
-        Myriad::Entities::Entity entity;
+        // GameObjectData _internalData;
+        // Myriad::Entities::Entity entity;
 
-        std::list<Component> components;
+        std::list<ComponentBase *> components;
         std::string name;
         Myriad::Transform *_ptransform;
     };

@@ -9,15 +9,15 @@ CC			:= zig cc -target $(TARGET_PLATFORM)
 #CC			:= gcc
 PRECOMPILED_STL := src/stl-$(TARGET_ARCH)-$(TARGET_OS)-$(TARGET_LIBC).pch
 
-LFLAGS		?= -shared
-CFLAGS		?= -std=c++17 -fPIC -I src -Ivendor/spdlog/include -Ivendor/raylib/src -Ivendor/flecs -D$(TARGET_PLATFORM)
+LFLAGS		?= -shared -l raylib -L$(BIN_DIR)
+CFLAGS		?= -std=c++17 -fPIC -I src -Ivendor/spdlog/include -Ivendor/raylib/src -D$(TARGET_PLATFORM) # -Ivendor/flecs 
 
 ifeq ($(TARGET_OS),windows)
     CFLAGS += -DMYR_PLATFORM_WINDOWS -DMYR_BUILD_DLL
     LIBRARY_NAME = myriad.dll
     LFLAGS += -Wl,--out-implib,$(BIN_DIR)/myriad.lib -static-libgcc -lopengl32 -lgdi32 -lwinmm
 #this is for flecs	
-    LFLAGS += -lws2_32
+#    LFLAGS += -lws2_32
 endif
 ifeq ($(TARGET_OS),linux)
     CFLAGS += -DMYR_PLATFORM_LINUX
@@ -26,8 +26,9 @@ ifeq ($(TARGET_OS),linux)
 endif
 
 # The last flag is for flecs
-CFLAGS +=  -Wl,-soname,$(LIBRARY_NAME) -DMYRIAD_INTERNAL -Dflecs_EXPORTS
-LFLAGS +=  -l raylib -L$(BIN_DIR)
+CFLAGS +=  -Wl,-soname,$(LIBRARY_NAME) -DMYRIAD_INTERNAL# -Dflecs_EXPORTS
+# this line was moved earlier to get raylib linked before windows stuff
+#LFLAGS +=  -l raylib -L$(BIN_DIR)
 
 # Optimise for size with Clang flags: -g0 -Os -s 
 ifeq ($(BUILD_MODE),Release)
@@ -68,6 +69,7 @@ REMOTERY_FLAGS = -Ivendor/Remotery/lib
 ifeq ($(TARGET_OS),linux)
     REMOTERY_FLAGS += -pthread -lm
 endif
+
 ifeq ($(TARGET_OS),windows)
 # when linking for windows, add in  libws2_32.a libwinmm.a
     REMOTERY_FLAGS  += -lwinmm -lws2_32
@@ -94,10 +96,12 @@ all: setup dep $(PRECOMPILED_STL) $(LIBRARY_NAME)
 $(LIBRARY_NAME): $(OBJECTS)
 	@echo "Linking $(LIBRARY_NAME) for $(TARGET_PLATFORM) on $(BUILD_OS)"
 	@$(MKDIR) $(BIN_DIR)
+#Taking out flecs.o from both these lines, it it was"
+#	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(OBJ_DIR)/flecs.o $(OBJ_DIR)/Remotery.o $(LFLAGS)
 ifeq ($(USE_REMOTERY),true)
-	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(OBJ_DIR)/flecs.o $(OBJ_DIR)/Remotery.o $(LFLAGS)
+	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(OBJ_DIR)/Remotery.o $(LFLAGS)
 else
-	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(OBJ_DIR)/flecs.o $(CFLAGS) $(LFLAGS)
+	$(CXX) -o $(BIN_DIR)/$(LIBRARY_NAME) $(OBJECTS) $(CFLAGS) $(LFLAGS)
 endif
 
 # Compile objects to the build directory

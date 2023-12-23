@@ -3,7 +3,8 @@
 
 #include <list>
 
-#include "flecs.h"
+// Not including flecs for now
+// #include "flecs.h"
 
 // don't #include "MyriadConfig.h" for now
 #include "core.h"
@@ -22,7 +23,7 @@ namespace Myriad
 
       private:
         Myriad::MyrColour backgroundColour;
-        flecs::system drawSystem;
+        // flecs::system drawSystem;
     };
 } // namespace Myriad
 #endif

@@ -2,9 +2,11 @@
 
 #include <list>
 
-#include "flecs.h"
+// No flecs for now
+// #include "flecs.h"
 
-#include "Entities/EntityManager.h"
+// No entity manager for now.
+// #include "Entities/EntityManager.h"
 #include "core/GameObject.h"
 // Don't include Log here. It causes all sorts of link errors.
 //  #include "core/Log.h"
@@ -38,6 +40,7 @@ namespace Myriad
                                { gameobject_data.gameObject->Draw(); });
         */
 
+        /* Add back in later when we have ECS
         drawSystem = Myriad::Entities::EntityManager::Instance()
                          ->World()
                          .system<Myriad::TransformData>("CameraDraw")
@@ -51,6 +54,7 @@ namespace Myriad
                                             transform_data.position.y, 2,
                                             {255, 128, 0, 255});
                              });
+        */
     }
     Camera::~Camera() {}
 
@@ -75,7 +79,7 @@ namespace Myriad
 #if MYR_RENDERER == RAYLIB
         DrawCircleV(v, 20, YELLOW);
 #endif
-        /*
+        /* OLD STD WAY
         if (drawlist != NULL)
         {
             std::list<GameObject *>::iterator it;
@@ -85,7 +89,10 @@ namespace Myriad
             }
         }
         */
+
+        /* NEW ECS WAY
         drawSystem.run();
+        */
 
         // query for everything with a transform.
 

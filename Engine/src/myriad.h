@@ -2,7 +2,7 @@
 #define __MYRIAD_H_
 
 // For client applications only, not for engine to include
-#include "Entities/EntityManager.h"
+// #include "Entities/EntityManager.h"
 #include "Events/Event.h"
 #include "Scene/Scene.h"
 #include "Scene/SceneManager.h"
