@@ -13,7 +13,7 @@ MYRIAD_LIB			:= $(MYRIAD_DIR)/build/$(VARIANT_PATH)/bin
 TARGET				?= test
 CXX					= zig c++ -target $(TARGET_PLATFORM)
 CFLAGS				?= -std=c++17
-INCLUDES			?= -I../Engine/vendor/spdlog/include -I../Engine/vendor/raylib/src -I../Engine/vendor/Remotery/lraylib
+INCLUDES			?= -I../Engine/vendor/spdlog/include -I../Engine/vendor/raylib/src -I../Engine/vendor/Remotery/lib
 #LFLAGS				+= -L.
 #LFLAGS				+= -L $(MYRIAD_LIB)
 OBJECTS				:= $(OBJ_DIR)/main.o# $(OBJ_DIR)/Dot.o# $(OBJ_DIR)/flecs.o
@@ -26,13 +26,13 @@ LFLAGS += -L $(BUILD_DIR)/$(VARIANT_PATH) -L.
 
 ifeq ($(TARGET_OS),windows)
 	CFLAGS += -DMYR_PLATFORM_WINDOWS
-	LFLAGS += -lmyriad -lgdi32 -lws2_32 -lwinmm
+	LFLAGS += -lmyriad -lraylib -lgdi32 -lws2_32 -lwinmm
 #	LFLAGS += -l myriad -lraylib -lopengl32 -lgdi32 -lwinmm -lws2_32
 #	LFLAGS += $(BUILD_DIR)/$(VARIANT_PATH)/myriad.dll
 endif
 ifeq ($(TARGET_OS),linux)
 	CFLAGS += -DMYR_PLATFORM_LINUX
-	LFLAGS += -l myriad -lraylib
+	LFLAGS += -lmyriad -lraylib
 endif
 
 # Optimise for size with Clang flags: -g0 -Os -s 
