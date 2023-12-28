@@ -2,10 +2,11 @@
 #include "Transform.h"
 #include <iostream>
 #include <list>
+#include <string>
 
-#include "GameObject.h"
 #include "Log.h"
 #include "core.h"
+#include "GameObject.h"
 // Include the config
 #include "MyriadConfig.h"
 
@@ -54,6 +55,11 @@ namespace Myriad
     void GameObject::RemoveComponent(Myriad::ComponentBase *c)
     {
         MYR_CORE_TRACE("GameObject::RemoveComponent is not implemented.");
+    }
+
+    ComponentBase* GameObject::GetComponentByName(std::string& name)
+    {
+        return NULL;
     }
 
     int GameObject::GetNumChildren() { return 0; }

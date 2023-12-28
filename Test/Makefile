@@ -11,6 +11,7 @@ OBJ_DIR				:= $(BUILD_DIR)/obj/$(VARIANT_PATH)
 MYRIAD_DIR			?= ../Engine
 MYRIAD_LIB			:= $(MYRIAD_DIR)/build/$(VARIANT_PATH)/bin
 TARGET				?= test
+BINARY				?= a.out
 CXX					= zig c++ -target $(TARGET_PLATFORM)
 CFLAGS				?= -std=c++17
 INCLUDES			?= -I../Engine/vendor/spdlog/include -I../Engine/vendor/raylib/src -I../Engine/vendor/Remotery/lib
@@ -27,12 +28,14 @@ LFLAGS += -L $(BUILD_DIR)/$(VARIANT_PATH) -L.
 ifeq ($(TARGET_OS),windows)
 	CFLAGS += -DMYR_PLATFORM_WINDOWS
 	LFLAGS += -lmyriad -lgdi32 -lws2_32 -lwinmm
+	BINARY = $(TARGET).exe
 #	LFLAGS += -l myriad -lraylib -lopengl32 -lgdi32 -lwinmm -lws2_32
 #	LFLAGS += $(BUILD_DIR)/$(VARIANT_PATH)/myriad.dll
 endif
 ifeq ($(TARGET_OS),linux)
 	CFLAGS += -DMYR_PLATFORM_LINUX
 	LFLAGS += -lmyriad -lraylib
+	BINARY = $(TARGET)
 endif
 
 # Optimise for size with Clang flags: -g0 -Os -s 
@@ -51,14 +54,14 @@ setup:
 	@echo $(CXX)
 	@echo $(CFLAGS)
 
-all: setup $(BUILD_DIR)/$(TARGET)
+all: setup $(BUILD_DIR)/$(BINARY)
 
 # LFLAGS Must come last
-$(BUILD_DIR)/$(TARGET): $(OBJECTS)
+$(BUILD_DIR)/$(BINARY): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)/$(VARIANT_PATH)
 	@cp $(MYRIAD_LIB)/* $(BUILD_DIR)/$(VARIANT_PATH)
 #	@cp $(MYRIAD_LIB)/* .
-	$(CXX) -o $(BUILD_DIR)/$(VARIANT_PATH)/$(TARGET) $(OBJECTS) $(LFLAGS)
+	$(CXX) -o $(BUILD_DIR)/$(VARIANT_PATH)/$(BINARY) $(OBJECTS) $(LFLAGS)
 	
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -69,5 +72,5 @@ clean:
 	@rm -rf build
 
 cleanlibs:
-	@echo "Nothing to be done for sample cleanlibs."
+	@echo "Nothing to be done for test cleanlibs."
 

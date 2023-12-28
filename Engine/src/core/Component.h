@@ -4,6 +4,7 @@
 #include "ComponentBase.h"
 #include "core.h"
 #include <iostream>
+#include <string>
 
 namespace Myriad
 {
@@ -31,6 +32,11 @@ namespace Myriad
         void OnEnable() override;
         void OnDisable() override;
 
+        inline std::string& GetName() override 
+        {
+            return m_name;
+        }
+
         inline void SetGameObject(GameObject *pgo)
         {
             mp_gameObject = (GameObjectBase *)pgo;
@@ -57,6 +63,7 @@ namespace Myriad
         // ComponentData *_pdata;
         bool _enabled;
         GameObjectBase *mp_gameObject;
+        std::string m_name;
     };
 } // namespace Myriad
 #endif

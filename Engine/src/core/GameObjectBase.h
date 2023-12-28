@@ -4,10 +4,12 @@
 #include "ComponentBase.h"
 #include "core.h"
 #include <iostream>
+#include "IComponentContainer.h"
+#include "IEnableable.h"
 
 namespace Myriad
 {
-    class MYR_API GameObjectBase
+    class MYR_API GameObjectBase : public IEnableable, public IComponentContainer
     {
       public:
         // GameObjectBase();

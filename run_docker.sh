@@ -1,1 +1,1 @@
-docker run -it --rm --mount type=bind,source="$(pwd)",target=/myriad myriad_build /bin/bash
+docker run -it --rm --mount type=bind,source="$(pwd)",target=/myriad --name myriad_build myriad_build /bin/bash

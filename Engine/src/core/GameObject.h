@@ -42,18 +42,22 @@ namespace Myriad
         }
         */
 
-        void AddComponent(ComponentBase *c);
-        void RemoveComponent(ComponentBase *c);
+        void AddComponent(ComponentBase *c) override;
+        void RemoveComponent(ComponentBase *c) override;
+        ComponentBase* GetComponentByName(std::string& name) override;
+
+        void Enable() override;
+        void Disable() override;
+        void OnEnable() override;
+        void OnDisable() override;
+
         int GetNumChildren();
         GameObjectBase **GetChildren();
         GameObjectBase *GetChild(int i);
         int AddChild(GameObjectBase *child);
         int RemoveChild(GameObjectBase *child);
         int RemoveChildn(int n);
-        void Enable();
-        void Disable();
-        void OnEnable();
-        void OnDisable();
+        
         // Transform *const GetTransform();
         // std::string GetName();
         // void SetName(const char *newname);

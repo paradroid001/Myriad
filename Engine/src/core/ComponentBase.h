@@ -3,20 +3,23 @@
 
 #include "core.h" //for MYR_API
 // #include "GameObjectBase.h"
+#include "core/IEnableable.h"
+#include <string>
 
 namespace Myriad
 {
     class GameObjectBase;
 
-    class MYR_API ComponentBase
+    class MYR_API ComponentBase : public IEnableable
     {
       public:
         virtual ~ComponentBase() {}
-        virtual void Enable() = 0;
-        virtual void Disable() = 0;
-        virtual void OnEnable() = 0;
-        virtual void OnDisable() = 0;
-        virtual const GameObjectBase *GetGameObject();
+        virtual std::string& GetName() = 0;
+        //virtual void Enable() = 0;
+        //virtual void Disable() = 0;
+        //virtual void OnEnable() = 0;
+        //virtual void OnDisable() = 0;
+        virtual const GameObjectBase *GetGameObject() = 0;
     };
 } // namespace Myriad
 
