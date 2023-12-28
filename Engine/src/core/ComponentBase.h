@@ -1,7 +1,8 @@
 #ifndef __COMPONENTBASE_H_
 #define __COMPONENTBASE_H_
 
-#include "core.h"
+#include "core.h" //for MYR_API
+// #include "GameObjectBase.h"
 
 namespace Myriad
 {
@@ -10,8 +11,7 @@ namespace Myriad
     class MYR_API ComponentBase
     {
       public:
-        // ComponentBase(GameObjectBase *g);
-        // virtual ~ComponentBase();
+        virtual ~ComponentBase() {}
         virtual void Enable() = 0;
         virtual void Disable() = 0;
         virtual void OnEnable() = 0;

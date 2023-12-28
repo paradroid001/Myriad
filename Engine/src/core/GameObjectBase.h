@@ -3,6 +3,7 @@
 
 #include "ComponentBase.h"
 #include "core.h"
+#include <iostream>
 
 namespace Myriad
 {

@@ -68,9 +68,9 @@ namespace Myriad
         // GameObjectData _internalData;
         // Myriad::Entities::Entity entity;
 
-        std::list<ComponentBase *> components;
+        std::list<ComponentBase *> m_components;
         std::string name;
-        Myriad::Transform *_ptransform;
+        Myriad::Transform *mp_transform;
     };
 } // namespace Myriad
 

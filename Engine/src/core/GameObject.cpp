@@ -1,6 +1,7 @@
 #include "ComponentBase.h"
 #include "Transform.h"
 #include <iostream>
+#include <list>
 
 #include "GameObject.h"
 #include "Log.h"
@@ -24,9 +25,10 @@ namespace Myriad
         //  entity.set<GameObjectData>(_internalData);
 
         MYR_CORE_TRACE("Gameobject is adding transform");
-        _ptransform = new Myriad::Transform();
+        mp_transform = new Myriad::Transform();
         // AddComponent<TransformData>(_ptransform); //, _ptransform->Data());
         MYR_CORE_TRACE("Finished adding transform, but didn't actually add it");
+        m_components.push_back(mp_transform);
 
         name = "DefaultName";
         // entity.set()
@@ -35,6 +37,13 @@ namespace Myriad
     GameObject::~GameObject()
     {
         MYR_CORE_TRACE("Destructor for GameObject[{0}]", name);
+        std::list<ComponentBase *>::iterator it;
+        for (it = m_components.begin(); it != m_components.end(); ++it)
+        {
+            std::cout << "Delete component" << std::endl;
+            ComponentBase *component = *it;
+            delete component;
+        }
     }
 
     void GameObject::AddComponent(Myriad::ComponentBase *c)

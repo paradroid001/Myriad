@@ -8,6 +8,7 @@
 #include "Scene/SceneManager.h"
 #include "core/Camera.h"
 #include "core/Component.h"
+#include "core/ComponentBase.h"
 #include "core/GameObject.h"
 #include "core/Log.h"
 #include "core/MyrApplication.h"

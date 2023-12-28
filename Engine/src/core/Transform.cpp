@@ -1,6 +1,7 @@
 #include "Transform.h"
 #include "Component.h"
 #include "core.h"
+#include <iostream>
 
 namespace Myriad
 {
@@ -9,12 +10,16 @@ namespace Myriad
         SetComponentData(&_transformData);
         SetPosition(0, 0, 0);
     };
+
     Transform::Transform(Vector3 position) : Transform::Component()
     {
         this->SetPosition(position.x, position.y, position.z);
     }
 
-    Transform::~Transform(){};
+    Transform::~Transform()
+    {
+        std::cout << "Transform destructor" << std::endl;
+    }
 
     void Transform::SetPosition(float x, float y, float z)
     {

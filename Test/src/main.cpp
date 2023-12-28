@@ -15,18 +15,25 @@ class Test : public Myriad::MyrApplication
     {
         MYR_INFO("Test is running!");
 
-        Myriad::Window *w = new Myriad::Window();
-        w->SetFPS(60);
-        w->Init(800, 600, "Test Window");
+        Myriad::Window *win = new Myriad::Window();
+        win->SetFPS(60);
+        win->Init(800, 600, "Test Window");
+        Myriad::Camera *cam = new Myriad::Camera();
+        cam->SetBackgroundColour({0, 0, 0, 0});
 
-        while (!w->ShouldClose())
+        Myriad::GameObject *gobject = new Myriad::GameObject();
+
+        while (!win->ShouldClose())
         {
-            // Something in here is causing that crash on windows...
-            // And it's not clearbackground...
-            BeginDrawing();
-            //   ClearBackground({0, 0, 0, 0});
-            EndDrawing();
+            cam->Draw();
+            // Want to use these on windows? Need to build 'special'
+            // See Readme.md
+            // BeginDrawing();
+            // ClearBackground({0, 0, 128, 255});
+            // EndDrawing();
         }
+
+        delete gobject;
     }
 };
 
