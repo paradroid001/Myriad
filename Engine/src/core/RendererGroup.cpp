@@ -18,16 +18,17 @@ namespace Myriad
         // Destructor
         MYR_CORE_TRACE("Renderergroup destructor");
     }
-    void RendererGroup::Add(Renderer *renderer)
+    void RendererGroup::add(Renderer &renderer)
     {
-        m_rendererList.push_back(renderer);
+        m_rendererList.push_back(&renderer);
     }
-    void RendererGroup::Remove(Renderer *renderer)
+    void RendererGroup::remove(Renderer &renderer)
     {
-        m_rendererList.remove(renderer);
+        m_rendererList.remove(&renderer);
     }
-    int RendererGroup::Count() { return m_rendererList.size(); }
-    Renderer *RendererGroup::Iterate()
+    int RendererGroup::count() { return m_rendererList.size(); }
+
+    Renderer *RendererGroup::iterate()
     {
         if (!iterating)
         {
@@ -47,10 +48,10 @@ namespace Myriad
         return (Renderer *)*m_iterator;
     }
 
-    void RendererGroup::Draw()
+    void RendererGroup::draw()
     {
         Renderer *current;
-        while ((current = Iterate()) != NULL)
+        while ((current = iterate()) != NULL)
         {
             TransformData tdata;
             // TODO this is just a test

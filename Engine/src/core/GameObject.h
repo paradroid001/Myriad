@@ -51,12 +51,12 @@ namespace Myriad
         void OnEnable() override;
         void OnDisable() override;
 
-        int GetNumChildren();
-        GameObjectBase **GetChildren();
-        GameObjectBase *GetChild(int i);
-        int AddChild(GameObjectBase *child);
-        int RemoveChild(GameObjectBase *child);
-        int RemoveChildn(int n);
+        int GetNumChildren() override;
+        GameObjectBase **GetChildren() override;
+        GameObjectBase *GetChild(int i) override;
+        int AddChild(GameObjectBase *child) override;
+        int RemoveChild(GameObjectBase *child) override;
+        int RemoveChildn(int n) override;
 
         // Transform *const GetTransform();
         // std::string GetName();
@@ -76,7 +76,7 @@ namespace Myriad
 
         std::list<ComponentBase *> m_components;
         std::string name;
-        Myriad::Transform *mp_transform;
+        Myriad::Transform m_transform;
     };
 } // namespace Myriad
 

@@ -34,10 +34,10 @@ class TestGameObject : public Myriad::GameObject
     virtual void Draw()
     {
         Myriad::TransformData *transformData =
-            (Myriad::TransformData *)mp_transform->Data();
+            (Myriad::TransformData *)m_transform.Data();
         renderer.Draw(*transformData);
     }
-    virtual Myriad::Transform &GetTransform() { return *mp_transform; }
+    virtual Myriad::Transform &GetTransform() { return m_transform; }
     virtual Myriad::Renderer &GetRenderer() { return renderer; }
 
   protected:

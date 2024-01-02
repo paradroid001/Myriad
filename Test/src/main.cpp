@@ -34,10 +34,6 @@ class Test : public Myriad::MyrApplication
         pMyscene->AddGameObject(*gobject);
         pMyscene->AddGameObject(*gentity);
 
-        std::list<Myriad::Renderer *> renderers;
-        TestRenderer *t1 = new TestRenderer();
-        gobject->AddComponent(t1);
-
         TestGameObject testObject1;
         Myriad::Transform testObjectTransform = testObject1.GetTransform();
 
@@ -55,7 +51,7 @@ class Test : public Myriad::MyrApplication
         drawObjects.push_back(&testObject1);
 
         Myriad::RendererGroup rgroup;
-        rgroup.Add(&(testObject1.GetRenderer()));
+        rgroup.add(testObject1.GetRenderer());
 
         while (!win->ShouldClose())
         {
@@ -70,7 +66,7 @@ class Test : public Myriad::MyrApplication
         pMyscene->RemoveGameObject(*gobject);
         pMyscene->RemoveGameObject(*gentity);
 
-        rgroup.Remove(&(testObject1.GetRenderer()));
+        rgroup.remove(testObject1.GetRenderer());
 
         delete gobject;
         delete gentity;

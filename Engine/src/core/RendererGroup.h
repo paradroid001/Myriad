@@ -10,18 +10,18 @@ using std::list;
 
 namespace Myriad
 {
-    class MYR_API RendererGroup : public IGroup<Renderer *>
+    class MYR_API RendererGroup : public IGroup<Renderer>
     {
       public:
         RendererGroup();
         virtual ~RendererGroup();
-        virtual void Add(Renderer *r) override;
-        virtual void Remove(Renderer *r) override;
-        virtual int Count() override;
-        virtual Renderer *Iterate() override;
+        virtual void add(Renderer &r) override;
+        virtual void remove(Renderer &r) override;
+        virtual int count() override;
+        virtual Renderer *iterate() override;
 
         // RendererGroup specifically can Draw.
-        virtual void Draw();
+        virtual void draw();
 
       protected:
         std::list<Renderer *> m_rendererList;

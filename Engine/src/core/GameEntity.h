@@ -6,8 +6,8 @@
 #include "core.h"
 
 #include "Entities/EntityManager.h"
+#include "GameObjectBase.h"
 #include "core/ComponentBase.h"
-#include "core/GameObjectBase.h"
 // TODO would be nice to not have to include flecs.
 // Everything should be in EntityManager
 #include "flecs.h"
@@ -29,12 +29,12 @@ namespace Myriad
         void OnEnable() override;
         void OnDisable() override;
 
-        int GetNumChildren();
-        GameObjectBase **GetChildren();
-        GameObjectBase *GetChild(int i);
-        int AddChild(GameObjectBase *child);
-        int RemoveChild(GameObjectBase *child);
-        int RemoveChildn(int n);
+        int GetNumChildren() override;
+        GameObjectBase **GetChildren() override;
+        GameObjectBase *GetChild(int i) override;
+        int AddChild(GameObjectBase *child) override;
+        int RemoveChild(GameObjectBase *child) override;
+        int RemoveChildn(int n) override;
     };
 } // namespace Myriad
 

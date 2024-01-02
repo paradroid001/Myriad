@@ -25,11 +25,11 @@ namespace Myriad
         //  entity.add<GameObjectData>();
         //  entity.set<GameObjectData>(_internalData);
 
-        MYR_CORE_TRACE("Gameobject is adding transform");
-        mp_transform = new Myriad::Transform();
-        // AddComponent<TransformData>(_ptransform); //, _ptransform->Data());
-        MYR_CORE_TRACE("Finished adding transform, but didn't actually add it");
-        m_components.push_back(mp_transform);
+        // MYR_CORE_TRACE("Gameobject is adding transform");
+        // mp_transform = new Myriad::Transform();
+        //  AddComponent<TransformData>(_ptransform); //, _ptransform->Data());
+        MYR_CORE_TRACE("GameObject Adding transform component");
+        m_components.push_back(&m_transform);
 
         name = "DefaultName";
         // entity.set()
@@ -41,9 +41,16 @@ namespace Myriad
         std::list<ComponentBase *>::iterator it;
         for (it = m_components.begin(); it != m_components.end(); ++it)
         {
-            std::cout << "Delete component" << std::endl;
-            ComponentBase *component = *it;
-            delete component;
+            if (*it != &m_transform)
+            {
+                MYR_CORE_TRACE("Delete component");
+                ComponentBase *component = *it;
+                delete component;
+            }
+            else
+            {
+                MYR_CORE_TRACE("Refusing to delete transform");
+            }
         }
     }
 

@@ -96,7 +96,7 @@ namespace Myriad
         // query for everything with a transform.
         drawSystem.run();
         */
-        renderers.Draw();
+        renderers.draw();
         EndDrawing();
     }
 

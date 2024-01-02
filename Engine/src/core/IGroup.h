@@ -10,10 +10,10 @@ namespace Myriad
       public:
         // TODO do I really need this destructor?
         virtual ~IGroup(){};
-        virtual void Add(T) = 0;
-        virtual void Remove(T) = 0;
-        virtual int Count() = 0;
-        virtual T Iterate() = 0;
+        virtual void add(T &) = 0;
+        virtual void remove(T &) = 0;
+        virtual int count() = 0;
+        virtual T *iterate() = 0;
     };
 } // namespace Myriad
 
