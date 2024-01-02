@@ -10,7 +10,7 @@ CC			:= zig cc -target $(TARGET_PLATFORM)
 PRECOMPILED_STL := src/stl-$(TARGET_ARCH)-$(TARGET_OS)-$(TARGET_LIBC).pch
 
 LFLAGS		?= -shared -l raylib -L$(BIN_DIR)
-CFLAGS		?= -std=c++17 -fPIC -I src -Ivendor/spdlog/include -Ivendor/raylib/src -D$(TARGET_PLATFORM) # -Ivendor/flecs 
+CFLAGS		?= -std=c++17 -fPIC -I src -Ivendor/spdlog/include -Ivendor/raylib/src -Ivendor/flecs -D$(TARGET_PLATFORM) 
 
 ifeq ($(TARGET_OS),windows)
     CFLAGS += -DMYR_PLATFORM_WINDOWS -DMYR_BUILD_DLL

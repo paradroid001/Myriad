@@ -7,6 +7,8 @@
 // #include "flecs.h"
 
 // don't #include "MyriadConfig.h" for now
+#include "GameObject.h"
+#include "RendererGroup.h"
 #include "core.h"
 
 namespace Myriad
@@ -19,7 +21,7 @@ namespace Myriad
         Camera();
         ~Camera();
         void SetBackgroundColour(Myriad::MyrColour c);
-        void Draw(); // std::list<Myriad::GameObject *> *drawlist);
+        void Draw(RendererGroup &renderers);
 
       private:
         Myriad::MyrColour backgroundColour;

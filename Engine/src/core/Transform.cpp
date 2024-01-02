@@ -1,6 +1,7 @@
-#include "Transform.h"
-#include "Component.h"
+#include "core/Transform.h"
 #include "core.h"
+#include "core/Component.h"
+#include "core/Log.h"
 #include <iostream>
 
 namespace Myriad
@@ -16,10 +17,7 @@ namespace Myriad
         this->SetPosition(position.x, position.y, position.z);
     }
 
-    Transform::~Transform()
-    {
-        std::cout << "Transform destructor" << std::endl;
-    }
+    Transform::~Transform() { MYR_CORE_TRACE("Transform destructor"); }
 
     void Transform::SetPosition(float x, float y, float z)
     {

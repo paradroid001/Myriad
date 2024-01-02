@@ -2,23 +2,22 @@
 #define __GAMEOBJECTBASE_H_
 
 #include "ComponentBase.h"
-#include "core.h"
-#include <iostream>
 #include "IComponentContainer.h"
 #include "IEnableable.h"
+#include "core.h"
+#include <iostream>
 
 namespace Myriad
 {
-    class MYR_API GameObjectBase : public IEnableable, public IComponentContainer
+    class MYR_API GameObjectBase : public IEnableable,
+                                   public IComponentContainer
     {
       public:
-        // GameObjectBase();
+        // TODO: does this class need a virtual destructor
+        // (plus implementation)?
         // virtual ~GameObjectBase();
-        virtual void AddComponent(ComponentBase *c) = 0;
-        virtual void RemoveComponent(ComponentBase *c) = 0;
-        // template <typename T> const ComponentBase *GetComponent();
-        virtual int GetNumChildren() = 0;
 
+        virtual int GetNumChildren() = 0;
         // TODO I feel like this should actually be an
         // array of references, but see below..
         virtual GameObjectBase **GetChildren() = 0;
@@ -30,10 +29,17 @@ namespace Myriad
         virtual int RemoveChild(GameObjectBase *child) = 0;
         virtual int RemoveChildn(int n) = 0;
 
-        virtual void Enable() = 0;
-        virtual void Disable() = 0;
-        virtual void OnEnable() = 0;
-        virtual void OnDisable() = 0;
+        // For IComponentContainer
+        // virtual void AddComponent(ComponentBase *c) = 0;
+        // virtual void RemoveComponent(ComponentBase *c) = 0;
+        // virtual ComponentBase* GetComponentByName(std::string& name) = 0;
+        // template <typename T> const ComponentBase *GetComponent();
+
+        // For IEnableable
+        // virtual void Enable() = 0;
+        // virtual void Disable() = 0;
+        // virtual void OnEnable() = 0;
+        // virtual void OnDisable() = 0;
     };
 } // namespace Myriad
 

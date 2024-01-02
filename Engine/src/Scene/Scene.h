@@ -1,7 +1,10 @@
 #ifndef __SCENE_H_
 #define __SCENE_H_
 
+#include "../core/GameObject.h"
 #include "../core/core.h"
+// #include "core/ComponentBase.h"
+#include <list>
 #include <string>
 
 namespace Myriad
@@ -23,9 +26,13 @@ namespace Myriad
             inline int GetSceneID() { return sceneId; }
             inline void SetSceneID(int id) { sceneId = id; }
 
+            void AddGameObject(GameObjectBase &obj);
+            void RemoveGameObject(GameObjectBase &obj);
+
           protected:
             int sceneId;
             std::string sceneName;
+            std::list<GameObjectBase *> gameObjects;
         };
     } // namespace Scene
 

@@ -2,6 +2,8 @@
 #define __RENDERER_H_
 
 #include "Component.h"
+#include "Types2D.h"
+#include "core.h"
 
 namespace Myriad
 {
@@ -27,8 +29,16 @@ namespace Myriad
             // derived implementation during construction.
             SetComponentData(&_renderData);
         };
+        virtual ~Renderer();
         virtual void Draw(TransformData t);
         // ComponentData *Data() { return &_internalData; }
+        static void MyrDrawCircle(float x, float y, float rad,
+                                  Myriad::MyrColour colour);
+        static void MyrDrawTriangle(Myriad::Vector2 p1, Myriad::Vector2 p2,
+                                    Myriad::Vector2 p3,
+                                    Myriad::MyrColour colour);
+        static void MyrDrawText(const char *text, float x, float y,
+                                float lineheight, Myriad::MyrColour colour);
 
       protected:
         RendererData _renderData;

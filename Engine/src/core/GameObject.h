@@ -44,7 +44,7 @@ namespace Myriad
 
         void AddComponent(ComponentBase *c) override;
         void RemoveComponent(ComponentBase *c) override;
-        ComponentBase* GetComponentByName(std::string& name) override;
+        ComponentBase *GetComponentByName(std::string &name) override;
 
         void Enable() override;
         void Disable() override;
@@ -57,13 +57,15 @@ namespace Myriad
         int AddChild(GameObjectBase *child);
         int RemoveChild(GameObjectBase *child);
         int RemoveChildn(int n);
-        
+
         // Transform *const GetTransform();
         // std::string GetName();
         // void SetName(const char *newname);
 
         // virtual void Update();
-        // virtual void Draw();
+
+        // TODO this is just for testing.
+        virtual void Draw();
         // virtual void DrawCircleShape(float x, float y, float r, MyrColour c);
         // Myriad::Entities::Entity &Entity() { return entity; };
         // GameObjectData *Data() { return &_internalData; }

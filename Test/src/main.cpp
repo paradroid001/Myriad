@@ -1,6 +1,11 @@
+// TODO: get rid of this, which is complicated
+// because of types2d.h but should be fixable.
 #include "raylib.h"
+
 #include <core/MyrEntryPoint.h>
 #include <myriad.h>
+
+#include "TestRenderer.h"
 
 class Test : public Myriad::MyrApplication
 {
@@ -22,10 +27,39 @@ class Test : public Myriad::MyrApplication
         cam->SetBackgroundColour({0, 0, 0, 0});
 
         Myriad::GameObject *gobject = new Myriad::GameObject();
+        Myriad::GameEntity *gentity = new Myriad::GameEntity();
+
+        Myriad::Scene::Scene *pMyscene = new Myriad::Scene::Scene("MyScene");
+
+        pMyscene->AddGameObject(*gobject);
+        pMyscene->AddGameObject(*gentity);
+
+        std::list<Myriad::Renderer *> renderers;
+        TestRenderer *t1 = new TestRenderer();
+        gobject->AddComponent(t1);
+
+        TestGameObject testObject1;
+        Myriad::Transform testObjectTransform = testObject1.GetTransform();
+
+        // TODO: this didn't work
+        testObjectTransform.SetPosition(400, 400, 0);
+        Myriad::TransformData *tdata =
+            (Myriad::TransformData *)testObjectTransform.Data();
+        MYR_TRACE("Tdata address = {0:x}", (size_t)tdata);
+        MYR_TRACE("Tdata = {0}, {1}", tdata->position.x, tdata->position.y);
+        // TODO: had to resort to this
+        tdata->position.x = 400;
+        tdata->position.y = 400;
+
+        std::list<Myriad::GameObject *> drawObjects;
+        drawObjects.push_back(&testObject1);
+
+        Myriad::RendererGroup rgroup;
+        rgroup.Add(&(testObject1.GetRenderer()));
 
         while (!win->ShouldClose())
         {
-            cam->Draw();
+            cam->Draw(rgroup);
             // Want to use these on windows? Need to build 'special'
             // See Readme.md
             // BeginDrawing();
@@ -33,7 +67,14 @@ class Test : public Myriad::MyrApplication
             // EndDrawing();
         }
 
+        pMyscene->RemoveGameObject(*gobject);
+        pMyscene->RemoveGameObject(*gentity);
+
+        rgroup.Remove(&(testObject1.GetRenderer()));
+
         delete gobject;
+        delete gentity;
+        delete pMyscene;
     }
 };
 

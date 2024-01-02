@@ -32,10 +32,7 @@ namespace Myriad
         void OnEnable() override;
         void OnDisable() override;
 
-        inline std::string& GetName() override 
-        {
-            return m_name;
-        }
+        inline std::string &GetName() override { return m_name; }
 
         inline void SetGameObject(GameObject *pgo)
         {
@@ -53,14 +50,14 @@ namespace Myriad
         // to call it.in constructor
         virtual void SetComponentData(ComponentData *data)
         {
-            //_pdata = data;
-            //_pdata->pcomponent = this;
+            _pdata = data;
+            _pdata->p_component = this;
         }
 
-        // virtual ComponentData *Data() { return _pdata; };
+        virtual ComponentData *Data() { return _pdata; };
 
       protected:
-        // ComponentData *_pdata;
+        ComponentData *_pdata;
         bool _enabled;
         GameObjectBase *mp_gameObject;
         std::string m_name;

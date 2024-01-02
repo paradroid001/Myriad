@@ -11,6 +11,7 @@
 // Don't include Log here. It causes all sorts of link errors.
 //  #include "core/Log.h"
 #include "core/Renderer.h"
+#include "core/RendererGroup.h"
 #include "core/Transform.h"
 #include "core/Types2D.h"
 #include "core/Types3D.h"
@@ -63,7 +64,7 @@ namespace Myriad
         this->backgroundColour = c;
     }
 
-    void Camera::Draw() // std::list<Myriad::GameObject *> *drawlist)
+    void Camera::Draw(RendererGroup &renderers)
     {
         BeginDrawing();
         Color c;
@@ -79,7 +80,8 @@ namespace Myriad
 #if MYR_RENDERER == RAYLIB
         DrawCircleV(v, 20, YELLOW);
 #endif
-        /* OLD STD WAY
+
+        /* Old iterative way
         if (drawlist != NULL)
         {
             std::list<GameObject *>::iterator it;
@@ -91,11 +93,10 @@ namespace Myriad
         */
 
         /* NEW ECS WAY
+        // query for everything with a transform.
         drawSystem.run();
         */
-
-        // query for everything with a transform.
-
+        renderers.Draw();
         EndDrawing();
     }
 

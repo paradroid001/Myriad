@@ -4,9 +4,9 @@
 #include <list>
 #include <string>
 
+#include "GameObject.h"
 #include "Log.h"
 #include "core.h"
-#include "GameObject.h"
 // Include the config
 #include "MyriadConfig.h"
 
@@ -57,7 +57,7 @@ namespace Myriad
         MYR_CORE_TRACE("GameObject::RemoveComponent is not implemented.");
     }
 
-    ComponentBase* GameObject::GetComponentByName(std::string& name)
+    ComponentBase *GameObject::GetComponentByName(std::string &name)
     {
         return NULL;
     }
@@ -133,9 +133,11 @@ namespace Myriad
     {
         //   override me
     }
-
+    */
     void GameObject::Draw()
     {
+
+        /* OLD STUFF, DELETE
         Color c = GREEN;
         MyrColour mc;
         mc.r = c.r;
@@ -145,8 +147,9 @@ namespace Myriad
         // override me
         this->DrawCircleShape(_ptransform->position().x,
                               _ptransform->position().y, 20, mc);
+        */
     }
-
+    /*
     void GameObject::DrawCircleShape(float x, float y, float r, MyrColour c)
     {
 #if MYRIAD_RENDERER == RAYLIB
