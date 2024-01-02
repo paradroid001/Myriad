@@ -12,3 +12,7 @@
 [submodule "Engine/vendor/flecs"]
 	path = Engine/vendor/flecs
 	url = https://github.com/SanderMertens/flecs.git
+[submodule "Engine/vendor/catch2"]
+	path = Engine/vendor/catch2
+	url = https://github.com/catchorg/Catch2.git
+	branch = devel
