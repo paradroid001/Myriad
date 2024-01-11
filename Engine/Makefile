@@ -51,30 +51,19 @@ ifeq ($(RELEASE_PLATFORM), Android)
 	SUB_MAKEFILE := Makefile.ANDROID
 endif
 
-.PHONY: clean cleanlibs all
+.PHONY: clean cleanlibs all test
 
 #this line means all env variables / make flags are exported to subshells.
 export
 
 clean:
 	@make -f $(SUB_MAKEFILE) $@
-#	@make -f $(SUB_MAKEFILE) $@ \
-		TARGET_PLATFORM=$(TARGET_PLATFORM) \
-		RELEASE_PLATFORM=$(RELEASE_PLATFORM) \
-		BUILD_OS=$(BUILD_OS) \
-		BUILD_MODE=$(BUILD_MODE) \
-		INC_DIR=$(INC_DIR) \
-		OUTPUT_DIR=$(OUTPUT_DIR)
 
 cleanlibs:
 	@make -f $(SUB_MAKEFILE) $@
-#	@make -f $(SUB_MAKEFILE) $@ \
-		TARGET_PLATFORM=$(TARGET_PLATFORM) \
-		RELEASE_PLATFORM=$(RELEASE_PLATFORM) \
-		BUILD_OS=$(BUILD_OS) \
-		BUILD_MODE=$(BUILD_MODE) \
-		INC_DIR=$(INC_DIR) \
-		OUTPUT_DIR=$(OUTPUT_DIR)
+
+test:
+	@make -C test -f Makefile.test all
 
 all:
 

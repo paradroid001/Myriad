@@ -3,9 +3,6 @@
 
 // For client applications only, not for engine to include
 // #include "Entities/EntityManager.h"
-#include "Events/Event.h"
-#include "Scene/Scene.h"
-#include "Scene/SceneManager.h"
 #include "core/Camera.h"
 #include "core/Component.h"
 #include "core/ComponentBase.h"
@@ -19,6 +16,9 @@
 #include "core/Types3D.h"
 #include "core/Window.h"
 #include "core/core.h"
+#include "events/Event.h"
+#include "scene/Scene.h"
+#include "scene/SceneManager.h"
 
 // --- Entry Point ---
 // #include "core/MyrEntryPoint.h"

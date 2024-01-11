@@ -1,0 +1,37 @@
+BINARY_NAME = ../testEngine
+OBJ_DIR 	:= obj
+SRC_DIR		:= .
+CXX			:= zig c++ -target $(TARGET_PLATFORM)
+CFLAGS		?= -I../src -I../vendor/spdlog/include -I../vendor/raylib/src -I../vendor/catch2/extras
+LFLAGS		?= -lmyriad -L../$(BIN_DIR)
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+SOURCES		:=$(call rwildcard,$(SRC_DIR),*.cpp)
+TEST_OBJECTS :=$(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(patsubst %.cpp, %.o, $(SOURCES)))
+
+.PHONY: setup clean all run
+
+setup:
+	@$(MKDIR) $(OBJ_DIR)
+	cp ../vendor/catch2/extras/catch_amalgamated.cpp .
+
+clean:
+	@echo "Cleaning Tests:"
+	$(RM) $(BINARY_NAME)
+	@echo "Finished Cleaning"
+
+# also runs the tests
+all: setup $(BINARY_NAME)
+	LD_LIBRARY_PATH=../$(BIN_DIR) $(BINARY_NAME)
+
+$(BINARY_NAME): $(TEST_OBJECTS)
+	@echo "SRC_DIR is " $(SRC_DIR)
+	@echo "OBJ_DIR is " $(OBJ_DIR)
+	@echo "SOURCES=" $(SOURCES)
+	@echo "Need to build $(TEST_OBJECTS)"
+	@echo "Linking test binary $(BINARY_NAME) for $(TARGET_PLATFORM) on $(BUILD_OS)"
+	$(CXX) -o $(BINARY_NAME) $(TEST_OBJECTS) $(CFLAGS) $(LFLAGS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@echo "Building $@"
+	$(MKDIR) $(dir $@)
+	$(CXX) -c -MMD -MP $(CFLAGS) $< -o $@	

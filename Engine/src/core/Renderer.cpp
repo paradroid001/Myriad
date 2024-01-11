@@ -27,7 +27,12 @@ namespace Myriad
     void Renderer::MyrDrawTriangle(Myriad::Vector2 p1, Myriad::Vector2 p2,
                                    Myriad::Vector2 p3, Myriad::MyrColour colour)
     {
-        DrawTriangle(p1, p2, p3, {colour.r, colour.g, colour.b, colour.a});
+        ::Vector2 raylib_p1 = {p1.x, p1.y};
+        ::Vector2 raylib_p2 = {p2.x, p2.y};
+        ::Vector2 raylib_p3 = {p3.x, p3.y};
+
+        DrawTriangle(raylib_p1, raylib_p2, raylib_p3,
+                     {colour.r, colour.g, colour.b, colour.a});
     }
     // Static
     void Renderer::MyrDrawText(const char *text, float x, float y,

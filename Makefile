@@ -53,7 +53,7 @@ MODE    ?= Release
 		 BUILD_MODE=$(MODE)
 
 
-.PHONY: all clean cleanlibs docs rebuild
+.PHONY: all clean cleanlibs docs rebuild test
 default: all
 
 #Adding export so that all vars propagate to the submakefiles.
@@ -63,6 +63,9 @@ rebuild: clean all
 
 all:
 	make -C $(PROJECT) all
+
+test:
+	make -C $(PROJECT) test
 
 cleanlibs:
 	make -C $(PROJECT) cleanlibs

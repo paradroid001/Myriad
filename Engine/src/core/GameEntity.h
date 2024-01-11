@@ -5,12 +5,9 @@
 #include "IEnableable.h"
 #include "core.h"
 
-#include "Entities/EntityManager.h"
 #include "GameObjectBase.h"
 #include "core/ComponentBase.h"
-// TODO would be nice to not have to include flecs.
-// Everything should be in EntityManager
-#include "flecs.h"
+#include "entities/EntityManager.h"
 
 namespace Myriad
 {

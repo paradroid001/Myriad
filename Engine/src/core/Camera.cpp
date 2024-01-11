@@ -78,7 +78,7 @@ namespace Myriad
         v.x = 200;
         v.y = 200;
 #if MYR_RENDERER == RAYLIB
-        DrawCircleV(v, 20, YELLOW);
+        DrawCircleV({v.x, v.y}, 20, YELLOW);
 #endif
 
         /* Old iterative way

@@ -1,5 +1,7 @@
 #!/bin/sh
 make PROJECT=Engine all
-make PROJECT=Sample clean
-make PROJECT=Sample all
-LD_LIBRARY_PATH=./Sample/build/Desktop/Release/x86_64-linux ./Sample/build/Desktop/Release/x86_64-linux/sample
+make PROJECT=Engine test
+# Run Test
+LD_LIBRARY_PATH=Engine/build/Desktop/Release/x86_64-linux-gnu/bin/ Engine/testEngine
+# Run sample
+#LD_LIBRARY_PATH=./Sample/build/Desktop/Release/x86_64-linux ./Sample/build/Desktop/Release/x86_64-linux/sample
