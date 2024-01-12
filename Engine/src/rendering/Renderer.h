@@ -1,9 +1,9 @@
 #ifndef __RENDERER_H_
 #define __RENDERER_H_
 
-#include "Component.h"
-#include "Types2D.h"
-#include "core.h"
+#include "core/Component.h"
+#include "core/Types2D.h"
+#include "core/core.h"
 
 namespace Myriad
 {

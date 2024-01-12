@@ -1,12 +1,12 @@
 #ifndef __GAMEENTITY_H_
 #define __GAMEENTITY_H_
 
-#include "IComponentContainer.h"
-#include "IEnableable.h"
-#include "core.h"
+#include "core/IComponentContainer.h"
+#include "core/IEnableable.h"
+#include "core/core.h"
 
-#include "GameObjectBase.h"
 #include "core/ComponentBase.h"
+#include "core/GameObjectBase.h"
 #include "entities/EntityManager.h"
 
 namespace Myriad

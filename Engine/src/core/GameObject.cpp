@@ -5,8 +5,8 @@
 #include <string>
 
 #include "GameObject.h"
-#include "Log.h"
 #include "core.h"
+#include "io/Log.h"
 // Include the config
 #include "MyriadConfig.h"
 

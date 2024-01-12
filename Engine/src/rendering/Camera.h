@@ -7,9 +7,9 @@
 // #include "flecs.h"
 
 // don't #include "MyriadConfig.h" for now
-#include "GameObject.h"
-#include "RendererGroup.h"
-#include "core.h"
+#include "core/GameObject.h"
+#include "core/core.h"
+#include "rendering/RendererGroup.h"
 
 namespace Myriad
 {

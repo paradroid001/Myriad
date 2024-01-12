@@ -1,6 +1,6 @@
-#include "core/GameEntity.h"
+#include "GameEntity.h"
 // #include "MyriadConfig.h"
-#include "core/Log.h"
+#include "io/Log.h"
 
 namespace Myriad
 {

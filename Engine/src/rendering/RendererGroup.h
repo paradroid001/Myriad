@@ -1,9 +1,9 @@
 #ifndef __RENDERERGROUP_H_
 #define __RENDERERGROUP_H_
 
-#include "IGroup.h"
-#include "Renderer.h"
-#include "core.h"
+#include "core/IGroup.h"
+#include "core/core.h"
+#include "rendering/Renderer.h"
 
 #include <list>
 using std::list;

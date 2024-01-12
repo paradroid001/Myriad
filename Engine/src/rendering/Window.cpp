@@ -1,7 +1,7 @@
 #include "Window.h"
 
 #ifdef MYRIAD_INTERNAL
-    #include "MyriadConfig.h"
+    #include "core/MyriadConfig.h"
 #else
 // fwd declare the functions we use.
 void InitWindow(int width, int height, const char *title);

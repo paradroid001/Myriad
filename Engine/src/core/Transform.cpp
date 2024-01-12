@@ -1,7 +1,7 @@
 #include "core/Transform.h"
 #include "core.h"
 #include "core/Component.h"
-#include "core/Log.h"
+#include "io/Log.h"
 #include <iostream>
 
 namespace Myriad
@@ -10,6 +10,7 @@ namespace Myriad
     {
         SetComponentData(&_transformData);
         SetPosition(0, 0, 0);
+        Component::SetType(this);
     };
 
     Transform::Transform(Vector3 position) : Transform::Component()

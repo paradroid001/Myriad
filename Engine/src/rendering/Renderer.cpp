@@ -1,8 +1,8 @@
-#include "core/Renderer.h"
-#include "core.h"
-#include "core/Log.h"
+#include "rendering/Renderer.h"
 #include "core/Transform.h"
 #include "core/Types2D.h"
+#include "core/core.h"
+#include "io/Log.h"
 // Only include raylib if we're building internally.
 #ifdef MYRIAD_INTERNAL
     #include "raylib.h"

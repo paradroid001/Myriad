@@ -1,8 +1,8 @@
 #ifndef __MYRENTRYPOINT_H_
 #define __MYRENTRYPOINT_H_
 
-#include "Log.h"
 #include "MyrApplication.h"
+#include "io/Log.h"
 
 extern Myriad::MyrApplication *Myriad::CreateApplication(); // defined in
                                                             // client.

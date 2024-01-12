@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "core.h"
+#include "core/core.h"
 
 #if defined(_WIN32)
     #define NOGDI  // All GDI defines and routines

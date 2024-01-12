@@ -1,7 +1,7 @@
 #ifndef __WINDOW_H_
 #define __WINDOW_H_
 
-#include "core.h"
+#include "core/core.h"
 
 namespace Myriad
 {

@@ -3,20 +3,32 @@
 
 // For client applications only, not for engine to include
 // #include "Entities/EntityManager.h"
-#include "core/Camera.h"
+
+// core
 #include "core/Component.h"
 #include "core/ComponentBase.h"
-#include "core/GameEntity.h"
 #include "core/GameObject.h"
-#include "core/Log.h"
 #include "core/MyrApplication.h"
-#include "core/Renderer.h"
-#include "core/RendererGroup.h"
 #include "core/Transform.h"
 #include "core/Types3D.h"
-#include "core/Window.h"
 #include "core/core.h"
+
+// entities
+#include "entities/GameEntity.h"
+
+// events
 #include "events/Event.h"
+
+// io
+#include "io/Log.h"
+
+// rendering
+#include "rendering/Camera.h"
+#include "rendering/Renderer.h"
+#include "rendering/RendererGroup.h"
+#include "rendering/Window.h"
+
+// scene
 #include "scene/Scene.h"
 #include "scene/SceneManager.h"
 

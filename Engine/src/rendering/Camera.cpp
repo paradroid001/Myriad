@@ -1,4 +1,4 @@
-#include "core/Camera.h"
+#include "Camera.h"
 
 #include <list>
 
@@ -10,11 +10,11 @@
 #include "core/GameObject.h"
 // Don't include Log here. It causes all sorts of link errors.
 //  #include "core/Log.h"
-#include "core/Renderer.h"
-#include "core/RendererGroup.h"
 #include "core/Transform.h"
 #include "core/Types2D.h"
 #include "core/Types3D.h"
+#include "rendering/Renderer.h"
+#include "rendering/RendererGroup.h"
 
 namespace Myriad
 {

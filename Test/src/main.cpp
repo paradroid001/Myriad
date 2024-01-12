@@ -1,6 +1,6 @@
 // TODO: get rid of this, which is complicated
 // because of types2d.h but should be fixable.
-#include "raylib.h"
+// #include "raylib.h"
 
 #include <core/MyrEntryPoint.h>
 #include <myriad.h>
@@ -36,6 +36,9 @@ class Test : public Myriad::MyrApplication
 
         TestGameObject testObject1;
         Myriad::Transform testObjectTransform = testObject1.GetTransform();
+
+        std::cout << "Transform type: " << Myriad::Transform::GetType().name()
+                  << std::endl;
 
         // TODO: this didn't work
         testObjectTransform.SetPosition(400, 400, 0);

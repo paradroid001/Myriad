@@ -1,16 +1,12 @@
 #ifndef __EVENT_H_
 #define __EVENT_H_
 
-#ifdef USE_STL_PCH
-    #include "stl.h.gch"
-#else
-    #include <functional>
-    #include <list>
-    #include <map>
-    #include <typeindex>
-    #include <typeinfo>
-#endif
-#include "../core/core.h"
+#include "core/core.h"
+#include <functional>
+#include <list>
+#include <map>
+#include <typeindex>
+#include <typeinfo>
 
 namespace Myriad
 {

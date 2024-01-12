@@ -5,6 +5,8 @@
 #include "core.h"
 #include <iostream>
 #include <string>
+#include <typeindex>
+#include <typeinfo>
 
 namespace Myriad
 {
@@ -24,6 +26,9 @@ namespace Myriad
         Component();
         virtual ~Component();
         virtual void Init();
+
+        static std::type_index &GetType() { return _typeid; }
+
         //  GameObject *parent();
         void Enable() override;
         void Disable() override;
@@ -57,10 +62,13 @@ namespace Myriad
         virtual ComponentData *Data() { return _pdata; };
 
       protected:
+        static std::type_index _typeid;
         ComponentData *_pdata;
         bool _enabled;
         GameObjectBase *mp_gameObject;
         std::string m_name;
+
+        static void SetType(Component *p);
     };
 } // namespace Myriad
 #endif

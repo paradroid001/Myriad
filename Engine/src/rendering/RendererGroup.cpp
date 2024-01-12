@@ -1,7 +1,7 @@
-#include "Transform.h"
+#include "core/Transform.h"
 
-#include "Log.h"
 #include "RendererGroup.h"
+#include "io/Log.h"
 
 #include <cstdlib>
 
