@@ -1,8 +1,8 @@
 #ifndef __COMPONENTBASE_H_
 #define __COMPONENTBASE_H_
 
-#include "core.h" //for MYR_API
 // #include "GameObjectBase.h"
+#include "core.h" //for MYR_API
 #include "core/IEnableable.h"
 #include <string>
 
