@@ -23,13 +23,18 @@ class TestGameObject : public Myriad::GameObject
   public:
     TestGameObject() : Myriad::GameObject()
     {
+        //Set the renderer up with the transform of this gameobject
+        Myriad::RendererData *rd = (Myriad::RendererData*)renderer.Data();
+        rd->p_transformData = (Myriad::TransformData *)m_transform.Data();
+        
         // Add the renderer
         AddComponent(&renderer);
     }
     virtual ~TestGameObject()
     {
+        //let the gameobject destructor do this.
         // Remove the renderer
-        RemoveComponent(&renderer);
+        //RemoveComponent(&renderer);
     }
     virtual void Draw()
     {
@@ -37,7 +42,10 @@ class TestGameObject : public Myriad::GameObject
             (Myriad::TransformData *)m_transform.Data();
         renderer.Draw(*transformData);
     }
-    virtual Myriad::Transform &GetTransform() { return m_transform; }
+    
+    inline virtual Myriad::Transform & GetTransform() { return m_transform; }
+    inline virtual Myriad::Transform const & GetTransform() const { return m_transform; }
+    inline virtual Myriad::Transform * GetTransformP() {return &m_transform; }
     virtual Myriad::Renderer &GetRenderer() { return renderer; }
 
   protected:

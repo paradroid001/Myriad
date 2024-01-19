@@ -23,6 +23,7 @@ namespace Myriad
 
         virtual std::string &GetName() = 0;
         virtual const GameObjectBase *GetGameObject() = 0;
+        virtual const void SetGameObject(GameObjectBase *gob) = 0;
     };
 } // namespace Myriad
 

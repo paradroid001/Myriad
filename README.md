@@ -71,8 +71,8 @@ PROJECT=XXX TARGET_OS=windows make
 
 If you are using raylib functions directly in your client app, you need to build in a strange way:
 ```
-PROJECT=Engine TARGET_OS=windows cleanlibs
-PROJECT=Engine TARGET_OS=windows clean
+PROJECT=Engine TARGET_OS=windows make cleanlibs
+PROJECT=Engine TARGET_OS=windows make clean
 PROJECT=Engine TARGET_OS=windows RAYLIB_LIBTYPE=SHARED make
 ```
 This link will fail because of some dynamic lib paths. Continue without RAYLIB_LIBTYPE=SHARED:

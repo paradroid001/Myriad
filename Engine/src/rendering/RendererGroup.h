@@ -15,13 +15,13 @@ namespace Myriad
       public:
         RendererGroup();
         virtual ~RendererGroup();
-        virtual void add(Renderer &r) override;
-        virtual void remove(Renderer &r) override;
-        virtual int count() override;
-        virtual Renderer *iterate() override;
+        virtual void Add(Renderer &r) override;
+        virtual void Remove(Renderer &r) override;
+        virtual int Count() override;
+        virtual Renderer *Iterate() override;
 
         // RendererGroup specifically can Draw.
-        virtual void draw();
+        virtual void Draw();
 
       protected:
         std::list<Renderer *> m_rendererList;

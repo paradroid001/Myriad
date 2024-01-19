@@ -32,6 +32,11 @@ namespace Myriad
         {
             return s_ClientLogger;
         }
+        static void SetLogLevelTrace(std::shared_ptr<spdlog::logger> p_logger);
+        static void SetLogLevelWarn(std::shared_ptr<spdlog::logger> p_logger);
+        static void SetLogLevelInfo(std::shared_ptr<spdlog::logger> p_logger);
+        static void SetLogLevelError(std::shared_ptr<spdlog::logger> p_logger);
+        
 
       private:
         static std::shared_ptr<spdlog::logger> s_CoreLogger;

@@ -39,9 +39,9 @@ namespace Myriad
 
         inline std::string &GetName() override { return m_name; }
 
-        inline void SetGameObject(GameObject *pgo)
+        inline const void SetGameObject(GameObjectBase *pgo) override
         {
-            mp_gameObject = (GameObjectBase *)pgo;
+            mp_gameObject = pgo;
         }; // TODO: not if already assigned?
 
         inline const GameObjectBase *GetGameObject() override
@@ -59,14 +59,14 @@ namespace Myriad
             _pdata->p_component = this;
         }
 
-        virtual ComponentData *Data() { return _pdata; };
+        virtual ComponentData *Data() const { return _pdata; };
 
       protected:
         static std::type_index _typeid;
         ComponentData *_pdata;
         bool _enabled;
         GameObjectBase *mp_gameObject;
-        std::string m_name;
+        std::string m_name = "Component";
 
         static void SetType(Component *p);
     };

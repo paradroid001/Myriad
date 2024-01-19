@@ -19,17 +19,17 @@ namespace Myriad
         // Destructor
         MYR_CORE_TRACE("Renderergroup destructor");
     }
-    void RendererGroup::add(Renderer &renderer)
+    void RendererGroup::Add(Renderer &renderer)
     {
         m_rendererList.push_back(&renderer);
     }
-    void RendererGroup::remove(Renderer &renderer)
+    void RendererGroup::Remove(Renderer &renderer)
     {
         m_rendererList.remove(&renderer);
     }
-    int RendererGroup::count() { return m_rendererList.size(); }
+    int RendererGroup::Count() { return m_rendererList.size(); }
 
-    Renderer *RendererGroup::iterate()
+    Renderer *RendererGroup::Iterate()
     {
         if (!iterating)
         {
@@ -49,21 +49,21 @@ namespace Myriad
         return (Renderer *)*m_iterator;
     }
 
-    void RendererGroup::draw()
+    void RendererGroup::Draw()
     {
         Renderer *current;
-        while ((current = iterate()) != NULL)
+        while ((current = Iterate()) != NULL)
         {
-            TransformData tdata;
+            //TransformData tdata;
             // TODO this is just a test
-            tdata.position = {(float)(rand() % 100), (float)(rand() % 100),
-                              (float)(rand() % 100)};
+            //tdata.position = {(float)(rand() % 100), (float)(rand() % 100),
+            //                  (float)(rand() % 100)};
 
-            // current->Draw(tdata);
+            current->Draw();//tdata);
 
             // What if we tried to get the game object to handle it?
             // This doesn't work because it returns an interface or something...
-            ((GameObject *)current->GetGameObject())->Draw();
+            //((GameObject *)current->GetGameObject())->Draw();
         }
     }
 } // namespace Myriad

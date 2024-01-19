@@ -1,6 +1,7 @@
 #include "Component.h"
 // #include "GameObject.h"
 // #include "core.h"
+#include "io/Log.h"
 
 #include <iostream>
 #include <typeindex>
@@ -13,7 +14,7 @@ namespace Myriad
     void Component::SetType(Component *p)
     {
         _typeid = typeid(p);
-        std::cout << "Set typeid to " << _typeid.name() << std::endl;
+        MYR_CORE_TRACE("Set typeid to {0}",_typeid.name());
     }
 
     Component::Component() : ComponentBase()
@@ -22,10 +23,11 @@ namespace Myriad
         {
             Component::SetType(this);
         }
+        MYR_CORE_TRACE("ComponentCreated");
     };
     Component::~Component()
     {
-        std::cout << "Component Destructor" << std::endl;
+        MYR_CORE_TRACE("Component Destructor {0}", m_name);
     }
 
     void Component::Init(){};

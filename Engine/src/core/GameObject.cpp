@@ -16,7 +16,7 @@ namespace Myriad
 {
     GameObject::GameObject()
     {
-        std::cout << "Creating GameObject" << std::endl;
+        MYR_CORE_TRACE("Creating GameObject");
         // entity =
         // Myriad::Entities::EntityManager::Instance()->World().entity();
 
@@ -56,12 +56,16 @@ namespace Myriad
 
     void GameObject::AddComponent(Myriad::ComponentBase *c)
     {
-        MYR_CORE_TRACE("GameObject::AddComponent is not implemented.");
+        //MYR_CORE_TRACE("GameObject::AddComponent is not implemented.");
+        m_components.push_back(c);
+        c->SetGameObject(this);
     }
 
     void GameObject::RemoveComponent(Myriad::ComponentBase *c)
     {
-        MYR_CORE_TRACE("GameObject::RemoveComponent is not implemented.");
+        //MYR_CORE_TRACE("GameObject::RemoveComponent is not implemented.");
+        c->SetGameObject(NULL);
+        m_components.remove(c);
     }
 
     ComponentBase *GameObject::GetComponentByName(std::string &name)

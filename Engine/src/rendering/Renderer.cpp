@@ -11,9 +11,14 @@
 namespace Myriad
 {
     Renderer::~Renderer() { MYR_CORE_TRACE("Renderer destructor"); }
-    void Renderer::Draw(Myriad::TransformData t)
+    
+    void Renderer::Draw()
     {
-        DrawCircle(t.position.x, t.position.y, 5, {100, 50, 0, 255});
+        if (_renderData.p_transformData != NULL)
+        {
+            TransformData t = *(_renderData.p_transformData);
+            DrawCircle(t.position.x, t.position.y, 5, {100, 50, 0, 255});
+        }
     }
 
     // Static

@@ -18,4 +18,22 @@ namespace Myriad
         s_ClientLogger->set_level(spdlog::level::trace);
     }
 
+    void Log::SetLogLevelTrace(std::shared_ptr<spdlog::logger> p_logger)
+    {
+        p_logger->set_level(spdlog::level::trace);
+    }
+    void Log::SetLogLevelWarn(std::shared_ptr<spdlog::logger> p_logger)
+    {
+        p_logger->set_level(spdlog::level::warn);
+    }
+    void Log::SetLogLevelInfo(std::shared_ptr<spdlog::logger> p_logger)
+    {
+        p_logger->set_level(spdlog::level::info);
+    }
+    void Log::SetLogLevelError(std::shared_ptr<spdlog::logger> p_logger)
+    {
+        p_logger->set_level(spdlog::level::err);
+    }
+        
+
 } // namespace Myriad

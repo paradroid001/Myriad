@@ -2,6 +2,7 @@
 #define __RENDERER_H_
 
 #include "core/Component.h"
+#include "rendering/IDrawable.h"
 #include "core/Types2D.h"
 #include "core/core.h"
 
@@ -12,9 +13,10 @@ namespace Myriad
 
     struct RendererData : ComponentData
     {
+      TransformData * p_transformData;
     };
 
-    class MYR_API Renderer : public Myriad::Component
+    class MYR_API Renderer : public Myriad::Component, public Myriad::IDrawable
     {
       public:
         Renderer() : Myriad::Component()
@@ -30,7 +32,7 @@ namespace Myriad
             SetComponentData(&_renderData);
         };
         virtual ~Renderer();
-        virtual void Draw(TransformData t);
+        virtual void Draw() override;
         // ComponentData *Data() { return &_internalData; }
         static void MyrDrawCircle(float x, float y, float rad,
                                   Myriad::MyrColour colour);
