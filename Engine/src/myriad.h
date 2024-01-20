@@ -15,6 +15,7 @@
 
 // entities
 #include "entities/GameEntity.h"
+#include "entities/Updater.h"
 
 // events
 #include "events/Event.h"

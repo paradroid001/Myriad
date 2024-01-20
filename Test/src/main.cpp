@@ -24,7 +24,7 @@ class Test : public Myriad::MyrApplication
         MYR_INFO("Test is running!");
 
         //Myriad::Log::SetLogLevelError(Myriad::Log::GetCoreLogger());
-        //Myriad::Log::SetLogLevelError(Myriad::Log::GetClientLogger());
+        Myriad::Log::SetLogLevelError(Myriad::Log::GetClientLogger());
         
 
         Myriad::Window *win = new Myriad::Window();
@@ -63,21 +63,21 @@ class Test : public Myriad::MyrApplication
         Myriad::RendererGroup rgroup;
         rgroup.Add(testObject1.GetRenderer());
 
-        int numObjects = 1;
+        int numObjects = 100;
         TestGameObject objectsArray[numObjects];
         for (int i = 0; i < numObjects; i++)
         {
             MYR_TRACE("Game Object {0}", i);
             TestGameObject *tgo = &(objectsArray[i]);
-            MYR_TRACE("Getting Transform");
-            Myriad::Transform t = tgo->GetTransform();
-            Myriad::Transform *p_t = tgo->GetTransformP();
+            //MYR_TRACE("Getting Transform");
+            Myriad::Transform& t = tgo->GetTransform();
+            //Myriad::Transform *p_t = tgo->GetTransformP();
             
             
             //transform.SetPosition((float)(rand() % 100), (float)(rand() % 100),
             //                  (float)(rand() % 100));
             Myriad::ComponentData *cdata1 = t.Data();
-            MYR_TRACE("Address of data1 = {0:x}", (size_t)cdata1);
+            //MYR_TRACE("Address of data1 = {0:x}", (size_t)cdata1);
             //Myriad::ComponentData *cdata2 = p_t->Data();
             //MYR_TRACE("Address of data2 = {0:x}", (size_t)cdata2);
             

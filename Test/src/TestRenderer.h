@@ -2,6 +2,7 @@
 #define __TESTRENDERER_H_
 
 #include "myriad.h"
+#include <cstdlib>
 
 // #include "core/GameObject.h"
 // #include "core/Transform.h"
@@ -9,13 +10,55 @@
 class TestRenderer : public Myriad::Renderer
 {
   public:
-    TestRenderer() {}
+    TestRenderer() : Myriad::Renderer() {}
     virtual ~TestRenderer() {}
     virtual void Draw(Myriad::TransformData t)
     {
         Myriad::Renderer::MyrDrawCircle(t.position.x, t.position.y, 10,
                                         {255, 0, 0, 255});
     }
+};
+
+struct TestUpdateData: public Myriad::ComponentData
+{
+  public:
+    Myriad::Vector2 velocity;
+    Myriad::TransformData *p_transform;
+};
+
+class TestUpdater : public Myriad::Updater
+{
+  public:
+    TestUpdater() : Myriad::Updater()
+    {
+      SetComponentData(&m_updateData);
+      m_updateData.velocity.x = rand() % 6 + 3;
+      m_updateData.velocity.y = rand() % 6 + 3;
+    }
+    virtual ~TestUpdater(){}
+    inline virtual void Update(float dt) override
+    {
+      int x= m_updateData.p_transform->position.x;
+      int y= m_updateData.p_transform->position.y;
+
+      Myriad::Vector2 newp = {x + m_updateData.velocity.x, y + m_updateData.velocity.y};
+      if (newp.x < 0 || newp.x > 800)
+      {
+        m_updateData.velocity.x = -m_updateData.velocity.x;
+      }
+      if (newp.y < 0 || newp.y > 600)
+      {
+        m_updateData.velocity.y = -m_updateData.velocity.y;
+      }
+
+      
+
+      m_updateData.p_transform->position.x += m_updateData.velocity.x;
+      m_updateData.p_transform->position.y += m_updateData.velocity.y;
+      
+    }
+  protected:
+    TestUpdateData m_updateData;
 };
 
 class TestGameObject : public Myriad::GameObject
@@ -29,6 +72,10 @@ class TestGameObject : public Myriad::GameObject
         
         // Add the renderer
         AddComponent(&renderer);
+
+        TestUpdateData *ud = (TestUpdateData*)updater.Data();
+        ud->p_transform = rd->p_transformData;
+        AddComponent(&updater);
     }
     virtual ~TestGameObject()
     {
@@ -50,6 +97,7 @@ class TestGameObject : public Myriad::GameObject
 
   protected:
     TestRenderer renderer;
+    TestUpdater updater;
 };
 
 #endif
