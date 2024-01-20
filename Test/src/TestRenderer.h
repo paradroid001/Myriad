@@ -94,6 +94,7 @@ class TestGameObject : public Myriad::GameObject
     inline virtual Myriad::Transform const & GetTransform() const { return m_transform; }
     inline virtual Myriad::Transform * GetTransformP() {return &m_transform; }
     virtual Myriad::Renderer &GetRenderer() { return renderer; }
+    virtual Myriad::Updater &GetUpdater() { return updater; }
 
   protected:
     TestRenderer renderer;

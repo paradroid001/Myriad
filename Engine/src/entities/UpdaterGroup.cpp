@@ -1,34 +1,25 @@
+#include "entities/Updater.h"
 #include "entities/UpdaterGroup.h"
-#include "core/IUpdateable.h"
+#include "io/Log.h"
+
 
 namespace Myriad
 {
-    UpdaterGroup::UpdaterGroup()
+    UpdaterGroup::UpdaterGroup() : GroupList<Updater>()
     {
-        iterating = false;
+        MYR_CORE_TRACE("Updatergroup constructor");
     }
     UpdaterGroup::~UpdaterGroup()
     {
-
+        MYR_CORE_TRACE("Updatergroup destructor");
     }
-    void UpdaterGroup::Add(IUpdateable& updateable)
-    {
-
-    }
-    void UpdaterGroup::Remove(IUpdateable& updateable)
-    {
-
-    }
-    int UpdaterGroup::Count()
-    {
-        return 0;
-    }
-    IUpdateable* UpdaterGroup::Iterate()
-    {
-        return NULL;
-    }
+    
     void UpdaterGroup::Update(float dt)
     {
-
+        Updater* current;
+        while ((current = Iterate()) != NULL)
+        {
+            current->Update(dt);
+        }
     }
 }

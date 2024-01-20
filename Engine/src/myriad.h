@@ -12,10 +12,14 @@
 #include "core/Transform.h"
 #include "core/Types3D.h"
 #include "core/core.h"
+#include "core/IGroup.h"
+#include "core/GroupList.h"
+
 
 // entities
 #include "entities/GameEntity.h"
 #include "entities/Updater.h"
+#include "entities/UpdaterGroup.h"
 
 // events
 #include "events/Event.h"

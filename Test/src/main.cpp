@@ -5,7 +5,7 @@
 #include <core/MyrEntryPoint.h>
 #include <myriad.h>
 
-#include "raylib.h"
+//#include "raylib.h"
 #include "TestRenderer.h"
 
 #include <cstdlib>
@@ -61,9 +61,10 @@ class Test : public Myriad::MyrApplication
         drawObjects.push_back(&testObject1);
 
         Myriad::RendererGroup rgroup;
+        Myriad::UpdaterGroup ugroup;
         rgroup.Add(testObject1.GetRenderer());
 
-        int numObjects = 100;
+        int numObjects = 800;
         TestGameObject objectsArray[numObjects];
         for (int i = 0; i < numObjects; i++)
         {
@@ -87,6 +88,7 @@ class Test : public Myriad::MyrApplication
             tdata->position.x = (float)(rand() % 400);
             tdata->position.y = (float)(rand() % 400);
             rgroup.Add(tgo->GetRenderer());
+            ugroup.Add(tgo->GetUpdater());
             MYR_TRACE("Done with iteration {0}", i);
             //Notice that now we get component destructor
             //as this guy falls off the stack.
@@ -99,6 +101,7 @@ class Test : public Myriad::MyrApplication
 
         while (!win->ShouldClose())
         {
+            ugroup.Update(1);
             cam->Draw(rgroup);
             
             // Want to use these on windows? Need to build 'special'
