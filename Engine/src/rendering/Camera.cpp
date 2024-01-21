@@ -97,6 +97,7 @@ namespace Myriad
         drawSystem.run();
         */
         renderers.Draw();
+        DrawFPS(0,0);
         EndDrawing();
     }
 

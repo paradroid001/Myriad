@@ -114,3 +114,10 @@ cd build
 mv libmyriad.so libmyriad.dll
 sample.exe
 ```
+
+# Coding Style
+
+- Classes should be named PascalCase, i.e. RendererGroup, InputManager
+- Variable names are camelCase, i.e. distanceToTarget.
+- Member variables don't require m_, they're just normal names, including pointers.
+- Braces { } on next line, even for trivial functions { return x; }

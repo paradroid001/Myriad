@@ -5,7 +5,6 @@
 #include <core/MyrEntryPoint.h>
 #include <myriad.h>
 
-//#include "raylib.h"
 #include "TestRenderer.h"
 
 #include <cstdlib>
@@ -13,18 +12,27 @@
 class Test : public Myriad::MyrApplication
 {
   public:
+    Myriad::AudioManager& audioManager = Myriad::AudioManager::GetInstance();
+    Myriad::InputManager& inputManager = Myriad::InputManager::GetInstance();
+    
     Test()
     {
         // Init the application here
         MYR_INFO("Test starting");
+        audioManager.SetChannelVolume("default", 0.4f);
     };
-    ~Test() { MYR_INFO("Test destructing"); };
+    
+    ~Test()
+    { 
+        MYR_INFO("Test destructing");
+    };
+    
     void Run()
     {
         MYR_INFO("Test is running!");
 
         //Myriad::Log::SetLogLevelError(Myriad::Log::GetCoreLogger());
-        Myriad::Log::SetLogLevelError(Myriad::Log::GetClientLogger());
+        //Myriad::Log::SetLogLevelError(Myriad::Log::GetClientLogger());
         
 
         Myriad::Window *win = new Myriad::Window();
@@ -64,46 +72,43 @@ class Test : public Myriad::MyrApplication
         Myriad::UpdaterGroup ugroup;
         rgroup.Add(testObject1.GetRenderer());
 
-        int numObjects = 800;
+        int numObjects = 1000;
         TestGameObject objectsArray[numObjects];
         for (int i = 0; i < numObjects; i++)
         {
             MYR_TRACE("Game Object {0}", i);
             TestGameObject *tgo = &(objectsArray[i]);
-            //MYR_TRACE("Getting Transform");
+            //Because this is a reference and not a full
+            //local object, it won't trigger a destructor.
             Myriad::Transform& t = tgo->GetTransform();
-            //Myriad::Transform *p_t = tgo->GetTransformP();
             
-            
-            //transform.SetPosition((float)(rand() % 100), (float)(rand() % 100),
-            //                  (float)(rand() % 100));
+            //To set the position you could do this:
+            t.SetPosition((float)(rand() % 400), (float)(rand() % 400),
+                          (float)(rand() % 400));
+            //Or this:
+            /*
             Myriad::ComponentData *cdata1 = t.Data();
-            //MYR_TRACE("Address of data1 = {0:x}", (size_t)cdata1);
-            //Myriad::ComponentData *cdata2 = p_t->Data();
-            //MYR_TRACE("Address of data2 = {0:x}", (size_t)cdata2);
-            
-            
             Myriad::TransformData *tdata =
                 (Myriad::TransformData *)(cdata1);
             tdata->position.x = (float)(rand() % 400);
             tdata->position.y = (float)(rand() % 400);
+            */
+            
             rgroup.Add(tgo->GetRenderer());
             ugroup.Add(tgo->GetUpdater());
             MYR_TRACE("Done with iteration {0}", i);
-            //Notice that now we get component destructor
-            //as this guy falls off the stack.
-            //But we don't get a component created, because
-            //i guess the copy constructor was used on
-            //line 73.
-            //I don't seem to be able to return a pointer to the
-            //transform, it just crashes when i call ->Data() :(
         }
 
         while (!win->ShouldClose())
         {
             ugroup.Update(1);
             cam->Draw(rgroup);
-            
+
+            if (inputManager.IsKeyDown(Myriad::Key::KEY_A))
+            {
+                MYR_TRACE("A was pressed");
+            }
+
             // Want to use these on windows? Need to build 'special'
             // See Readme.md
             //BeginDrawing();

@@ -14,7 +14,10 @@
 #include "core/core.h"
 #include "core/IGroup.h"
 #include "core/GroupList.h"
+#include "core/Singleton.h" //in case clients want to make singletons?
 
+// audio
+#include "audio/AudioManager.h"
 
 // entities
 #include "entities/GameEntity.h"
@@ -25,6 +28,7 @@
 #include "events/Event.h"
 
 // io
+#include "io/InputManager.h"
 #include "io/Log.h"
 
 // rendering
