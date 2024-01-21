@@ -8,13 +8,13 @@
 #include "core/Component.h"
 #include "core/ComponentBase.h"
 #include "core/GameObject.h"
+#include "core/GroupList.h"
+#include "core/IGroup.h"
 #include "core/MyrApplication.h"
+#include "core/Singleton.h" //in case clients want to make singletons?
 #include "core/Transform.h"
 #include "core/Types3D.h"
 #include "core/core.h"
-#include "core/IGroup.h"
-#include "core/GroupList.h"
-#include "core/Singleton.h" //in case clients want to make singletons?
 
 // audio
 #include "audio/AudioManager.h"
@@ -29,6 +29,7 @@
 
 // io
 #include "io/InputManager.h"
+#include "io/Json.h"
 #include "io/Log.h"
 
 // rendering

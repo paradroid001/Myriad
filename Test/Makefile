@@ -14,7 +14,7 @@ TARGET				?= test
 BINARY				?= a.out
 CXX					= zig c++ -target $(TARGET_PLATFORM)
 CFLAGS				?= -std=c++17
-INCLUDES			?= -I../Engine/vendor/spdlog/include -I../Engine/vendor/Remotery/lib -I../Engine/vendor/flecs -I../Engine/vendor/raylib/src
+INCLUDES			?= -I../Engine/vendor/spdlog/include -I../Engine/vendor/Remotery/lib -I../Engine/vendor/flecs -I../Engine/vendor/raylib/src -I../Engine/vendor/json/include
 #LFLAGS				+= -L.
 #LFLAGS				+= -L $(MYRIAD_LIB)
 OBJECTS				:= $(OBJ_DIR)/main.o# $(OBJ_DIR)/Dot.o# $(OBJ_DIR)/flecs.o

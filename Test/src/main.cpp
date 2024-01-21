@@ -12,28 +12,27 @@
 class Test : public Myriad::MyrApplication
 {
   public:
-    Myriad::AudioManager& audioManager = Myriad::AudioManager::GetInstance();
-    Myriad::InputManager& inputManager = Myriad::InputManager::GetInstance();
-    
+    Myriad::AudioManager &audioManager = Myriad::AudioManager::GetInstance();
+    Myriad::InputManager &inputManager = Myriad::InputManager::GetInstance();
+
     Test()
     {
         // Init the application here
         MYR_INFO("Test starting");
         audioManager.SetChannelVolume("default", 0.4f);
+        Myriad::Json Json;
+        nlohmann::json data = Json.ReadJson("example.json");
+        std::cout << data.dump(4) << std::endl;
     };
-    
-    ~Test()
-    { 
-        MYR_INFO("Test destructing");
-    };
-    
+
+    ~Test() { MYR_INFO("Test destructing"); };
+
     void Run()
     {
         MYR_INFO("Test is running!");
 
-        //Myriad::Log::SetLogLevelError(Myriad::Log::GetCoreLogger());
-        //Myriad::Log::SetLogLevelError(Myriad::Log::GetClientLogger());
-        
+        // Myriad::Log::SetLogLevelError(Myriad::Log::GetCoreLogger());
+        // Myriad::Log::SetLogLevelError(Myriad::Log::GetClientLogger());
 
         Myriad::Window *win = new Myriad::Window();
         win->SetFPS(60);
@@ -72,20 +71,20 @@ class Test : public Myriad::MyrApplication
         Myriad::UpdaterGroup ugroup;
         rgroup.Add(testObject1.GetRenderer());
 
-        int numObjects = 1000;
+        int numObjects = 1;
         TestGameObject objectsArray[numObjects];
         for (int i = 0; i < numObjects; i++)
         {
             MYR_TRACE("Game Object {0}", i);
             TestGameObject *tgo = &(objectsArray[i]);
-            //Because this is a reference and not a full
-            //local object, it won't trigger a destructor.
-            Myriad::Transform& t = tgo->GetTransform();
-            
-            //To set the position you could do this:
+            // Because this is a reference and not a full
+            // local object, it won't trigger a destructor.
+            Myriad::Transform &t = tgo->GetTransform();
+
+            // To set the position you could do this:
             t.SetPosition((float)(rand() % 400), (float)(rand() % 400),
                           (float)(rand() % 400));
-            //Or this:
+            // Or this:
             /*
             Myriad::ComponentData *cdata1 = t.Data();
             Myriad::TransformData *tdata =
@@ -93,7 +92,7 @@ class Test : public Myriad::MyrApplication
             tdata->position.x = (float)(rand() % 400);
             tdata->position.y = (float)(rand() % 400);
             */
-            
+
             rgroup.Add(tgo->GetRenderer());
             ugroup.Add(tgo->GetUpdater());
             MYR_TRACE("Done with iteration {0}", i);
@@ -111,10 +110,10 @@ class Test : public Myriad::MyrApplication
 
             // Want to use these on windows? Need to build 'special'
             // See Readme.md
-            //BeginDrawing();
-            //ClearBackground({0, 0, 128, 255});
-            //testObject1.Draw();
-            //EndDrawing();
+            // BeginDrawing();
+            // ClearBackground({0, 0, 128, 255});
+            // testObject1.Draw();
+            // EndDrawing();
         }
 
         pMyscene->RemoveGameObject(*gobject);

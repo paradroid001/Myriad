@@ -4,6 +4,7 @@ RUN apt-get update -yqq && \
     apt-get install -yq binutils \
     build-essential \
     make \
+    cmake \
     wget \
     curl \
     python3 \
@@ -11,7 +12,8 @@ RUN apt-get update -yqq && \
     bear \
     less \
     file \
-    vim
+    vim \
+    git
 
 
 #libx11-dev .................   for X11/Xlib.h

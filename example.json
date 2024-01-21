@@ -1,0 +1,9 @@
+{
+    "first": ["one", "two", "three"],
+    "second": [1, 2, 3],
+    "third": {
+        "fourth": true,
+        "fifth": null,
+        "sixth": false
+    }
+}
