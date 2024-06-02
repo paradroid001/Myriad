@@ -71,7 +71,7 @@ class Test : public Myriad::MyrApplication
         Myriad::UpdaterGroup ugroup;
         rgroup.Add(testObject1.GetRenderer());
 
-        int numObjects = 1;
+        int numObjects = 20;
         TestGameObject objectsArray[numObjects];
         for (int i = 0; i < numObjects; i++)
         {
