@@ -10,6 +10,7 @@
 #include "core/GameObject.h"
 #include "core/GroupList.h"
 #include "core/IGroup.h"
+#include "core/MyrAppInfo.h"
 #include "core/MyrApplication.h"
 #include "core/Singleton.h" //in case clients want to make singletons?
 #include "core/Transform.h"

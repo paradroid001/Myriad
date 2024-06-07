@@ -8,6 +8,26 @@
 #include <typeindex>
 #include <typeinfo>
 
+/* 20240603
+   I am realising that the event system should really handle
+   all the memory for events. You don't want to, in a game function,
+   do:
+   MyEvent *e = new MyEvent()
+   e->data1 = 7;
+   e->data2 = 12;
+   e->Emit()
+
+   Because, then what are you going to do with it? When do we free that memory?
+   How do we know when the event has been handled?
+   We really don't want to be creating new events like that in 'client' code.
+   We need the event system to manage the objects: create events, and destroy
+   them once they're handled.
+
+   So the api really needs to be:
+
+
+*/
+
 namespace Myriad
 {
     namespace Events
@@ -119,7 +139,7 @@ namespace Myriad
                 EventDispatcher::Instance()->subscribe(instance,
                                                        memberFunction);
             };
-            static void Unregister(){};
+            static void Unregister() {};
             void Emit() { EventDispatcher::Instance()->publish(this); };
 
           protected:

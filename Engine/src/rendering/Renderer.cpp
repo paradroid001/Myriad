@@ -11,7 +11,7 @@
 namespace Myriad
 {
     Renderer::~Renderer() { MYR_CORE_TRACE("Renderer destructor"); }
-    
+
     void Renderer::Draw()
     {
         if (_renderData.p_transformData != NULL)
@@ -46,4 +46,6 @@ namespace Myriad
         DrawText(text, x, y, lineheight,
                  {colour.r, colour.g, colour.b, colour.a});
     }
+
+    // void Renderer:MyrDrawTexture()
 } // namespace Myriad

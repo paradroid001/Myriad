@@ -1,9 +1,13 @@
 {
-    "first": ["one", "two", "three"],
-    "second": [1, 2, 3],
-    "third": {
-        "fourth": true,
-        "fifth": null,
-        "sixth": false
-    }
+  "first": ["one", "two", "three"],
+  "second": [1, 2, 3],
+  "third": {
+    "fourth": true,
+    "fifth": null,
+    "sixth": false
+  },
+
+  "device_width": 1024,
+  "device_height": 768,
+  "log_level": 1
 }

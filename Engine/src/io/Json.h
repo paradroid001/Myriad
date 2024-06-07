@@ -6,7 +6,8 @@
 
 namespace Myriad
 {
-    using json = nlohmann::json;
+    // using ext_json = nlohmann::json;
+    typedef nlohmann::json json;
     class MYR_API Json
     {
       public:

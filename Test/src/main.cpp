@@ -3,6 +3,7 @@
 // #include "raylib.h"
 
 #include <core/MyrEntryPoint.h>
+#include <io/Json.h>
 #include <myriad.h>
 
 #include "TestRenderer.h"
@@ -15,17 +16,29 @@ class Test : public Myriad::MyrApplication
     Myriad::AudioManager &audioManager = Myriad::AudioManager::GetInstance();
     Myriad::InputManager &inputManager = Myriad::InputManager::GetInstance();
 
+    Myriad::MyrAppInfo *appInfo;
+
     Test()
     {
         // Init the application here
         MYR_INFO("Test starting");
         audioManager.SetChannelVolume("default", 0.4f);
         Myriad::Json Json;
-        nlohmann::json data = Json.ReadJson("example.json");
-        std::cout << data.dump(4) << std::endl;
+        Myriad::json data = Json.ReadJson("example.json");
+        appInfo = new Myriad::MyrAppInfo();
+        appInfo->FromJson(data);
+
+        // std::cout << data.dump(4) << std::endl;
+        std::cout << "Device width " << appInfo->device_width << std::endl;
+        std::cout << "Device height " << appInfo->device_height << std::endl;
+        std::cout << "Log level " << appInfo->log_level << std::endl;
     };
 
-    ~Test() { MYR_INFO("Test destructing"); };
+    ~Test()
+    {
+        MYR_TRACE("Test destructing");
+        delete appInfo;
+    };
 
     void Run()
     {
@@ -71,7 +84,7 @@ class Test : public Myriad::MyrApplication
         Myriad::UpdaterGroup ugroup;
         rgroup.Add(testObject1.GetRenderer());
 
-        int numObjects = 20;
+        int numObjects = 2000;
         TestGameObject objectsArray[numObjects];
         for (int i = 0; i < numObjects; i++)
         {

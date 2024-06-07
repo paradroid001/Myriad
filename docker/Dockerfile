@@ -13,7 +13,8 @@ RUN apt-get update -yqq && \
     less \
     file \
     vim \
-    git
+    git \
+    valgrind
 
 
 #libx11-dev .................   for X11/Xlib.h
@@ -33,9 +34,9 @@ RUN useradd -u 1000 -g myriad -ms /bin/bash myriad
 USER myriad
 
 WORKDIR /home/myriad
-RUN wget https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.464+a63a1c5cb.tar.xz
-RUN tar xf zig-linux-x86_64-0.12.0-dev.464+a63a1c5cb.tar.xz
-RUN ln -s zig-linux-x86_64-0.12.0-dev.464+a63a1c5cb zig
+RUN wget https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz
+RUN tar xf zig-linux-x86_64-0.13.0.tar.xz
+RUN ln -s zig-linux-x86_64-0.13.0 zig
 ENV PATH="/home/myriad/zig:$PATH"
 
 RUN wget https://www.doxygen.nl/files/doxygen-1.9.8.linux.bin.tar.gz
@@ -45,5 +46,3 @@ ENV PATH="/home/myriad/doxygen/bin:$PATH"
 
 WORKDIR /myriad
 CMD ["tail","-f","/dev/forever"]
-
-
