@@ -4,11 +4,11 @@
 	branch = v2.x
 [submodule "raylib"]
 	path = Engine/vendor/raylib
-	url = https://github.com/gabime/spdlog
+	url = https://github.com/raysan5/raylib
 	branch = master
 [submodule "flecs"]
 	path = Engine/vendor/flecs
-	url = https://github.com/SanderMertens/flecs.git
+	url = https://github.com/SanderMertens/flecs
 	branch = master
 [submodule "json"]
 	path = Engine/vendor/json
