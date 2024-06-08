@@ -1,21 +1,16 @@
-[submodule "Engine/vendor/spdlog"]
+[submodule "spdlog"]
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
 	branch = v2.x
-[submodule "Engine/vendor/raylib"]
+[submodule "raylib"]
 	path = Engine/vendor/raylib
-	url = https://github.com/raysan5/raylib
-[submodule "Engine/vendor/Remotery"]
-	path = Engine/vendor/Remotery
-	url = https://github.com/Celtoys/Remotery.git
-[submodule "Engine/vendor/flecs"]
+	url = https://github.com/gabime/spdlog
+	branch = master
+[submodule "flecs"]
 	path = Engine/vendor/flecs
 	url = https://github.com/SanderMertens/flecs.git
-[submodule "Engine/vendor/catch2"]
-	path = Engine/vendor/catch2
-	url = https://github.com/catchorg/Catch2.git
-	branch = devel
-[submodule "Engine/vendor/json"]
+	branch = master
+[submodule "json"]
 	path = Engine/vendor/json
-	url = https://github.com/nlohmann/json.git
+	url = https://github.com/nlohmann/json
 	branch = master
