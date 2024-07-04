@@ -1,42 +1,47 @@
-#include "Window.h"
-
+#include "rendering/Window.h"
+// #include "core/MyrHandle.h"
 #ifdef MYRIAD_INTERNAL
     #include "core/MyriadConfig.h"
 #else
+
 // fwd declare the functions we use.
-void InitWindow(int width, int height, const char *title);
-void SetTargetFPS(int fps);
-bool WindowShouldClose();
-void CloseWindow();
+// void InitWindow(int width, int height, const char *title);
+// void SetTargetFPS(int fps);
+// bool WindowShouldClose();
+// void CloseWindow();
+#endif
+
+#if MYRIAD_RENDERER == RAYLIB
+    #include "rendering/WindowProviderRaylib.h"
 #endif
 
 namespace Myriad
 {
-    Window::Window() {}
-    Window::~Window() {}
-    void Window::Init(int w, int h, const char *title)
+    Window::Window()
     {
 #if MYRIAD_RENDERER == RAYLIB
-        InitWindow(w, h, title);
+        window_provider =
+            (MyrHandle<WindowProvider> *)(new MyrHandle<WindowProviderRaylib>(
+                new WindowProviderRaylib()));
 #endif
     }
 
-    void Window::SetFPS(int fps)
+    Window::~Window() {}
+
+    bool Window::Init(int w, int h, const char *title)
     {
-#if MYRIAD_RENDERER == RAYLIB
-        SetTargetFPS(fps);
+        return (*window_provider)->Init(w, h, title);
     }
-#endif
-    bool Window::ShouldClose()
+
+    void Window::SetFPS(int fps) { (*window_provider)->SetFPS(fps); }
+
+    bool Window::ShouldClose() { return (*window_provider)->ShouldClose(); }
+
+    void Window::Close() { (*window_provider)->Close(); }
+
+    bool Window::Shutdown()
     {
-#if MYRIAD_RENDERER == RAYLIB
-        return WindowShouldClose();
-#endif
-    }
-    void Window::Close()
-    {
-#if MYRIAD_RENDERER == RAYLIB
-        CloseWindow();
-#endif
-    }
+        MYR_CORE_INFO("Window Shutting Down");
+        return true;
+    };
 } // namespace Myriad

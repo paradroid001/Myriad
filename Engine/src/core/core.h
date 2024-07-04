@@ -29,6 +29,21 @@ namespace Myriad
         unsigned char b;
         unsigned char a;
     };
+
+    class Vector2
+    {
+      public:
+        float x;
+        float y;
+    };
+
+    class Vector3
+    {
+      public:
+        float x;
+        float y;
+        float z;
+    };
 } // namespace Myriad
 
 #endif
