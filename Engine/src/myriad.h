@@ -5,9 +5,11 @@
 
 #include "core/AllocatorService.h"
 #include "core/IService.h"
+#include "core/Job.h"
 #include "core/MyrApplication.h"
 #include "core/MyrEntryPoint.h"
 #include "core/MyrHandle.h"
+#include "core/ThreadPool.h"
 
 #include "core/GameObject.h"
 

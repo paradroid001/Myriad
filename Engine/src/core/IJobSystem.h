@@ -4,9 +4,9 @@
 #include "Job.h"
 #include "core.h"
 
-namespace MYR_API Myriad
+namespace Myriad
 {
-    class IJobSystem
+    class MYR_API IJobSystem
     {
       public:
         virtual ~IJobSystem(){};
@@ -14,5 +14,5 @@ namespace MYR_API Myriad
         virtual void Drain() = 0;
         virtual void AddJob(Job *job) = 0;
     };
-} // namespace MYR_API Myriad
+} // namespace Myriad
 #endif

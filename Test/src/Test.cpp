@@ -1,12 +1,33 @@
 #include <iostream>
 #include <cctype>
 #include <random>
+#include <thread>
 
 #include "myriad.h"
 #include "TestGameObject.h"
 
 using u32 = uint_least32_t;
 using engine = std::mt19937;
+
+class TestJob : public Myriad::Job
+{
+private:
+  std::string jobname;
+
+public:
+  TestJob(const char *name)
+  {
+    jobname = name; // assignment operator copies string hopefully?
+  }
+
+protected:
+  virtual void Execute() override
+  {
+    MYR_WARN("Hello world from a thread job: {0}", jobname);
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(100));
+  }
+};
 
 class MyriadTest : public Myriad::MyrApplication
 {
@@ -28,6 +49,28 @@ public:
     allocator_ptr->Shutdown();
   }
 
+  void TestThreadPool()
+  {
+    MYR_CORE_INFO("Testing threadpool");
+    Myriad::ThreadPool pool(2);
+    TestJob emily = TestJob("Emily");
+    TestJob alex = TestJob("Alex");
+    TestJob stephanie = TestJob("Stephanie");
+    TestJob thomas = TestJob("Thomas");
+
+    pool.Init();
+    pool.AddJob(&emily);
+    pool.AddJob(&alex);
+    pool.AddJob(&stephanie);
+    pool.AddJob(&thomas);
+    // pool.Drain();
+
+    // Prevent tasks from being destroyed before the threads are finished.
+    MYR_INFO("Main thread sleeping");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    MYR_INFO("END Testing threadpool");
+  }
+
   void Old()
   {
     // Myriad::MyrHandle<Myriad::IService> *allocator = Myriad::AllocatorService::Instance();
@@ -40,7 +83,7 @@ public:
     Myriad::MyrHandle<int> hint = allocator_ptr->Alloc<int>();
     MYR_TRACE("Made it into a cast handle");
 
-    //    Myriad::Allocator *allocman = new Myriad::Allocator();
+    // Myriad::Allocator *allocman = new Myriad::Allocator();
     // Myriad::Handle *mate = allocman->Alloc<int>();
 
     // Open a window
@@ -133,7 +176,8 @@ public:
   {
     prefs.screen_dimensions = {800, 600};
     // Init the engine
-    Old();
+    // Old();
+    TestThreadPool();
   }
 };
 

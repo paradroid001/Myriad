@@ -12,7 +12,7 @@ project("MyriadEngineProject")
 set(PLATFORM Desktop)
 #set(CMAKE_SYSTEM_NAME Windows)
 #set(UNIX off)
-#set(GLFW_BUILD_WAYLAND OFF)
+set(GLFW_BUILD_WAYLAND OFF)
 set(GLFW_BUILD_X11 ON)
 
 #We don't want raylib's examples built. This option is picked up by raylib's CMakeLists.txt
