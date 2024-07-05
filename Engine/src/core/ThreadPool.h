@@ -20,20 +20,57 @@ namespace Myriad
         std::string jobname;
         std::chrono::high_resolution_clock::time_point start;
         std::chrono::high_resolution_clock::time_point end;
-        size_t milliseconds;
+        uint64_t milliseconds;
+        uint64_t nanoseconds;
 
-        RunJobInfo(const char *name) { jobname = name; };
+        RunJobInfo(const char *name)
+        {
+            jobname = name;
+            milliseconds = 0;
+            nanoseconds = 0;
+        };
 
-        void Start() { start = std::chrono::high_resolution_clock::now(); }
-        void End() { end = std::chrono::high_resolution_clock::now(); };
-        size_t Elapsed()
+        void Start()
+        {
+            this->start = std::chrono::high_resolution_clock::now();
+
+            // std::chrono::duration<uint64_t> s =
+            //     std::chrono::duration_cast<std::chrono::duration<uint64_t>>(
+            //         this->start.time_since_epoch());
+            //
+            // MYR_CORE_TRACE("Starting stats for job {0}: {1}", jobname,
+            //                s.count());
+        }
+        void End()
+        {
+            this->end = std::chrono::high_resolution_clock::now();
+            // std::chrono::duration<uint64_t> s =
+            //     std::chrono::duration_cast<std::chrono::duration<uint64_t>>(
+            //         this->end.time_since_epoch());
+            // MYR_CORE_TRACE("Ending stats for job {0}: {1}", jobname,
+            // s.count());
+        };
+        uint64_t Elapsed()
         {
             milliseconds =
-                std::chrono::duration_cast<std::chrono::milliseconds>(end -
-                                                                      start)
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    this->end - this->start)
                     .count();
+            nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                              this->end - this->start)
+                              .count();
             return milliseconds;
         };
+
+        void Print()
+        {
+            Elapsed();
+            // std::chrono::duration<double> seconds =
+            //     std::chrono::duration_cast<std::chrono::duration<double>>(
+            //         end - start);
+            MYR_CORE_TRACE("Job {0} took {1}ms ({2}ns)", jobname, milliseconds,
+                           nanoseconds);
+        }
     };
 
     class MYR_API ThreadPool : public IJobSystem
@@ -42,7 +79,7 @@ namespace Myriad
         // worker threads
         std::vector<std::thread> _threads;
         // queue of tasks
-        std::queue<Job *> _jobs;
+        std::queue<std::reference_wrapper<Job>> _jobs;
         // mutex
         std::mutex _queue_mutex;
         // condtion variable signals queue changes
@@ -50,7 +87,8 @@ namespace Myriad
         // Should the queue stop?
         bool _stop = false;
 
-        std::vector<RunJobInfo> _jobinfo;
+        // Job Statistics.
+        std::vector<RunJobInfo *> _jobstats;
 
       public:
         ThreadPool(size_t num_threads = std::thread::hardware_concurrency())
@@ -64,6 +102,7 @@ namespace Myriad
                         while (true)
                         {
                             std::function<void()> task;
+                            RunJobInfo *jobinfo;
                             // Unlock the queue before executing the queue
                             // so other threads can perform enqueue calls
                             {
@@ -82,17 +121,35 @@ namespace Myriad
 
                                 MYR_CORE_TRACE("Ready to run a task.");
                                 // Get the next task from the queue.
-                                task = std::move(_jobs.front()->GetTask());
+                                task = std::move(_jobs.front().get().GetTask());
+                                jobinfo = new RunJobInfo(
+                                    _jobs.front().get().GetName());
+                                // Put the jobinfo on the stats list.
+                                _jobstats.push_back(jobinfo);
+
                                 _jobs.pop();
                             }
                             // here the queue will be unlocked.
+                            jobinfo->Start();
                             task(); // run the task
+                            jobinfo->End();
                         }
                     });
             }
         }
 
-        ~ThreadPool() { Drain(); }
+        ~ThreadPool()
+        {
+            Drain();
+            // By now all the threads have stopped.
+            //  need to free all the jobstats
+            for (auto &jobinfo : _jobstats)
+            {
+                delete jobinfo;
+            }
+        }
+
+        std::vector<RunJobInfo *> &GetStats() { return _jobstats; }
 
         void Init() override
         {
@@ -119,11 +176,14 @@ namespace Myriad
             }
         }
 
-        void AddJob(Job *job) override
+        void AddJob(Job &job) override
         {
             {
                 std::unique_lock<std::mutex>(_queue_mutex);
-                _jobs.emplace(std::move(job));
+                //using references now, no
+                //need for the std::move...
+                //_jobs.emplace(std::move(job));
+                _jobs.emplace(job);
             }
             _cv.notify_one(); // wake up a thread to do some work.
         }

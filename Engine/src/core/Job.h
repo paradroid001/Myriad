@@ -9,19 +9,21 @@ namespace Myriad
 {
     class MYR_API Job
     {
+      protected:
+        std::string job_name;
+        void RunTask() { Execute(); };
+        // the function that will be excecuted.
+        virtual void Execute() = 0; // { MYR_CORE_INFO("Inside execute"); };
 
       public:
+        Job(const char *name) { job_name = name; };
         ~Job(){};
+        const char *GetName() { return job_name.c_str(); }
         std::function<void()> GetTask()
         {
             return std::bind(&Job::RunTask, this);
         }; // using () operator
         // void operator()() { Execute(); };
-
-      protected:
-        void RunTask() { Execute(); };
-        // the function that will be excecuted.
-        virtual void Execute() = 0; // { MYR_CORE_INFO("Inside execute"); };
     };
 } // namespace Myriad
 #endif

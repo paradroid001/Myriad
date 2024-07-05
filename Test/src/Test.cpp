@@ -11,21 +11,16 @@ using engine = std::mt19937;
 
 class TestJob : public Myriad::Job
 {
-private:
-  std::string jobname;
-
 public:
-  TestJob(const char *name)
-  {
-    jobname = name; // assignment operator copies string hopefully?
-  }
+  TestJob(const char *name) : Job(name){};
 
 protected:
   virtual void Execute() override
   {
-    MYR_WARN("Hello world from a thread job: {0}", jobname);
+    MYR_WARN("Hello world from a thread job: {0}", job_name);
     std::this_thread::sleep_for(
-        std::chrono::milliseconds(100));
+        std::chrono::milliseconds(1000));
+    MYR_WARN("Goodbye world from a thread job: {0}", job_name);
   }
 };
 
@@ -47,28 +42,35 @@ public:
   {
     std::cout << "myr test destructor" << std::endl;
     allocator_ptr->Shutdown();
+    delete allocator_ptr;
   }
 
   void TestThreadPool()
   {
     MYR_CORE_INFO("Testing threadpool");
-    Myriad::ThreadPool pool(2);
+    Myriad::ThreadPool pool(1);
     TestJob emily = TestJob("Emily");
     TestJob alex = TestJob("Alex");
     TestJob stephanie = TestJob("Stephanie");
     TestJob thomas = TestJob("Thomas");
 
+    Myriad::MyrHandle<TestJob> nat = allocator_ptr->Alloc<TestJob>("Nat");
+
     pool.Init();
-    pool.AddJob(&emily);
-    pool.AddJob(&alex);
-    pool.AddJob(&stephanie);
-    pool.AddJob(&thomas);
+    pool.AddJob(emily);
+    pool.AddJob(alex);
+    pool.AddJob(stephanie);
+    pool.AddJob(thomas);
     // pool.Drain();
 
     // Prevent tasks from being destroyed before the threads are finished.
     MYR_INFO("Main thread sleeping");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     MYR_INFO("END Testing threadpool");
+    for (auto &info : pool.GetStats())
+    {
+      info->Print();
+    }
   }
 
   void Old()

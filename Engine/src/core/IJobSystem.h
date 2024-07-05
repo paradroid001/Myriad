@@ -12,7 +12,7 @@ namespace Myriad
         virtual ~IJobSystem(){};
         virtual void Init() = 0;
         virtual void Drain() = 0;
-        virtual void AddJob(Job *job) = 0;
+        virtual void AddJob(Job &job) = 0;
     };
 } // namespace Myriad
 #endif

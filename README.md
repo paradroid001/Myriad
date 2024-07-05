@@ -21,3 +21,12 @@ A Handle wraps a pointer, handles can be passed around and copied, and the inter
 The AllocatorService allocates and distributes Handles, and they live on in this scope. The AllocatorService is therefore responsible for cleaning up Handles and their associated pointers at Engine Shutdown.
 
 The Logging Service directs messages to multiple endpoints.
+
+The job system:
+
+- Currently a thread pool with a shared queue
+- Since so much code is not thread safe yet, this is restricted to one thread (!)
+- Sounds useless but it's just to get the code to use a job submission style.
+- Later on, the job system could be something better (It just needs to conform to the IJobSystem interface), like:
+  - https://www.rismosch.com/article?id=building-a-job-system (in rust but references a c++ guy?)
+  - https://wickedengine.net/2018/11/simple-job-system-using-standard-c/
