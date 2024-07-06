@@ -4,7 +4,10 @@
 #include <thread>
 
 #include "myriad.h"
+#include "core/Job.h"
+
 #include "TestGameObject.h"
+#include "JobbedTest.h"
 
 using u32 = uint_least32_t;
 using engine = std::mt19937;
@@ -49,18 +52,23 @@ public:
   {
     MYR_CORE_INFO("Testing threadpool");
     Myriad::ThreadPool pool(1);
-    TestJob emily = TestJob("Emily");
-    TestJob alex = TestJob("Alex");
-    TestJob stephanie = TestJob("Stephanie");
-    TestJob thomas = TestJob("Thomas");
+    Myriad::MyrHandle<TestJob> emily = allocator_ptr->Alloc<TestJob>("Emily");
+    Myriad::MyrHandle<TestJob> alex = allocator_ptr->Alloc<TestJob>("Alex");
+    Myriad::MyrHandle<TestJob> stephanie = allocator_ptr->Alloc<TestJob>("Stephanie");
+    Myriad::MyrHandle<TestJob> thomas = allocator_ptr->Alloc<TestJob>("Thomas");
 
-    Myriad::MyrHandle<TestJob> nat = allocator_ptr->Alloc<TestJob>("Nat");
+    MYR_CORE_TRACE("Emily refcount: {0}", emily.GetRefCount());
+
+    // Myriad::MyrHandle<Job> job_emily = static_cast<Myriad::MyrHandle<Myriad::Job>>(emily);
+
+    auto x = 42;
+    auto y = int{43};
 
     pool.Init();
-    pool.AddJob(emily);
-    pool.AddJob(alex);
-    pool.AddJob(stephanie);
-    pool.AddJob(thomas);
+    pool.AddJob(&*emily);
+    pool.AddJob(&*alex);
+    pool.AddJob(&*stephanie);
+    pool.AddJob(&*thomas);
     // pool.Drain();
 
     // Prevent tasks from being destroyed before the threads are finished.
@@ -111,7 +119,7 @@ public:
     Myriad::MyrHandle<Myriad::Renderer> renderer = allocator_ptr->Alloc<Myriad::Renderer>();
     renderer->Init();
 
-    int num_objects = 1000;
+    int num_objects = 100;
     std::random_device os_seed;
     const u32 seed = os_seed();
     engine generator(seed);
@@ -174,12 +182,24 @@ public:
     Handle gameObject = Myr.core.allocator.Alloc();
   }
   */
+
+  void Nicer()
+  {
+    Myriad::MyrHandle<JobbedTestGame> jtg = allocator_ptr->Alloc<JobbedTestGame>();
+    jtg->Init(*allocator_ptr, prefs);
+    jtg->Run(*allocator_ptr);
+  }
+
   void Run()
   {
     prefs.screen_dimensions = {800, 600};
-    // Init the engine
+    // The old way
     // Old();
-    TestThreadPool();
+
+    // TestThreadPool();
+    // MYR_CORE_TRACE("Allocated jobs should have been deleted by now.");
+
+    Nicer();
   }
 };
 

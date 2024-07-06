@@ -6,8 +6,17 @@
 
 namespace Myriad
 {
+    // This is just a base class so that the allocator
+    // has a class to pin the template variants on,
+    //for the purpose of deleting them
+    class HandleBase
+    {
+      public:
+        virtual ~HandleBase(){};
+    };
+
     // A handle is a pointer abstraction
-    template <class T> class MYR_API MyrHandle
+    template <class T> class MYR_API MyrHandle : public HandleBase
     {
       private:
         T *ptr;
@@ -30,7 +39,20 @@ namespace Myriad
         T *operator->() { return ptr; }
         T &operator*() { return *ptr; }
 
-        const T *ConstPtr() { return (const T *)ptr; }
+        const int GetRefCount() { return *ref_count; }
+
+        // Only the allocator should call this.
+        void __Destroy()
+        {
+            *ref_count = -1;
+            MyrHandle<T> dummy = *this;
+            // now let this go out of scope, trigger the thing.
+        }
+
+        const T *ConstPtr()
+        {
+            return (const T *)ptr;
+        } // todo try a const_cast here.
     };
 
     template <class T> MyrHandle<T>::~MyrHandle()
@@ -44,8 +66,8 @@ namespace Myriad
         {
             delete ptr;
             delete ref_count;
-            ptr = 0;
-            ref_count = 0;
+            ptr = 0;       // null
+            ref_count = 0; // null
             MYR_CORE_TRACE("Deleted a myr handle");
         }
         else

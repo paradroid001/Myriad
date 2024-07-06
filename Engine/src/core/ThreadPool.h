@@ -73,13 +73,24 @@ namespace Myriad
         }
     };
 
+    /*
+        this thread pool structure is slightly wrong.
+        the 'threads' that we are joining with Drain
+        aren't actually our jobs, they are the lambda that we are
+        currently in.
+        If we do allow it to end, then we can't easily
+        reset it for the next frame.
+        So we either need something to signal that each
+        thread is done, or we need some kind of overarching
+        thread object which encapsulates state.
+    */
     class MYR_API ThreadPool : public IJobSystem
     {
       private:
         // worker threads
         std::vector<std::thread> _threads;
         // queue of tasks
-        std::queue<std::reference_wrapper<Job>> _jobs;
+        std::queue<Job *> _jobs;
         // mutex
         std::mutex _queue_mutex;
         // condtion variable signals queue changes
@@ -112,24 +123,27 @@ namespace Myriad
                                 // pool is stopped.
                                 _cv.wait(lock, [this]
                                          { return !_jobs.empty() || _stop; });
+
                                 // exit the thread in the case the pool
                                 // is stopped and there are no tasks
                                 if (_stop && _jobs.empty())
                                 {
                                     return;
                                 }
+                                else
+                                {
+                                    MYR_CORE_TRACE("Ready to run a task.");
+                                    // Get the next task from the queue.
+                                    task = std::move(_jobs.front()->GetTask());
+                                    jobinfo = new RunJobInfo(
+                                        _jobs.front()->GetName());
+                                    // Put the jobinfo on the stats list.
+                                    _jobstats.push_back(jobinfo);
 
-                                MYR_CORE_TRACE("Ready to run a task.");
-                                // Get the next task from the queue.
-                                task = std::move(_jobs.front().get().GetTask());
-                                jobinfo = new RunJobInfo(
-                                    _jobs.front().get().GetName());
-                                // Put the jobinfo on the stats list.
-                                _jobstats.push_back(jobinfo);
-
-                                _jobs.pop();
+                                    _jobs.pop();
+                                }
                             }
-                            // here the queue will be unlocked.
+
                             jobinfo->Start();
                             task(); // run the task
                             jobinfo->End();
@@ -154,7 +168,18 @@ namespace Myriad
         void Init() override
         {
             // nothing, possibly this should take 'num threads'
+
+            // Cheeky. We are going to use Init to reset _stop to false.
+            // No threads should be running, but we lock anyway.
+            {
+                // Lock the queue to update the stop flag safely
+                std::unique_lock<std::mutex>(_queue_mutex);
+                _stop = false;
+            }
         }
+
+        // Wait is just drain.
+        void Wait() override { Drain(); }
 
         // drain the pool.
         void Drain() override
@@ -176,14 +201,15 @@ namespace Myriad
             }
         }
 
-        void AddJob(Job &job) override
+        void AddJob(Job *job) override
         {
             {
                 std::unique_lock<std::mutex>(_queue_mutex);
-                //using references now, no
-                //need for the std::move...
-                //_jobs.emplace(std::move(job));
-                _jobs.emplace(job);
+                // If using ptr, need to std move (do we?)
+                _jobs.emplace(std::move(job));
+
+                // If using a ref, no need (is there?)
+                //_jobs.emplace(job);
             }
             _cv.notify_one(); // wake up a thread to do some work.
         }

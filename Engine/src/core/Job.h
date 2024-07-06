@@ -16,13 +16,13 @@ namespace Myriad
         virtual void Execute() = 0; // { MYR_CORE_INFO("Inside execute"); };
 
       public:
-        Job(const char *name) { job_name = name; };
-        ~Job(){};
+        Job(const char *name) { job_name = name; }
+        ~Job() { MYR_CORE_WARN("Job {0} is destructing.", job_name); }
         const char *GetName() { return job_name.c_str(); }
         std::function<void()> GetTask()
         {
             return std::bind(&Job::RunTask, this);
-        }; // using () operator
+        } // using () operator
         // void operator()() { Execute(); };
     };
 } // namespace Myriad
