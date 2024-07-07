@@ -1,6 +1,8 @@
 #ifndef MYRIAD_CORE_MYRAPPLICATION_H
 #define MYRIAD_CORE_MYRAPPLICATION_H
 
+#include <cstddef>
+
 #include "core.h"
 
 namespace Myriad
@@ -22,6 +24,7 @@ namespace Myriad
     {
       public:
         Vector2 screen_dimensions;
+        size_t target_fps;
     };
 
     // This is the live app state
@@ -33,6 +36,7 @@ namespace Myriad
         // https://stackoverflow.com/questions/18860895/how-to-initialize-static-members-in-the-header
         inline static MyrAppData *_instance;
         Vector2 _screen_dimensions;
+        size_t _target_fps;
 
         // Private Constructor
         MyrAppData(){};

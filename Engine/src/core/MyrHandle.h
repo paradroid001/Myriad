@@ -8,7 +8,7 @@ namespace Myriad
 {
     // This is just a base class so that the allocator
     // has a class to pin the template variants on,
-    //for the purpose of deleting them
+    // for the purpose of deleting them
     class HandleBase
     {
       public:
@@ -36,8 +36,10 @@ namespace Myriad
         MyrHandle<T> operator=(const MyrHandle<T> &rhs);
 
         // Can just use the handle as a pointer
-        T *operator->() { return ptr; }
-        T &operator*() { return *ptr; }
+        T *operator->() const { return ptr; }
+        T &operator*() const { return *ptr; }
+
+        T *Get() const { return ptr; }
 
         const int GetRefCount() { return *ref_count; }
 

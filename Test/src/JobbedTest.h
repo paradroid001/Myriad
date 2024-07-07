@@ -8,35 +8,60 @@ using engine = std::mt19937;
 #include "myriad.h"
 #include "TestGameObject.h"
 
+class RenderInitJob : public Myriad::Job
+{
+private:
+  Myriad::MyrHandle<Myriad::Renderer> renderer_;
+  Myriad::MyrHandle<Myriad::Window> window_;
+  Myriad::MyrAppPreferences prefs_;
+
+public:
+  RenderInitJob(const char *name) : Myriad::Job(name) {}
+
+  void Init(Myriad::MyrAppPreferences &prefs, Myriad::MyrHandle<Myriad::Window> window, Myriad::MyrHandle<Myriad::Renderer> renderer)
+  {
+    prefs_ = prefs;
+    renderer_ = renderer;
+    window_ = window;
+  }
+
+protected:
+  virtual void Execute() override
+  {
+    window_->Init(prefs_.screen_dimensions.x, prefs_.screen_dimensions.y, "Jobbed Game Loop");
+    window_->SetFPS(prefs_.target_fps);
+    MYR_INFO("Opened Window");
+    renderer_->Init();
+  }
+};
+
 class RenderJob : public Myriad::Job
 {
 private:
-  Myriad::Renderer renderer_;
+  Myriad::MyrHandle<Myriad::Renderer> renderer_;
   std::vector<TestGameObject *> *p_object_ps_;
 
 public:
   RenderJob(const char *name) : Myriad::Job(name){};
-  void Init(Myriad::MyrAppPreferences &prefs, Myriad::Window &window, Myriad::Renderer &renderer, std::vector<TestGameObject *> *const p_objects)
+  void Init(Myriad::MyrHandle<Myriad::Renderer> renderer, std::vector<TestGameObject *> *const p_objects)
   {
-    window.Init(prefs.screen_dimensions.x, prefs.screen_dimensions.y, "Jobbed Game Loop");
     renderer_ = renderer;
-    renderer_.Init();
     p_object_ps_ = p_objects;
   }
 
 protected:
   virtual void Execute() override
   {
-    renderer_.BeginDrawing();
-    renderer_.ClearBackground({0, 0, 255, 255});
+    renderer_->BeginDrawing();
+    renderer_->ClearBackground({0, 0, 255, 255});
 
     for (auto &object_p : *p_object_ps_)
     {
-      object_p->Draw(renderer_);
-      renderer_.DrawCircle({100, 100}, 100.0f, {0, 255, 0, 255});
+      object_p->Draw(*renderer_);
+      renderer_->DrawCircle({100, 100}, 100.0f, {0, 255, 0, 255});
     }
 
-    renderer_.EndDrawing();
+    renderer_->EndDrawing();
   }
 };
 
@@ -125,24 +150,29 @@ public:
   void Run(Myriad::AllocatorService *allocator, Myriad::MyrAppPreferences &prefs)
   {
     Myriad::MyrHandle<GetInputJob> inputjob = allocator->Alloc<GetInputJob>("GetInput Job");
+    Myriad::MyrHandle<RenderInitJob> renderinitjob = allocator->Alloc<RenderInitJob>("Render Init Job");
     Myriad::MyrHandle<RenderJob> renderjob = allocator->Alloc<RenderJob>("Render Job");
     Myriad::MyrHandle<UpdateJob> updatejob = allocator->Alloc<UpdateJob>("Update Job");
 
     // Allow the live app data to know the dimensions of the created window.
     Myriad::MyrAppData::Instance()->UpdateScreenDimensions(prefs.screen_dimensions);
 
-    MYR_INFO("Init Pool");
-    // pool_->Init(); //deprecated
     MYR_INFO("Init Update Job");
-    auto p_object_ps = updatejob->Init(*allocator, 50); // returns obj[]
-    MYR_INFO("Init Render Job");
-    renderjob->Init(prefs, *window_, *renderer_, p_object_ps);
-    window_->SetFPS(60);
-    MYR_INFO("Opened Window");
-    bool game_over = false;
-    int frames = 0;
+    auto p_object_ps = updatejob->Init(*allocator, 500); // returns obj[]
+
+    MYR_INFO("Init Render Init Job");
+    renderinitjob->Init(prefs, window_, renderer_);
+    renderjob->Init(renderer_, p_object_ps);
+    auto game_over = false;
+    auto total_frames = 0;
+    auto frames = 0;
     while (!game_over)
     {
+      if (total_frames == 0)
+      {
+        // if this is the first run, have to init.
+        pool_->Submit(&*renderinitjob);
+      }
       // Add jobs to the queue.
       // these will run in order since it is singlethreaded.
       pool_->Submit(&*inputjob);
@@ -155,6 +185,7 @@ public:
         std::this_thread::sleep_for(
             std::chrono::milliseconds(1));
       }
+
       if (window_->ShouldClose())
         game_over = true;
       frames += 1;
@@ -163,6 +194,7 @@ public:
         MYR_INFO("Frames rendered: {0}", frames);
         frames = 0;
       }
+      ++total_frames;
     }
 
     MYR_INFO("Closed Window");

@@ -71,6 +71,7 @@ public:
   void Run()
   {
     prefs.screen_dimensions = {800, 600};
+    prefs.target_fps = 60;
     // The basic, non jobbed game test
     // BasicNonJobbedGameTest();
 
