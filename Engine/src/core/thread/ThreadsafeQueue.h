@@ -3,12 +3,14 @@
 
 #include <queue>
 
+#include "core/core.h"
+
 namespace Myriad
 {
     // Based on the threadsafe queue from Anthony Williams'
     // C++ Concurrency in Action, chapter 6
     //
-    template <typename T> class ThreadsafeQueue
+    template <typename T> class MYR_API ThreadsafeQueue
     {
       private:
         mutable std::mutex mtx;
@@ -66,6 +68,11 @@ namespace Myriad
         {
             std::lock_guard<std::mutex> lock(mtx);
             return queue_.empty();
+        }
+        size_t size() const
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            return queue_.size();
         }
     };
 } // namespace Myriad

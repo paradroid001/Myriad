@@ -72,10 +72,10 @@ public:
   {
     prefs.screen_dimensions = {800, 600};
     // The basic, non jobbed game test
-    BasicNonJobbedGameTest();
+    // BasicNonJobbedGameTest();
 
     // BasicThreadPoolTest();
-    //  MYR_CORE_TRACE("Allocated jobs should have been deleted by now.");
+    //    MYR_CORE_TRACE("Allocated jobs should have been deleted by now.");
 
     // An attempt to run render/update/get input on jobs in a simple
     // job system. Fails because the thread that inits a renderer also
@@ -83,7 +83,7 @@ public:
     // of keeping jobs persistent in threads.
     // Under linux, this window just stays blank, and doesn't even clear to a set colour.
     // Under windows OS, this window stops responding and can't be closed.
-    // Nicer();
+    Nicer();
 
     // Scheduled jobs with dependencies.
     // Nicest();

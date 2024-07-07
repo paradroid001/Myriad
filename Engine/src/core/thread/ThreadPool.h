@@ -91,13 +91,14 @@ namespace Myriad
         // worker threads
         std::vector<std::thread> _threads;
         // queue of tasks
-        std::queue<IJob *> _jobs;
+        // std::queue<IJob *> _jobs;
+        ThreadsafeQueue<IJob *> _jobs;
         // mutex
         std::mutex _queue_mutex;
         // condtion variable signals queue changes
         std::condition_variable _cv;
         // Should the queue stop?
-        bool _stop = false;
+        std::atomic_bool _stop = false;
         size_t total_threads; // the total size of the thread pool.
         size_t busy_threads;  // how many of those have a job?
         // Job Statistics.
@@ -118,16 +119,31 @@ namespace Myriad
                         while (true)
                         {
                             std::function<void()> task;
-                            RunJobInfo *jobinfo;
+                            RunJobInfo *jobinfo = nullptr;
                             // Unlock the queue before executing the queue
                             // so other threads can perform enqueue calls
+
+                            // Actually now I am using the threadsafe queue.
+                            // So my queue interactions don't need locking.
+                            // But unfortunately stop and the jobstats
+                            // access does, so we still have the mutex and
+                            // condition var in there.
+
                             {
                                 // first lock the queue
-                                std::unique_lock<std::mutex> lock(_queue_mutex);
+                                // std::unique_lock<std::mutex>
+                                // lock(_queue_mutex);
+
                                 // Wait until there is a task to execute or the
                                 // pool is stopped.
-                                _cv.wait(lock, [this]
-                                         { return !_jobs.empty() || _stop; });
+                                //_cv.wait(lock, [this]
+                                //         { return !_jobs.empty() || _stop; });
+                                while (_jobs.empty() && !_stop)
+                                {
+                                    std::this_thread::yield();
+                                    // MYR_CORE_TRACE("Jobs count? {0}",
+                                    //                _jobs.size());
+                                }
 
                                 // exit the thread in the case the pool
                                 // is stopped and there are no tasks
@@ -139,20 +155,29 @@ namespace Myriad
                                 {
                                     // MYR_CORE_TRACE("Ready to run a task.");
                                     //  Get the next task from the queue.
-                                    task = std::move(_jobs.front()->GetTask());
-                                    jobinfo = new RunJobInfo(
-                                        _jobs.front()->GetName());
-                                    // Put the jobinfo on the stats list.
-                                    _jobstats.push_back(jobinfo);
-                                    _jobs.pop();
-                                    ++busy_threads;
+                                    auto front_job = _jobs.try_pop();
+                                    if (front_job != nullptr)
+                                    {
+                                        // task =
+                                        // std::move(_jobs.front()->GetTask());
+                                        task = (*front_job)->GetTask();
+                                        jobinfo = new RunJobInfo(
+                                            (*front_job)->GetName());
+                                        // Put the jobinfo on the stats list.
+                                        _jobstats.push_back(jobinfo);
+                                        ++busy_threads;
+                                    }
+                                    // otherwise queue was empty.
                                 }
                             }
 
-                            // Actually run the task
-                            jobinfo->Start();
-                            task(); // run the task
-                            jobinfo->End();
+                            if (jobinfo != nullptr)
+                            {
+                                // Actually run the task
+                                jobinfo->Start();
+                                task(); // run the task
+                                jobinfo->End();
+                            }
 
                             {
                                 // lock the queue so we can update the
@@ -178,21 +203,6 @@ namespace Myriad
 
         std::vector<RunJobInfo *> &GetStats() { return _jobstats; }
 
-        /*
-        void Init() override
-        {
-            // nothing, possibly this should take 'num threads'
-
-            // Cheeky. We are going to use Init to reset _stop to false.
-            // No threads should be running, but we lock anyway.
-            {
-                // Lock the queue to update the stop flag safely
-                std::unique_lock<std::mutex>(_queue_mutex);
-                _stop = false;
-            }
-        }
-        */
-
         // Wait is just drain.
         void Wait() override { Drain(); }
 
@@ -208,7 +218,7 @@ namespace Myriad
             // you aren't busy.
             {
                 // Lock the queue to read some status:
-                std::unique_lock<std::mutex>(_queue_mutex);
+                // std::unique_lock<std::mutex>(_queue_mutex);
                 if (_jobs.empty() && busy_threads == 0)
                     return false;
             }
@@ -238,9 +248,11 @@ namespace Myriad
         void Submit(IJob *job) override
         {
             {
-                std::unique_lock<std::mutex>(_queue_mutex);
-                // If using ptr, need to std move (do we?)
-                _jobs.emplace(std::move(job));
+                _jobs.push(job);
+
+                // std::unique_lock<std::mutex>(_queue_mutex);
+                //  If using ptr, need to std move (do we?)
+                //_jobs.emplace(std::move(job));
 
                 // If using a ref, no need (is there?)
                 //_jobs.emplace(job);
