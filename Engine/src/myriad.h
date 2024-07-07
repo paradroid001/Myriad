@@ -5,13 +5,14 @@
 
 #include "core/AllocatorService.h"
 #include "core/IService.h"
-#include "core/Job.h"
 #include "core/MyrApplication.h"
 #include "core/MyrEntryPoint.h"
 #include "core/MyrHandle.h"
-#include "core/ScheduledJob.h"
-#include "core/ThreadPool.h"
-#include "core/ThreadPoolJobSystem.h"
+#include "core/thread/IJob.h"
+#include "core/thread/Job.h"
+#include "core/thread/ScheduledJob.h"
+#include "core/thread/ThreadPool.h"
+#include "core/thread/ThreadPoolJobSystem.h"
 
 #include "core/GameObject.h"
 

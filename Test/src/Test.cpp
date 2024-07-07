@@ -1,32 +1,9 @@
-#include <iostream>
-#include <cctype>
-#include <random>
-#include <thread>
-
 #include "myriad.h"
-#include "core/Job.h"
 
-#include "TestGameObject.h"
 #include "JobbedTest.h"
 #include "ScheduledJobbedTest.h"
-
-using u32 = uint_least32_t;
-using engine = std::mt19937;
-
-class TestJob : public Myriad::Job
-{
-public:
-  TestJob(const char *name) : Job(name){};
-
-protected:
-  virtual void Execute() override
-  {
-    MYR_WARN("Hello world from a thread job: {0}", job_name);
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(2000));
-    MYR_WARN("Goodbye world from a thread job: {0}", job_name);
-  }
-};
+#include "TestThreadPool.h"
+#include "NonJobbedGameTest.h"
 
 class MyriadTest : public Myriad::MyrApplication
 {
@@ -49,130 +26,6 @@ public:
     delete allocator_ptr;
   }
 
-  void TestThreadPool()
-  {
-    MYR_CORE_INFO("Testing threadpool");
-    Myriad::ThreadPool pool(1);
-    Myriad::MyrHandle<TestJob> emily = allocator_ptr->Alloc<TestJob>("Emily");
-    Myriad::MyrHandle<TestJob> alex = allocator_ptr->Alloc<TestJob>("Alex");
-    Myriad::MyrHandle<TestJob> stephanie = allocator_ptr->Alloc<TestJob>("Stephanie");
-    Myriad::MyrHandle<TestJob> thomas = allocator_ptr->Alloc<TestJob>("Thomas");
-
-    MYR_CORE_TRACE("Emily refcount: {0}", emily.GetRefCount());
-
-    // Myriad::MyrHandle<Job> job_emily = static_cast<Myriad::MyrHandle<Myriad::Job>>(emily);
-
-    auto x = 42;
-    auto y = int{43};
-
-    pool.Init();
-
-    // Three iterations of the loop
-    for (int i = 0; i < 3; i++)
-    {
-      pool.AddJob(&*emily);
-      pool.AddJob(&*alex);
-      pool.AddJob(&*stephanie);
-      pool.AddJob(&*thomas);
-      // pool.Drain();
-
-      // Prevent tasks from being destroyed before the threads are finished.
-      MYR_INFO("Main thread sleeping");
-      while (pool.IsBusy())
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    MYR_INFO("END Testing threadpool");
-    for (auto &info : pool.GetStats())
-    {
-      info->Print();
-    }
-  }
-
-  void Old()
-  {
-    // Myriad::MyrHandle<Myriad::IService> *allocator = Myriad::AllocatorService::Instance();
-
-    // Myriad::MyrHandle<Myriad::AllocatorService> allocator_handle = *(static_cast<Myriad::MyrHandle<Myriad::AllocatorService> *>(allocator));
-    // Myriad::AllocatorService *allocator_ptr = static_cast<Myriad::AllocatorService *>(allocator->ConstPtr());
-    // MYR_TRACE("Finished casting allocator");
-    // now allocate stuff with it
-    // Myriad::MyrHandle<int> hint = (*(Myriad::MyrHandle<Myriad::AllocatorService> *)allocator)->Alloc<int>();
-    Myriad::MyrHandle<int> hint = allocator_ptr->Alloc<int>();
-    MYR_TRACE("Made it into a cast handle");
-
-    // Myriad::Allocator *allocman = new Myriad::Allocator();
-    // Myriad::Handle *mate = allocman->Alloc<int>();
-
-    // Open a window
-    // Myriad::Window *win = new Myriad::Window();
-
-    // Myriad::MyrHandle<Myriad::Window> *win = new Myriad::MyrHandle<Myriad::Window>(new Myriad::Window);
-    // Myriad::MyrHandle<Myriad::WindowProviderRaylib> *win = new Myriad::MyrHandle<Myriad::WindowProviderRaylib>(new Myriad::WindowProviderRaylib);
-    Myriad::MyrHandle<Myriad::Window> win = allocator_ptr->Alloc<Myriad::Window>();
-
-    MYR_TRACE("Made a window");
-    win->SetFPS(60);
-    win->Init(prefs.screen_dimensions.x, prefs.screen_dimensions.y, "Test Window");
-    // Allow the live app data to know the dimensions of the created window.
-    Myriad::MyrAppData::Instance()->UpdateScreenDimensions(prefs.screen_dimensions);
-
-    MYR_TRACE("Setting hint to 0");
-    *hint = 0; // start count at 0
-    MYR_TRACE("hint is 0");
-    // Myriad::MyrHandle<Myriad::GameObject> go = allocator_ptr->Alloc<Myriad::GameObject>();
-    // go->SetPosition(200, 200);
-    // go->SetVelocity(100, 100);
-    MYR_TRACE("alloc renderer");
-    Myriad::MyrHandle<Myriad::Renderer> renderer = allocator_ptr->Alloc<Myriad::Renderer>();
-    renderer->Init();
-
-    int num_objects = 100;
-    std::random_device os_seed;
-    const u32 seed = os_seed();
-    engine generator(seed);
-    std::uniform_int_distribution<u32> distribute_x(0, Myriad::MyrAppData::Instance()->GetScreenDimensions().x);
-    std::uniform_int_distribution<u32> distribute_y(0, Myriad::MyrAppData::Instance()->GetScreenDimensions().y);
-
-    Myriad::MyrHandle<TestGameObject> objects[num_objects];
-    for (int i = 0; i < num_objects; i++)
-    {
-      // this handle situation isn't going to work...
-      objects[i] = allocator_ptr->Alloc<TestGameObject>();
-      objects[i]->SetPosition(distribute_x(generator), distribute_y(generator));
-      objects[i]->SetVelocity(50, 50);
-    }
-
-    while (!win->ShouldClose() && (*hint) < 6000)
-    {
-      // render
-      // MYR_WARN("Render");
-      // MYR_TRACE("Incrementing hint");
-      ++(*hint);
-      // MYR_TRACE("Incremented hint");
-      for (int i = 0; i < num_objects; i++)
-      {
-        objects[i]->Update(1.0f / 60);
-      }
-
-      renderer->BeginDrawing();
-      renderer->ClearBackground({0, 0, 255, 255});
-
-      for (int i = 0; i < num_objects; i++)
-      {
-        objects[i]->Draw(*renderer);
-      }
-      renderer->EndDrawing();
-      if (*hint % 1000 == 0)
-      {
-        MYR_INFO("HINT is {0}", *hint);
-      }
-    }
-
-    // delete &win; // should cause Window destructor to run.
-    renderer->Shutdown();
-    win->Shutdown();
-  }
-
   /*
   void Nice()
   {
@@ -190,6 +43,18 @@ public:
   }
   */
 
+  void BasicNonJobbedGameTest()
+  {
+    Myriad::MyrHandle<NonJobbedGameTest> njgt = allocator_ptr->Alloc<NonJobbedGameTest>();
+    njgt->Run(*allocator_ptr, prefs);
+  }
+
+  void BasicThreadPoolTest()
+  {
+    Myriad::MyrHandle<TestThreadPool> ttp = allocator_ptr->Alloc<TestThreadPool>();
+    ttp->Run(*allocator_ptr);
+  }
+
   void Nicer()
   {
     Myriad::MyrHandle<JobbedTestGame> jtg = allocator_ptr->Alloc<JobbedTestGame>();
@@ -206,14 +71,22 @@ public:
   void Run()
   {
     prefs.screen_dimensions = {800, 600};
-    // The old way
-    // Old();
+    // The basic, non jobbed game test
+    BasicNonJobbedGameTest();
 
-    // TestThreadPool();
-    // MYR_CORE_TRACE("Allocated jobs should have been deleted by now.");
+    // BasicThreadPoolTest();
+    //  MYR_CORE_TRACE("Allocated jobs should have been deleted by now.");
 
+    // An attempt to run render/update/get input on jobs in a simple
+    // job system. Fails because the thread that inits a renderer also
+    // needs to be the thread that renders to it: so we need a way
+    // of keeping jobs persistent in threads.
+    // Under linux, this window just stays blank, and doesn't even clear to a set colour.
+    // Under windows OS, this window stops responding and can't be closed.
     // Nicer();
-    Nicest();
+
+    // Scheduled jobs with dependencies.
+    // Nicest();
   }
 };
 

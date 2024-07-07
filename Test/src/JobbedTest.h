@@ -132,7 +132,7 @@ public:
     Myriad::MyrAppData::Instance()->UpdateScreenDimensions(prefs.screen_dimensions);
 
     MYR_INFO("Init Pool");
-    pool_->Init();
+    // pool_->Init(); //deprecated
     MYR_INFO("Init Update Job");
     auto p_object_ps = updatejob->Init(*allocator, 50); // returns obj[]
     MYR_INFO("Init Render Job");
@@ -145,9 +145,9 @@ public:
     {
       // Add jobs to the queue.
       // these will run in order since it is singlethreaded.
-      pool_->AddJob(&*inputjob);
-      pool_->AddJob(&*updatejob);
-      pool_->AddJob(&*renderjob);
+      pool_->Submit(&*inputjob);
+      pool_->Submit(&*updatejob);
+      pool_->Submit(&*renderjob);
 
       // run the queue.
       while (pool_->IsBusy())
