@@ -97,13 +97,17 @@ namespace Myriad
         std::condition_variable _cv;
         // Should the queue stop?
         bool _stop = false;
-
+        size_t total_threads; // the total size of the thread pool.
+        size_t busy_threads;  // how many of those have a job?
         // Job Statistics.
         std::vector<RunJobInfo *> _jobstats;
 
       public:
         ThreadPool(size_t num_threads = std::thread::hardware_concurrency())
         {
+            total_threads = num_threads;
+            busy_threads = 0;
+
             // create worker threads
             for (size_t i = 0; i < num_threads; ++i)
             {
@@ -132,21 +136,29 @@ namespace Myriad
                                 }
                                 else
                                 {
-                                    MYR_CORE_TRACE("Ready to run a task.");
-                                    // Get the next task from the queue.
+                                    // MYR_CORE_TRACE("Ready to run a task.");
+                                    //  Get the next task from the queue.
                                     task = std::move(_jobs.front()->GetTask());
                                     jobinfo = new RunJobInfo(
                                         _jobs.front()->GetName());
                                     // Put the jobinfo on the stats list.
                                     _jobstats.push_back(jobinfo);
-
                                     _jobs.pop();
+                                    ++busy_threads;
                                 }
                             }
 
+                            // Actually run the task
                             jobinfo->Start();
                             task(); // run the task
                             jobinfo->End();
+
+                            {
+                                // lock the queue so we can update the
+                                // busy threads var
+                                std::unique_lock<std::mutex> lock(_queue_mutex);
+                                --busy_threads;
+                            }
                         }
                     });
             }
@@ -180,6 +192,25 @@ namespace Myriad
 
         // Wait is just drain.
         void Wait() override { Drain(); }
+
+        bool IsBusy() override
+        {
+            // with this queue you would be 'not busy'
+            // if all the threads were stopped, and
+            // the queue was empty.
+            // For that, we could increment a var
+            // when each thread is active, and decrement
+            // it when the thread isn't running a job.
+            // so if the queue is empty and that var is 0,
+            // you aren't busy.
+            {
+                // Lock the queue to read some status:
+                std::unique_lock<std::mutex>(_queue_mutex);
+                if (_jobs.empty() && busy_threads == 0)
+                    return false;
+            }
+            return true;
+        }
 
         // drain the pool.
         void Drain() override

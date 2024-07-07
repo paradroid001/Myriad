@@ -9,7 +9,9 @@
 #include "core/MyrApplication.h"
 #include "core/MyrEntryPoint.h"
 #include "core/MyrHandle.h"
+#include "core/ScheduledJob.h"
 #include "core/ThreadPool.h"
+#include "core/ThreadPoolJobSystem.h"
 
 #include "core/GameObject.h"
 

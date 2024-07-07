@@ -95,3 +95,15 @@ bin will end up in Test/
 - See Sokol Author: https://floooh.github.io/2018/05/01/cpp-to-c-size-reduction.html
 - Size profiling for binaries: https://github.com/google/bloaty
 - Use Valgrind
+
+TODO:
+- Cleanroom branch
+resource loader
+- font
+- textures, sounds
+job system
+ - with stats/timing
+
+Issues:
+1. OpenGL context has to be inited on the same thread as rendering.
+2. Have to guarantee the init job runs before any others.

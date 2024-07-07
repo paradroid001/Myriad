@@ -8,6 +8,7 @@
 
 #include "TestGameObject.h"
 #include "JobbedTest.h"
+#include "ScheduledJobbedTest.h"
 
 using u32 = uint_least32_t;
 using engine = std::mt19937;
@@ -22,7 +23,7 @@ protected:
   {
     MYR_WARN("Hello world from a thread job: {0}", job_name);
     std::this_thread::sleep_for(
-        std::chrono::milliseconds(1000));
+        std::chrono::milliseconds(2000));
     MYR_WARN("Goodbye world from a thread job: {0}", job_name);
   }
 };
@@ -65,15 +66,21 @@ public:
     auto y = int{43};
 
     pool.Init();
-    pool.AddJob(&*emily);
-    pool.AddJob(&*alex);
-    pool.AddJob(&*stephanie);
-    pool.AddJob(&*thomas);
-    // pool.Drain();
 
-    // Prevent tasks from being destroyed before the threads are finished.
-    MYR_INFO("Main thread sleeping");
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    // Three iterations of the loop
+    for (int i = 0; i < 3; i++)
+    {
+      pool.AddJob(&*emily);
+      pool.AddJob(&*alex);
+      pool.AddJob(&*stephanie);
+      pool.AddJob(&*thomas);
+      // pool.Drain();
+
+      // Prevent tasks from being destroyed before the threads are finished.
+      MYR_INFO("Main thread sleeping");
+      while (pool.IsBusy())
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
     MYR_INFO("END Testing threadpool");
     for (auto &info : pool.GetStats())
     {
@@ -148,7 +155,7 @@ public:
       }
 
       renderer->BeginDrawing();
-      renderer->ClearBackground({0, 0, 0, 255});
+      renderer->ClearBackground({0, 0, 255, 255});
 
       for (int i = 0; i < num_objects; i++)
       {
@@ -186,8 +193,14 @@ public:
   void Nicer()
   {
     Myriad::MyrHandle<JobbedTestGame> jtg = allocator_ptr->Alloc<JobbedTestGame>();
-    jtg->Init(*allocator_ptr, prefs);
-    jtg->Run(*allocator_ptr);
+    jtg->Init(&*allocator_ptr);
+    jtg->Run(&*allocator_ptr, prefs);
+  }
+
+  void Nicest()
+  {
+    ScheduledJobbedTest sjt;
+    sjt.Run();
   }
 
   void Run()
@@ -199,7 +212,8 @@ public:
     // TestThreadPool();
     // MYR_CORE_TRACE("Allocated jobs should have been deleted by now.");
 
-    Nicer();
+    // Nicer();
+    Nicest();
   }
 };
 
