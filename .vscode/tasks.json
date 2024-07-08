@@ -5,28 +5,51 @@
       "label": "cmake (default Linux)",
       "type": "shell",
       "options": {
-        "cwd": "${workspaceFolder}/build"
+        "cwd": "${workspaceFolder}/build/Linux"
       },
-      "command": "cmake \"MinGW Makefiles\" ${workspaceFolder}",
+      "command": "cmake",
+      "args": [
+        "-D",
+        "CMAKE_TOOLCHAIN_FILE=TC-linux.cmake",
+        "\"MinGW Makefiles\"",
+        "${workspaceFolder}"
+      ],
       "group": "build"
     },
     {
       "label": "cmake (Windows)",
       "type": "shell",
       "options": {
-        "cwd": "${workspaceFolder}/build"
+        "cwd": "${workspaceFolder}/build/Windows"
       },
-      "command": "cmake -D CMAKE_TOOLCHAIN_FILE=TC-windows.cmake \"MinGW Makefiles\" ${workspaceFolder}",
+      "command": "cmake",
+      "args": [
+        "-D",
+        "CMAKE_TOOLCHAIN_FILE=TC-windows.cmake",
+        "\"MinGW Makefiles\"",
+        "${workspaceFolder}"
+      ],
       "group": "build"
     },
     {
-      "label": "Build Myriad",
+      "label": "Build Myriad (Linux)",
       "type": "shell",
       "options": {
         "cwd": "${workspaceFolder}/build"
       },
       "command": "make",
-      "group": "build"
+      "group": "build",
+      "detail": "Build for Linux"
+    },
+    {
+      "label": "Build Myriad (Windows)",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/build"
+      },
+      "command": "make",
+      "group": "build",
+      "detail": "Build for Windows"
     },
     {
       "type": "cmake",
@@ -36,6 +59,18 @@
       "group": "build",
       "problemMatcher": [],
       "detail": "CMake template clean rebuild task"
+    },
+    {
+      "type": "cmake",
+      "label": "CMake: build",
+      "command": "build",
+      "targets": ["all"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "detail": "CMake template build task"
     }
   ]
 }

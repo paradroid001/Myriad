@@ -9,6 +9,5 @@ project("Myriad")
 #set(CMAKE_C_COMPILER:FILEPATH="/home/myriad/zig/zig_c_windows.sh")
 #set(CMAKE_CXX_COMPILER:FILEPATH="/home/myriad/zig/zig_cpp_windows.sh")
 
-
 add_subdirectory("Engine")
 add_subdirectory("Test")

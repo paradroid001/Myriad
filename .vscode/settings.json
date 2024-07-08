@@ -1,5 +1,5 @@
 {
-  "cmake.configureOnOpen": true,
+  "cmake.configureOnOpen": false,
   "cmake.sourceDirectory": "/workspaces/Myriad",
   "files.associations": {
     "*.json": "json",
@@ -77,5 +77,30 @@
     "typeinfo": "cpp",
     "valarray": "cpp",
     "variant": "cpp"
-  }
+  },
+  "cmake.buildTask": false,
+  "cmake.additionalKits": ["${workspaceFolder}/CMakeKits.json"],
+  "cmake.automaticReconfigure": true,
+  "cmake.autoSelectActiveFolder": true,
+  "cmake.debugConfig": {
+    "miDebuggerPath": "/usr/bin/gdb",
+    "name": "(gdb) Launch",
+    "type": "cppdbg",
+    "request": "launch",
+    // Resolved by CMake Tools:
+    "program": "${command:cmake.launchTargetPath}",
+    "args": [],
+    "stopAtEntry": false,
+    "cwd": "${workspaceFolder}",
+    "console": "internalConsole",
+    "MIMode": "gdb",
+    "setupCommands": [
+      {
+        "description": "Enable pretty-printing for gdb",
+        "text": "-enable-pretty-printing",
+        "ignoreFailures": true
+      }
+    ]
+  },
+  "cmake.options.statusBarVisibility": "compact"
 }

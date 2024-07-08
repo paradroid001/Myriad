@@ -1,0 +1,20 @@
+[
+  {
+    "name": "x86_64-linux-gnu",
+    "toolchainFile": "TC-linux.cmake",
+    "environmentVariables": {
+      "CC": "/home/myriad/zig/zig cc",
+      "CXX": "/home/myriad/zig/zig c++"
+    },
+    "isTrusted": true
+  },
+  {
+    "name": "x86_64-windows-gnu",
+    "toolchainFile": "TC-windows.cmake",
+    "environmentVariables": {
+      "CC": "/home/myriad/zig/zig_c_windows.sh",
+      "CXX": "/home/myriad/zig/zig_cpp_windows.sh"
+    },
+    "isTrusted": true
+  }
+]
