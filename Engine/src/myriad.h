@@ -8,6 +8,7 @@
 #include "core/MyrApplication.h"
 #include "core/MyrEntryPoint.h"
 #include "core/MyrHandle.h"
+
 #include "core/thread/IJob.h"
 #include "core/thread/Job.h"
 #include "core/thread/ScheduledJob.h"
@@ -15,16 +16,10 @@
 #include "core/thread/ThreadPoolJobSystem.h"
 
 #include "core/GameObject.h"
+// #include "core/object/MyrObject.h"
 
-// new stuff
-// #include "core/Allocator.h"
-// #include "core/Handle.h"
-
-// #include "core/Provider.h"
 #include "io/Log.h"
-#include "rendering/Window.h"
-// #include "rendering/WindowProvider.h"
 #include "rendering/Renderer.h"
-// #include "rendering/WindowProviderRaylib.h"
+#include "rendering/Window.h"
 
 #endif

@@ -4,6 +4,7 @@
 #include "ScheduledJobbedTest.h"
 #include "TestThreadPool.h"
 #include "NonJobbedGameTest.h"
+#include "ObjectsTest.h"
 
 class MyriadTest : public Myriad::MyrApplication
 {
@@ -68,6 +69,12 @@ public:
     sjt.Run();
   }
 
+  void TestObjects()
+  {
+    auto objtest = allocator_ptr->Alloc<ObjectsTest>();
+    objtest->Run(*allocator_ptr);
+  }
+
   void Run()
   {
     prefs.screen_dimensions = {800, 600};
@@ -84,10 +91,13 @@ public:
     // of keeping jobs persistent in threads.
     // Under linux, this window just stays blank, and doesn't even clear to a set colour.
     // Under windows OS, this window stops responding and can't be closed.
-    Nicer();
+    // Nicer();
 
     // Scheduled jobs with dependencies.
     // Nicest();
+
+    // Test out object model
+    TestObjects();
   }
 };
 

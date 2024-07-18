@@ -2,11 +2,13 @@
 #define MYR_CORE_GAMEOBJECT_H
 
 #include "core/core.h"
+#include "core/object/MyrObject.h"
+#include "io/Log.h"
 #include "rendering/Renderer.h"
 
 namespace Myriad
 {
-    class MYR_API GameObject
+    class MYR_API GameObject : public MyrObject
     {
       protected:
         float x;
@@ -15,12 +17,13 @@ namespace Myriad
         float v_y;
 
       public:
-        GameObject();
+        GameObject() : MyrObject() {}
+        GameObject(const std::string name) : MyrObject(name) {}
+        virtual ~GameObject() { MYR_CORE_TRACE("Destructing a GameObject"); }
         void SetPosition(float posx, float posy);
         void SetVelocity(float velx, float vely);
         virtual void Update(float dt);
         virtual void Draw(Renderer &renderer);
-        ~GameObject();
     };
 } // namespace Myriad
 #endif

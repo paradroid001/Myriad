@@ -17,20 +17,21 @@ namespace Myriad
                 // TODO: Test this.
                 _hinstance = new MyrHandle<IService>(this);
             }
-        }; // private constructor
+        } // private constructor
       public:
-        virtual ~IService();
+        virtual ~IService() {}
         static MyrHandle<IService> *Instance() { return _hinstance; }
         virtual bool Init() = 0;
         virtual bool Shutdown() = 0;
     };
 
-    MyrHandle<IService> *IService::_hinstance;
+    // MyrHandle<IService> *IService::_hinstance;
 
+    /*
     IService::~IService()
     {
         // nothing
-    }
+    }*/
 
 } // namespace Myriad
 #endif

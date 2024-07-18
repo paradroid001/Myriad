@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION "3.18.4")
 
-project("MyriadEngineProject")
+project("MyriadEngine" VERSION 0.0.1 DESCRIPTION "Myriad is a Game Engine")
 
 #set(CMAKE_CXX_STANDARD 20)
 #set(SPDLOG_USE_STD_FORMAT OFF)
@@ -21,11 +21,13 @@ add_subdirectory(vendor/raylib)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library("MyriadEngine")
+add_library(${PROJECT_NAME} SHARED) # Make a dynamic lib
+#set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
+set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 # I tried INTERFACE here instead of PUBLIC, and it didn't work.
-target_include_directories("MyriadEngine" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/")
-target_include_directories("MyriadEngine" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/spdlog/")
-target_include_directories("MyriadEngine" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/")
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/spdlog/")
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
 
 # since we're compiling the myriad library, it needs to know it's 'internal'
 add_compile_definitions(MYRIAD_INTERNAL)
@@ -34,6 +36,8 @@ add_compile_definitions(MYRIAD_INTERNAL)
 file(GLOB_RECURSE MYRIAD_SOURCES CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp")
 #add_library("MyriadEngine" "${MYRIAD_SOURCES}") #doing this with target_sources below
 
-target_include_directories("MyriadEngine" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
-target_sources("MyriadEngine" PRIVATE "${MYRIAD_SOURCES}")
-target_link_libraries("MyriadEngine" PRIVATE raylib)
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+target_sources(${PROJECT_NAME} PRIVATE "${MYRIAD_SOURCES}")
+target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/myriad.h)

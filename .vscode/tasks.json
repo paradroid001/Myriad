@@ -32,6 +32,19 @@
       "group": "build"
     },
     {
+      "label": "Build Myriad",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/build"
+      },
+      "command": "make",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Build Myriad (General Purpose)"
+    },
+    {
       "label": "Build Myriad (Linux)",
       "type": "shell",
       "options": {
@@ -66,8 +79,7 @@
       "command": "build",
       "targets": ["all"],
       "group": {
-        "kind": "build",
-        "isDefault": true
+        "kind": "build"
       },
       "problemMatcher": [],
       "detail": "CMake template build task"

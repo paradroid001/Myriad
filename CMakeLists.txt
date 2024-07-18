@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION "3.18.4")
 project("Myriad")
-set(CMAKE_EXPORT_COMPILE_COMMANDS)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #set(CMAKE_TOOLCHAIN_FILE "TC-windows.cmake")
 
 # the name of the target operating system

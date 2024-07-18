@@ -4,9 +4,9 @@
 
 namespace Myriad
 {
-    GameObject::GameObject() {}
+    // GameObject::GameObject() {}
 
-    GameObject::~GameObject() {}
+    // GameObject::~GameObject() {}
 
     void GameObject::SetPosition(float pos_x, float pos_y)
     {

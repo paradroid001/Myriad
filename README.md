@@ -97,13 +97,17 @@ bin will end up in Test/
 - Use Valgrind
 
 TODO:
+
 - Cleanroom branch
-resource loader
+  resource loader
 - font
 - textures, sounds
-job system
- - with stats/timing
+  job system
+- with stats/timing
+- shared library engine and app, with stub loader.
+  - allow hot reloading.
 
 Issues:
+
 1. OpenGL context has to be inited on the same thread as rendering.
 2. Have to guarantee the init job runs before any others.
