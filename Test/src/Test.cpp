@@ -91,13 +91,13 @@ public:
     // of keeping jobs persistent in threads.
     // Under linux, this window just stays blank, and doesn't even clear to a set colour.
     // Under windows OS, this window stops responding and can't be closed.
-    // Nicer();
+    Nicer();
 
     // Scheduled jobs with dependencies.
     // Nicest();
 
     // Test out object model
-    TestObjects();
+    // TestObjects();
   }
 };
 

@@ -56,7 +56,7 @@ namespace Myriad
             return true;
         }
 
-        bool RemoveChild(MyrObject *child) {}
+        bool RemoveChild(MyrObject *child) { return false; }
 
         void Destroy() { destroyed = true; }
     };

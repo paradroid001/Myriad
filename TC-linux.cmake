@@ -1,6 +1,9 @@
 # the name of the target operating system
 set(CMAKE_SYSTEM_NAME Linux)
 set(UNIX on)
+set(GLFW_BUILD_X11 ON)
+set(GLFW_BUILD_WAYLAND OFF)
+
 #set(CMAKE_BUILD_TYPE "Debug")
 # "Release" "MinSizeRel" "RelWithDebInfo")
 

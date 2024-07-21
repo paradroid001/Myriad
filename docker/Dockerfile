@@ -3,6 +3,7 @@ FROM bitnami/minideb:bullseye
 RUN apt-get update -yqq && \
     apt-get install -yq binutils \
     build-essential \
+    gdb \
     make \
     cmake \
     wget \
@@ -13,8 +14,10 @@ RUN apt-get update -yqq && \
     less \
     file \
     vim \
-    git
+    git \
+    sudo
 
+RUN apt install -yq zip unzip
 
 #libx11-dev .................   for X11/Xlib.h
 #mesa-common-dev........        for GL/glx.h

@@ -12,8 +12,8 @@
     "name": "x86_64-windows-gnu",
     "toolchainFile": "TC-windows.cmake",
     "environmentVariables": {
-      "CC": "/home/myriad/zig/zig_c_windows.sh",
-      "CXX": "/home/myriad/zig/zig_cpp_windows.sh"
+      "CC": "/home/myriad/zig_c_windows.sh",
+      "CXX": "/home/myriad/zig_cpp_windows.sh"
     },
     "isTrusted": true
   }

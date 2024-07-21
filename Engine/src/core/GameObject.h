@@ -20,10 +20,18 @@ namespace Myriad
         GameObject() : MyrObject() {}
         GameObject(const std::string name) : MyrObject(name) {}
         virtual ~GameObject() { MYR_CORE_TRACE("Destructing a GameObject"); }
-        void SetPosition(float posx, float posy);
-        void SetVelocity(float velx, float vely);
-        virtual void Update(float dt);
-        virtual void Draw(Renderer &renderer);
+        void SetPosition(float posx, float posy)
+        {
+            x = posx;
+            y = posy;
+        }
+        void SetVelocity(float velx, float vely)
+        {
+            v_x = velx;
+            v_y = vely;
+        }
+        virtual void Update(float dt) {}
+        virtual void Draw(Renderer &renderer) {}
     };
 } // namespace Myriad
 #endif

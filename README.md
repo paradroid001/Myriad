@@ -96,7 +96,7 @@ bin will end up in Test/
 - Size profiling for binaries: https://github.com/google/bloaty
 - Use Valgrind
 
-TODO:
+## TODO:
 
 - Cleanroom branch
   resource loader

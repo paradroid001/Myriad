@@ -10,27 +10,27 @@ project("MyriadEngine" VERSION 0.0.1 DESCRIPTION "Myriad is a Game Engine")
 #target_include_directories("MyriadEngine" PUBLIC )
 
 set(PLATFORM Desktop)
-#set(CMAKE_SYSTEM_NAME Windows)
-#set(UNIX off)
-set(GLFW_BUILD_WAYLAND OFF)
-set(GLFW_BUILD_X11 ON)
 
 #We don't want raylib's examples built. This option is picked up by raylib's CMakeLists.txt
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(vendor/raylib)
 
-set(CMAKE_CXX_STANDARD 17)
+#add_library(${PROJECT_NAME} SHARED) # Make a dynamic lib
+#target_compile_definitions(${PROJECT_NAME} PRIVATE MYR_BUILD_DLL)
+add_library(${PROJECT_NAME} STATIC) # Make a static lib
+# since we're compiling the myriad library, it needs to know it's 'internal'
+target_compile_definitions(${PROJECT_NAME} PRIVATE MYRIAD_INTERNAL)
 
-add_library(${PROJECT_NAME} SHARED) # Make a dynamic lib
 #set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
-set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+#set(CMAKE_CXX_STANDARD 17)
+set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
+if(CMAKE_SYSTEM_NAME EQUAL Windows)
+target_link_options(-static-libgcc -lopengl32 -lgdi32 -lwinmm)
+endif()
 # I tried INTERFACE here instead of PUBLIC, and it didn't work.
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/spdlog/")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
-
-# since we're compiling the myriad library, it needs to know it's 'internal'
-add_compile_definitions(MYRIAD_INTERNAL)
 
 #define MY_SOURCES to be all my globbed cpp files.
 file(GLOB_RECURSE MYRIAD_SOURCES CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp")

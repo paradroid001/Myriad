@@ -9,7 +9,7 @@ namespace Myriad
     // This is just a base class so that the allocator
     // has a class to pin the template variants on,
     // for the purpose of deleting them
-    class HandleBase
+    class MYR_API HandleBase
     {
       public:
         virtual ~HandleBase(){};
