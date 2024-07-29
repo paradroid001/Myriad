@@ -9,14 +9,14 @@
 class MyriadTest : public Myriad::MyrApplication
 {
 public:
-  Myriad::AllocatorService *allocator_ptr;
+  Myriad::AllocatorQD *allocator_ptr;
   Myriad::MyrAppPreferences prefs;
 
   MyriadTest()
   {
     MYR_INFO("Hello this is an info message");
     std::cout << "Hello world from myr test" << std::endl;
-    allocator_ptr = new Myriad::AllocatorService();
+    allocator_ptr = new Myriad::AllocatorQD();
     MYR_TRACE("Made an allocator");
   }
 

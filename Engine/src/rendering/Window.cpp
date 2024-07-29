@@ -1,4 +1,5 @@
 #include "rendering/Window.h"
+#include "core/memory/AllocatorProvider.h"
 // #include "core/MyrHandle.h"
 #ifdef MYRIAD_INTERNAL
     #include "core/MyriadConfig.h"
@@ -17,12 +18,13 @@
 
 namespace Myriad
 {
-    Window::Window()
+    Window::Window(AllocatorProvider *allocator)
     {
 #if MYRIAD_RENDERER == RAYLIB
-        window_provider =
-            (MyrHandle<WindowProvider> *)(new MyrHandle<WindowProviderRaylib>(
-                new WindowProviderRaylib()));
+        uint16_t id = allocator->Alloc<WindowProviderRaylib>();
+        window_provider = allocator->Get<WindowProviderRaylib>(id);
+        //(MyrHandle<WindowProvider> *)(new MyrHandle<WindowProviderRaylib>(
+        //    new WindowProviderRaylib()));
 #endif
     }
 
@@ -30,14 +32,14 @@ namespace Myriad
 
     bool Window::Init(int w, int h, const char *title)
     {
-        return (*window_provider)->Init(w, h, title);
+        return window_provider->Init(w, h, title);
     }
 
-    void Window::SetFPS(int fps) { (*window_provider)->SetFPS(fps); }
+    void Window::SetFPS(int fps) { window_provider->SetFPS(fps); }
 
-    bool Window::ShouldClose() { return (*window_provider)->ShouldClose(); }
+    bool Window::ShouldClose() { return window_provider->ShouldClose(); }
 
-    void Window::Close() { (*window_provider)->Close(); }
+    void Window::Close() { window_provider->Close(); }
 
     bool Window::Shutdown()
     {

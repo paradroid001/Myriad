@@ -230,7 +230,7 @@ namespace Myriad
         {
             {
                 // Lock the queue to update the stop flag safely
-                std::unique_lock<std::mutex>(_queue_mutex);
+                std::unique_lock<std::mutex> _queue_mutex;
                 _stop = true;
             }
 

@@ -90,7 +90,7 @@ namespace Myriad
                 // Create the spindle with the same id as its position.
                 spindles.emplace_back((uint8_t)i);
             }
-            for (auto i = 0; i < num_threads; ++i)
+            for (size_t i = 0; i < num_threads; ++i)
             {
                 // create the thread using the corresponding
                 // Spindle

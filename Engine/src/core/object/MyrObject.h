@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "core/AllocatorService.h"
 #include "core/MyrHandle.h"
 #include "core/core.h"
+#include "core/memory/AllocatorProvider.h"
 #include "io/Log.h"
 
 namespace Myriad
@@ -22,10 +22,10 @@ namespace Myriad
         bool destroyed;
 
       public:
-        MyrObject() : name("None"), destroyed(false), parent(NULL) {}
+        MyrObject() : name("None"), parent(NULL), destroyed(false) {}
         // This is meant to be private, but the allocator then can't call new.
         MyrObject(const std::string object_name)
-            : name(object_name), destroyed(false), parent(NULL)
+            : name(object_name), parent(NULL), destroyed(false)
         { /*Nothing*/
         } // private constructor - you can't create these.
 

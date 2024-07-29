@@ -11,14 +11,14 @@ using engine = std::mt19937;
 class RenderInitJob : public Myriad::Job
 {
 private:
-  Myriad::MyrHandle<Myriad::Renderer> renderer_;
-  Myriad::MyrHandle<Myriad::Window> window_;
-  Myriad::MyrAppPreferences prefs_;
+  uint16_t renderer_;
+  uint16_t window_;
+  uint16_t prefs_;
 
 public:
   RenderInitJob(const char *name) : Myriad::Job(name) {}
 
-  void Init(Myriad::MyrAppPreferences &prefs, Myriad::MyrHandle<Myriad::Window> window, Myriad::MyrHandle<Myriad::Renderer> renderer)
+  void Init(Myriad::MyrAppPreferences &prefs, uint16_t window, uint16_t renderer)
   {
     prefs_ = prefs;
     renderer_ = renderer;
@@ -38,7 +38,7 @@ protected:
 class RenderJob : public Myriad::Job
 {
 private:
-  Myriad::MyrHandle<Myriad::Renderer> renderer_;
+  uint16_t renderer_;
   std::vector<TestGameObject *> *p_object_ps_;
 
 public:
@@ -74,7 +74,7 @@ public:
   UpdateJob(const char *name) : Myriad::Job(name)
   {
   }
-  std::vector<TestGameObject *> *Init(Myriad::AllocatorService &allocator, int num_objects)
+  std::vector<TestGameObject *> *Init(Myriad::AllocatorProvider &allocator, int num_objects)
   {
     std::random_device os_seed;
     const u32 seed = os_seed();
@@ -85,7 +85,9 @@ public:
     for (int i = 0; i < num_objects; i++)
     {
       // this handle situation isn't going to work...
-      TestGameObject *p_tgo = &*(allocator.Alloc<TestGameObject>());
+      uint16_t gameobject_id = allocator.Alloc<TestGameObject>();
+      TestGameObject *p_tgo = allocator.Get<TestGameObject>(gameobject_id);
+      // TestGameObject *p_tgo = &*(allocator.Alloc<TestGameObject>());
       object_ps_.push_back(p_tgo);
       int x = distribute_x(generator);
       int y = distribute_y(generator);
@@ -140,14 +142,14 @@ public:
     // allocator was given to us.
   }
 
-  void Init(Myriad::AllocatorService *allocator)
+  void Init(Myriad::AllocatorProvider *allocator)
   {
     pool_ = allocator->Alloc<Myriad::ThreadPool>(1); // single threaded
     window_ = allocator->Alloc<Myriad::Window>();
     renderer_ = allocator->Alloc<Myriad::Renderer>();
   }
 
-  void Run(Myriad::AllocatorService *allocator, Myriad::MyrAppPreferences &prefs)
+  void Run(Myriad::AllocatorProvider *allocator, Myriad::MyrAppPreferences &prefs)
   {
     Myriad::MyrHandle<GetInputJob> inputjob = allocator->Alloc<GetInputJob>("GetInput Job");
     Myriad::MyrHandle<RenderInitJob> renderinitjob = allocator->Alloc<RenderInitJob>("Render Init Job");

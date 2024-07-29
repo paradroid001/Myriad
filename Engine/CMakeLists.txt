@@ -42,3 +42,19 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/myriad.h)
 # since we're compiling the myriad library, it needs to know it's 'internal'
 target_compile_definitions(${PROJECT_NAME} PRIVATE MYRIAD_INTERNAL)
 target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall)
+
+#
+# TESTS
+#
+#find_package(Catch2 3 REQUIRED)
+# Rather than find package, could also do:
+add_subdirectory(vendor/catch2)
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/catch2/src")
+# These tests can use the Catch2-provided main
+add_executable(EngineTests tests/test.cpp src/io/Log.cpp)
+target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/")
+target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/spdlog/")
+target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
+target_link_libraries(EngineTests PRIVATE Catch2::Catch2WithMain)
+target_compile_options(EngineTests PRIVATE -std=c++17 -Wall)

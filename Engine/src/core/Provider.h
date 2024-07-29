@@ -8,7 +8,7 @@ namespace Myriad
 
       public:
         virtual ~Provider();
-        // virtual bool Init() = 0;
+        virtual bool Init() = 0;
         virtual bool Shutdown() = 0;
     };
 } // namespace Myriad

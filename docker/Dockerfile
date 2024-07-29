@@ -6,6 +6,7 @@ RUN apt-get update -yqq && \
     gdb \
     make \
     cmake \
+    catch2 \
     wget \
     curl \
     python3 \
@@ -15,6 +16,7 @@ RUN apt-get update -yqq && \
     file \
     vim \
     git \
+    valgrind \
     sudo
 
 RUN apt install -yq zip unzip
