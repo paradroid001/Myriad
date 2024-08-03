@@ -13,7 +13,7 @@ using engine = std::mt19937;
 class NonJobbedGameTest
 {
 public:
-  void Run(Myriad::AllocatorService &allocator, Myriad::MyrAppPreferences &prefs)
+  void Run(Myriad::Allocator &allocator, Myriad::MyrAppPreferences &prefs)
   {
     // Myriad::MyrHandle<Myriad::IService> *allocator = Myriad::AllocatorService::Instance();
 
@@ -33,7 +33,7 @@ public:
 
     // Myriad::MyrHandle<Myriad::Window> *win = new Myriad::MyrHandle<Myriad::Window>(new Myriad::Window);
     // Myriad::MyrHandle<Myriad::WindowProviderRaylib> *win = new Myriad::MyrHandle<Myriad::WindowProviderRaylib>(new Myriad::WindowProviderRaylib);
-    Myriad::MyrHandle<Myriad::Window> win = allocator.Alloc<Myriad::Window>();
+    Myriad::MyrHandle<Myriad::Window> win = allocator.Alloc<Myriad::Window>(&allocator);
 
     MYR_TRACE("Made a window");
     win->SetFPS(60);

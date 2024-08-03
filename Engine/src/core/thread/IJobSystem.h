@@ -1,7 +1,7 @@
 #ifndef _MYRIAD_CORE_IJOBSYSTEM_H_
 #define _MYRIAD_CORE_IJOBSYSTEM_H_
 
-#include "core/MyrHandle.h"
+// #include "core/memory/MyrHandle.h"
 #include "core/core.h"
 #include "core/thread/IJob.h"
 

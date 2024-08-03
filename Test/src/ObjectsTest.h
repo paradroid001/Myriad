@@ -7,7 +7,7 @@
 class ObjectsTest
 {
 public:
-  void Run(Myriad::AllocatorService &allocator)
+  void Run(Myriad::Allocator &allocator)
   {
 
     auto myrobject = allocator.Alloc<Myriad::MyrObject>("MyrObject");

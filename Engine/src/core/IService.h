@@ -1,7 +1,7 @@
 #ifndef MYRIAD_CORE_ISERVICE_H
 #define MYRIAD_CORE_ISERVICE_H
 
-#include "MyrHandle.h"
+// #include "core/memory/MyrHandle.h"
 
 namespace Myriad
 {

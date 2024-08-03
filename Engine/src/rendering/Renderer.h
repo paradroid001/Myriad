@@ -2,7 +2,7 @@
 #define MYRIAD_RENDERING_RENDERER_H
 
 // #include "core/AllocatorService.h"
-#include "core/MyrHandle.h"
+#include "core/memory/MyrHandle.h"
 #include "core/core.h"
 #include "rendering/RenderProvider.h"
 

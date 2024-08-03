@@ -51,10 +51,11 @@ target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall)
 add_subdirectory(vendor/catch2)
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/catch2/src")
 # These tests can use the Catch2-provided main
-add_executable(EngineTests tests/test.cpp src/io/Log.cpp)
+add_executable(EngineTests tests/test.cpp) # src/io/Log.cpp)
 target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/")
 target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/spdlog/")
 target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
-target_link_libraries(EngineTests PRIVATE Catch2::Catch2WithMain)
+#link against Catch2, and against the Engine
+target_link_libraries(EngineTests PRIVATE Catch2::Catch2WithMain ${PROJECT_NAME})
 target_compile_options(EngineTests PRIVATE -std=c++17 -Wall)

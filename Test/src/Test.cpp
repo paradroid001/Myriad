@@ -6,17 +6,19 @@
 #include "NonJobbedGameTest.h"
 #include "ObjectsTest.h"
 
+#include "core/memory/AllocatorQD.h"
+
 class MyriadTest : public Myriad::MyrApplication
 {
 public:
-  Myriad::AllocatorQD *allocator_ptr;
+  Myriad::Allocator *allocator_ptr;
   Myriad::MyrAppPreferences prefs;
 
   MyriadTest()
   {
     MYR_INFO("Hello this is an info message");
     std::cout << "Hello world from myr test" << std::endl;
-    allocator_ptr = new Myriad::AllocatorQD();
+    allocator_ptr = new Myriad::Allocator();
     MYR_TRACE("Made an allocator");
   }
 

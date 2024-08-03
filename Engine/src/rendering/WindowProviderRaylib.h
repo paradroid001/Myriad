@@ -11,11 +11,12 @@ namespace Myriad
     class MYR_API WindowProviderRaylib : public WindowProvider
     {
       public:
-        virtual bool Shutdown();
-        virtual bool Init(int w, int h, const char *title);
-        virtual void SetFPS(int fps);
-        virtual bool ShouldClose();
-        virtual void Close();
+        virtual bool Shutdown() override;
+        virtual bool Init();
+        virtual bool Init(int w, int h, const char *title) override;
+        virtual void SetFPS(int fps) override;
+        virtual bool ShouldClose() override;
+        virtual void Close() override;
     };
 
     bool WindowProviderRaylib::Shutdown()
@@ -23,6 +24,9 @@ namespace Myriad
         MYR_CORE_INFO("Raylib Window Provider shutting down");
         return true;
     }
+
+    // TODO this is included because it has to be, it's an abstract method.
+    bool WindowProviderRaylib::Init() { return true; }
     bool WindowProviderRaylib::Init(int w, int h, const char *title)
     {
         // Raylib Function

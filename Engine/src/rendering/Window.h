@@ -2,7 +2,7 @@
 #define MYRIAD_RENDERING_WINDOW_H
 
 #include "core/core.h"
-#include "core/memory/AllocatorProvider.h"
+#include "core/memory/Allocator.h"
 #include "rendering/WindowProvider.h"
 
 namespace Myriad
@@ -11,11 +11,13 @@ namespace Myriad
     {
       private:
         // MyrHandle<WindowProvider> *window_provider;
+
         WindowProvider *window_provider;
 
       public:
-        Window(AllocatorProvider *allocator);
+        Window(Allocator *allocator);
         ~Window();
+        bool Init() override { return true;} // TODO this is useless.
         bool Init(int w, int h, const char *title);
         void SetFPS(int fps);
         bool ShouldClose();

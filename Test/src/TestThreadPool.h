@@ -21,7 +21,7 @@ protected:
 class TestThreadPool
 {
 public:
-  void Run(Myriad::AllocatorService &allocator)
+  void Run(Myriad::Allocator &allocator)
   {
     MYR_CORE_INFO("Testing threadpool");
     Myriad::ThreadPool pool(1);
@@ -30,12 +30,10 @@ public:
     Myriad::MyrHandle<TestJob> stephanie = allocator.Alloc<TestJob>("Stephanie");
     Myriad::MyrHandle<TestJob> thomas = allocator.Alloc<TestJob>("Thomas");
 
-    MYR_CORE_TRACE("Emily refcount: {0}", emily.GetRefCount());
-
     // Myriad::MyrHandle<Job> job_emily = static_cast<Myriad::MyrHandle<Myriad::Job>>(emily);
 
-    auto x = 42;
-    auto y = int{43};
+    // auto x = 42;
+    // auto y = int{43};
 
     // pool.Init();
 
