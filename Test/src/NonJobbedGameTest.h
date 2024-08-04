@@ -51,7 +51,7 @@ public:
     Myriad::MyrHandle<Myriad::Renderer> renderer = allocator.Alloc<Myriad::Renderer>();
     renderer->Init();
 
-    int num_objects = 100;
+    int num_objects = 1;
     std::random_device os_seed;
     const u32 seed = os_seed();
     engine generator(seed);
@@ -62,7 +62,7 @@ public:
     for (int i = 0; i < num_objects; i++)
     {
       // this handle situation isn't going to work...
-      objects[i] = allocator.Alloc<TestGameObject>();
+      objects[i] = allocator.Alloc<TestGameObject>(&allocator);
       objects[i]->SetPosition(distribute_x(generator), distribute_y(generator));
       objects[i]->SetVelocity(50, 50);
     }

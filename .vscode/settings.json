@@ -82,8 +82,13 @@
     "future": "cpp"
   },
   "cmake.buildTask": false,
+  //We have set our kits up in this file.
   "cmake.additionalKits": ["${workspaceFolder}/CMakeKits.json"],
   "cmake.automaticReconfigure": true,
+  //Build directory naming is based on the buildkit and variant.
+  "cmake.buildDirectory": "${workspaceFolder}/build/${buildKit}/${buildType}",
+  //Copy compile commands to the central location referenced below
+  "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
   "cmake.autoSelectActiveFolder": true,
   "cmake.debugConfig": {
     "miDebuggerPath": "/usr/bin/gdb",

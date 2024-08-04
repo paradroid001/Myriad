@@ -36,7 +36,7 @@ namespace Myriad
 #endif
     }
 
-    Window::~Window() {}
+    Window::~Window() { delete window_provider; }
 
     bool Window::Init(int w, int h, const char *title)
     {

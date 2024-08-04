@@ -30,6 +30,7 @@ namespace Myriad
         {
             if (allocator_provider != nullptr)
             {
+                allocator_provider->Shutdown();
                 delete allocator_provider;
             }
             return true;

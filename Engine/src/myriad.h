@@ -18,6 +18,11 @@
 #include "core/thread/ThreadPool.h"
 #include "core/thread/ThreadPoolJobSystem.h"
 
+#include "asset/AssetProvider.h"
+#include "asset/MyrAsset.h"
+#include "asset/Texture2D.h"
+#include "asset/TextureProvider.h"
+
 #include "core/GameObject.h"
 // #include "core/object/MyrObject.h"
 

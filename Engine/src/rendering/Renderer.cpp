@@ -1,4 +1,6 @@
 #include "rendering/Renderer.h"
+#include "asset/Texture2D.h"
+
 #ifdef MYRIAD_INTERNAL
     #include "core/MyriadConfig.h"
 #else
@@ -41,5 +43,9 @@ namespace Myriad
     void Renderer::DrawCircle(Vector2 pos, float radius, MyrColour colour)
     {
         render_provider->DrawCircle(pos, radius, colour);
+    }
+    void Renderer::DrawTexture(Texture2D tex, Vector2 pos, MyrColour colour)
+    {
+        render_provider->DrawTexture(tex, pos, colour);
     }
 } // namespace Myriad

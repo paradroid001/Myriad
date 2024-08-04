@@ -34,7 +34,9 @@ namespace Myriad
          */
         T *Get() const
         {
-            return static_cast<T *>(p_allocator_provider_->Get(index_));
+            // return static_cast<T *>(p_allocator_provider_->Ptr(index_));
+            // Ptr returns a void*, so we have to cast it.
+            return static_cast<T *>(p_allocator_provider_->Ptr(index_));
         }
 
         // -> operator, returns T*

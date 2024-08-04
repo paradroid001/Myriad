@@ -95,6 +95,49 @@ bin will end up in Test/
 - See Sokol Author: https://floooh.github.io/2018/05/01/cpp-to-c-size-reduction.html
 - Size profiling for binaries: https://github.com/google/bloaty
 - Use Valgrind
+- For posterity, JobbedTest (500 objects), AllocatorQD, running for about 2 seconds,
+  allocator destroyed 508 objects. Ran in WSL, make sure you install mesa-common-dev so you have glx, and export DISPLAY=:0
+  Output of valgrind --tool=cachegrind --cache-sim=yes build/Test/MyriadTest
+
+  ```
+  ==10038==
+  ==10038== I   refs:      2,791,171,291
+  ==10038== I1  misses:       18,859,714
+  ==10038== LLi misses:          414,819
+  ==10038== I1  miss rate:          0.68%
+  ==10038== LLi miss rate:          0.01%
+  ==10038==
+  ==10038== D   refs:      1,572,680,682  (1,058,955,945 rd   + 513,724,737 wr)
+  ==10038== D1  misses:       26,223,736  (   15,522,069 rd   +  10,701,667 wr)
+  ==10038== LLd misses:        3,710,625  (    1,575,701 rd   +   2,134,924 wr)
+  ==10038== D1  miss rate:           1.7% (          1.5%     +         2.1%  )
+  ==10038== LLd miss rate:           0.2% (          0.1%     +         0.4%  )
+  ==10038==
+  ==10038== LL refs:          45,083,450  (   34,381,783 rd   +  10,701,667 wr)
+  ==10038== LL misses:         4,125,444  (    1,990,520 rd   +   2,134,924 wr)
+  ==10038== LL miss rate:            0.1% (          0.1%     +         0.4%  )
+  ```
+
+  Also from the same binary, just running valgrind:
+
+  ```
+  ==10056==
+  ==10056== HEAP SUMMARY:
+  ==10056==     in use at exit: 30,595,813 bytes in 16,526 blocks
+  ==10056==   total heap usage: 110,362 allocs, 93,836 frees, 58,540,165 bytes allocated
+  ==10056==
+  ==10056== LEAK SUMMARY:
+  ==10056==    definitely lost: 78,136 bytes in 507 blocks
+  ==10056==    indirectly lost: 20,000 bytes in 500 blocks
+  ==10056==      possibly lost: 4,501,941 bytes in 2,555 blocks
+  ==10056==    still reachable: 25,995,736 bytes in 12,964 blocks
+  ==10056==         suppressed: 0 bytes in 0 blocks
+  ==10056== Rerun with --leak-check=full to see details of leaked memory
+  ==10056==
+  ==10056== Use --track-origins=yes to see where uninitialised values come from
+  ==10056== For lists of detected and suppressed errors, rerun with: -s
+  ==10056== ERROR SUMMARY: 10000000 errors from 503 contexts (suppressed: 0 from 0)
+  ```
 
 ## TODO:
 
@@ -111,3 +154,27 @@ Issues:
 
 1. OpenGL context has to be inited on the same thread as rendering.
 2. Have to guarantee the init job runs before any others.
+3. For raylib at least, you have to init textures after GL is inited, i.e. after the render init job.
+
+# Projects and Links:
+
+Interesting GL/Multiplayer: https://github.com/calint/glos?tab=readme-ov-file
+Valgrind Driven dev: https://atilaoncode.blog/2015/06/22/valgrind-driven-development/
+Valgrind's Tools: https://valgrind.org/info/tools.html
+How To Profile C++ with Callgrind/KCacheGrind: https://baptiste-wicht.com/posts/2011/09/profile-c-application-with-callgrind-kcachegrind.html
+This is also good: https://stackoverflow.com/questions/32542164/using-valgrind-to-measure-cache-misses
+Set DISPLAY in WSL: https://askubuntu.com/questions/1299323/how-to-set-up-display-variable-for-wsl2-of-ubuntu-20
+Handles are better pointers: https://floooh.github.io/2018/06/17/handles-vs-pointers.html
+CMake Dependencies: https://floooh.github.io/2016/01/12/cmake-dependency-juggling.html
+Building an ECS series: https://ajmmertens.medium.com/building-an-ecs-2-archetypes-and-vectorization-fe21690805f9
+This guy didn't like Raylib: https://danielchasehooper.com/posts/shapeup/
+Interesting fantasy platform thing: https://bztsrc.gitlab.io/meg4/
+ET Engine - Planet Vis: http://leah-lindner.com/blog/et_engine/
+ET Engine - Github: https://github.com/Illation/ETEngine
+
+Mike Acton - Data Oriented Design and C++: https://www.youtube.com/watch?v=rX0ItVEVjHc
+Game Engine using C++11: https://www.youtube.com/watch?v=8AjRD6mU96s
+
+```
+
+```

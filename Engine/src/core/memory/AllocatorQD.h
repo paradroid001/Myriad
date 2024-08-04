@@ -22,7 +22,8 @@ namespace Myriad
     class MemRecordBase
     {
       public:
-        virtual ~MemRecordBase(){};
+        virtual ~MemRecordBase() {}
+        virtual void *GetVoidRaw() const { return nullptr; }
     };
 
     template <class T> class MemRecord : public MemRecordBase
@@ -50,8 +51,13 @@ namespace Myriad
                       << std::endl;
         }
 
-        // Get
-        // T *Get(AllocatorProvider *allocator) const { return ptr.get(); }
+        // GetRaw
+        T *GetRaw() const { return ptr.get(); }
+
+        void *GetVoidRaw() const override
+        {
+            return static_cast<void *>(ptr.get());
+        }
 
         MyrHandle<T> *GetHandle() const { return phandle; }
     };
@@ -60,18 +66,23 @@ namespace Myriad
     {
       private:
         int next_index;
-        // MemRecordBase *memrecords_[MAX_HANDLES];
-        void *ptrs_[MAX_HANDLES];
+        MemRecordBase *memrecords_[MAX_HANDLES];
 
       public:
+        virtual ~AllocatorQD()
+        {
+            // We shouldn't need to delete here,
+            // This should be triggered by our delete.
+            MYR_CORE_TRACE("AllocatorQD destructor doing nothing");
+        }
+
         virtual bool Init()
         {
             next_index = 0; // this index will be used for an allocator handle.
             // Zero everything
             for (int i = 0; i < MAX_HANDLES; i++)
             {
-                ptrs_[i] = nullptr;
-                // memrecords_[i] = NULL;
+                memrecords_[i] = NULL;
             }
             // Don't use the first slot.
             next_index += 1;
@@ -83,28 +94,23 @@ namespace Myriad
             // Don't delete the first slot
             for (int i = 1; i < next_index; i++)
             {
-                // if (memrecords_[i] != NULL)
-                if (ptrs_[i] != nullptr)
+                if (memrecords_[i] != NULL)
                 {
-                    // delete memrecords_[i];
+                    delete memrecords_[i];
                     // delete ptrs_[i]; //whoops we have void*, we can't delete
                     counter += 1;
                 }
             }
             // 0 index would be us, the allocator
-            // if (memrecords_[0] != NULL)
-            //    delete memrecords_[0];
-
             // TODO: so this means the allocator provider deletes itself.
             // the outer, owning 'thing' doesn't need to bother.
-            if (ptrs_[0] != nullptr)
-            {
-                // delete ptrs_[0]; //again, this is void *
-            }
-            // We shouldn't need to delete here,
-            // This should be triggered by our delete.
-            std::cout << "Allocator destructor deleted " << counter
-                      << " pointers" << std::endl;
+            // Deleting ourselves in Shutdown will trigger our destructor,
+            // which shouldn't have much to do.
+            if (memrecords_[0] != NULL)
+                delete memrecords_[0];
+
+            std::cout << "Allocator Shutdown deleted " << counter << " pointers"
+                      << std::endl;
             MYR_CORE_WARN(
                 "Do I still need to fix the allocator? Will it will never "
                 "know when handles "
@@ -112,6 +118,7 @@ namespace Myriad
             return true;
         }
 
+        /*
         // New Wave Functions
         // TODO: this function should really be called 'Store', because it
         // officially stores the ptr
@@ -128,33 +135,69 @@ namespace Myriad
                 return nullptr;
             return ptrs_[index];
         }
+        */
+
+        /*
         template <class T> MyrHandle<T> MakeHandle(T *ptr)
         {
             uint16_t index = AssignSlot(ptr);
             MyrHandle<T> *h = new MyrHandle<T>(index, this);
             return *h; // TODO leak
         }
+        */
 
         // Original Functions
         // template <class T, typename... Args> MyrHandle<T> Alloc(Args...
         // args);
         template <class T, typename... Args>
-        Myriad::MyrHandle<T> Alloc(Args... args)
+        MyrHandle<T> New(T *dummyptr, Args... args)
         {
             MYR_CORE_TRACE("Allocator {0:x} is creating a new handle.",
                            (size_t)this);
             Myriad::MyrHandle<T> *p_handle =
                 new Myriad::MyrHandle<T>(next_index, this);
 
-            // MemRecord<T> *p_memrecord =
-            //     new Myriad::MemRecord<T>(next_index, p_handle, args...);
-            // memrecords_[next_index] = p_memrecord;
+            MemRecord<T> *p_memrecord =
+                new Myriad::MemRecord<T>(next_index, p_handle, args...);
+            memrecords_[next_index] = p_memrecord;
 
             // TODO will it let me exec this code?
-            ptrs_[next_index] = new T(args...);
+            // ptrs_[next_index] = new T(args...);
 
             next_index += 1;
             return *p_handle; // return the created handle.
+        }
+
+        // Gets a pointer to the handle (nullptr if out of range)
+        template <class T> MyrHandle<T> *At(uint16_t index)
+        {
+            // TODO this is obviously not completely correct
+            if (index <= next_index)
+            {
+                return (
+                    static_cast<MemRecord<T>>(memrecords_[index])->GetHandle());
+            }
+            return nullptr;
+        }
+
+        // Gets the pointer, but I don't know how to call this.
+        template <class T> T *Get(uint16_t index)
+        {
+            // TODO this is obviously not completely correct
+            if (index <= next_index)
+            {
+                return static_cast<MemRecord<T>>(memrecords_[index])->GetRaw();
+            }
+            return nullptr;
+        }
+
+        void *GetVoid(uint16_t index)
+        {
+            if (index <= next_index)
+            {
+                return memrecords_[index]->GetVoidRaw();
+            }
+            return nullptr;
         }
 
         // template <class T> T *Ptr(uint16_t index);
