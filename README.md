@@ -175,6 +175,43 @@ ET Engine - Github: https://github.com/Illation/ETEngine
 Mike Acton - Data Oriented Design and C++: https://www.youtube.com/watch?v=rX0ItVEVjHc
 Game Engine using C++11: https://www.youtube.com/watch?v=8AjRD6mU96s
 
-```
+This is an interesting post/engine:
 
-```
+- https://phoboslab.org/log/2024/08/high_impact
+- https://github.com/phoboslab/high_impact
+
+# Notes
+
+## Gameobject-Component model:
+
+### GameObject
+
+    Children: GameObject[] (authoring my own would just be data, because they only vary by component?)
+    Components: Component[] (these could be anything, you would want to define them in your app)
+
+So what if we just define interfaces for now, and then have a few implementations:
+
+- a quick and dirty implementation (do whatever)
+- a performance conscious implementation where I might want to try using a few perf conscious ways of doing things.
+  - making structs small, looking at alignment, arrays.
+- an ecs version using flecs or similar.
+
+The aim, particularly of doing the quick and dirty version, is to actually start making a game, and worrying about performance later.
+
+### Alloc Requirements:
+
+- From any user/engine code, I want you to construct me a Thing and hand me back a token (handle) that I can use to get that Thing in future.
+- I can ask for that Thing to be destroyed, if I have the token.
+- I can swap out the backend implementation that manages Things.
+- My token knows if it has become invalid.
+
+Handle h1 = allocator.Alloc<GameObject>(pos,rot,scale);
+Handle h2 = allocator.Alloc<TextObject>(x, y, "Hello World");
+
+allocator.Alloc<GameObjec>(pos, rot, scale);
+
+## So, thoughts 20240811:
+
+- No singletons - if something needs access to a thing, it gets passed in.
+  - therefore there can be permissions around this: you can pass things in const etc.
+- Get multithreading working first, because that sorts out all the permission stuff (passing/injection of things that are needed).

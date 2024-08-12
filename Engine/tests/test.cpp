@@ -4,6 +4,10 @@
 
 #include "core/memory/Allocator.h"
 #include "core/memory/MyrHandle.h"
+#include "core/event/MyrEvent.h"
+#include "core/event/MyrEventService.h"
+#include "core/MyrTimer.h"
+#include <iostream>
 
 unsigned int Factorial(unsigned int number)
 {
@@ -75,4 +79,69 @@ TEST_CASE("Allocator correctly creates client classes", "[group1]")
   // all the allocations are corectly cleaned up.
   allocator->Shutdown();
   delete allocator;
+}
+
+class MyEvent : public Myriad::MyrEvent
+{
+public:
+  MyEvent() : Myriad::MyrEvent(Myriad::MYR_EVENT_SYSTEM, 8){};
+  int field1;
+  float field2;
+};
+
+class MyObject
+{
+public:
+  void Run(Myriad::MyrEvent *evt)
+  {
+    std::cout << "Hello from MyObject.Run" << std::endl;
+  }
+};
+
+TEST_CASE("Can combine uint16s")
+{
+  Myriad::MyrEventType type = Myriad::MYR_EVENT_FRAME_LIFECYCLE;
+  uint8_t subtype = 195;
+  uint16_t combined = type << 8 | subtype;
+  std::cout << "Combined is " << combined << " which should be " << type << " and " << subtype << std::endl;
+  REQUIRE(combined > 195);
+  REQUIRE(combined == 4291); // 16 * 256 + 195 = 4291
+}
+
+TEST_CASE("Timer behaves")
+{
+  Myriad::MyrTimer timer;
+  timer.Start();
+  float t1 = timer.Time();
+  float t2 = timer.Time();
+  timer.Stop();
+  float t3 = timer.Time();
+  timer.Start();
+  float t4 = timer.Time();
+  timer.Reset();
+  timer.Stop();
+  float t5 = timer.Time();
+  REQUIRE(t2 > t1);
+  REQUIRE(t3 == t2);
+  REQUIRE(t4 > t3);
+  REQUIRE(t5 == 0.0f);
+}
+
+TEST_CASE("Can Make Events")
+{
+  Myriad::MyrEventService::GetInstance().StartService();
+
+  MyEvent *me = new MyEvent();
+  me->field1 = 5;
+  me->field2 = 7.0f;
+  REQUIRE(me->field1 == 5);
+  REQUIRE(me->field2 == 7.0f);
+
+  Myriad::EventDispatcher *ed = new Myriad::EventDispatcher();
+  MyObject *mo = new MyObject();
+
+  // This is the best we can do for now, and
+  MyEvent::Register<MyObject>(Myriad::MYR_EVENT_SYSTEM, 8, mo, &MyObject::Run, ed);
+  me->Emit(ed);
+  Myriad::MyrEventService::GetInstance().StopService();
 }
