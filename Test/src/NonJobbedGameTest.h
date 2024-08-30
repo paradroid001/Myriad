@@ -63,8 +63,14 @@ public:
     {
       // this handle situation isn't going to work...
       objects[i] = allocator.Alloc<TestGameObject>(&allocator);
-      objects[i]->SetPosition(distribute_x(generator), distribute_y(generator));
-      objects[i]->SetVelocity(50, 50);
+
+      // objects[i]->SetPosition(distribute_x(generator), distribute_y(generator));
+      // objects[i]->SetVelocity(50, 50);
+      objects[i]->GetTransform().SetPosition((float)distribute_x(generator), (float)distribute_y(generator), 0.0f);
+      // This code might not work, the vector might be read only.
+      Myriad::Vector2 v = static_cast<TestGameObjectUpdater *>(objects[i]->GetUpdater())->GetVelocity();
+      v.x = 50;
+      v.y = 50;
     }
 
     while (!win->ShouldClose() && (*hint) < 6000)
@@ -76,7 +82,7 @@ public:
       // MYR_TRACE("Incremented hint");
       for (int i = 0; i < num_objects; i++)
       {
-        objects[i]->Update(1.0f / 60);
+        objects[i]->GetUpdater()->Update(1.0f / 60);
       }
 
       renderer->BeginDrawing();
@@ -84,7 +90,7 @@ public:
 
       for (int i = 0; i < num_objects; i++)
       {
-        objects[i]->Draw(*renderer);
+        objects[i]->GetDrawer()->Draw(*renderer);
       }
       renderer->EndDrawing();
       if (*hint % 1000 == 0)

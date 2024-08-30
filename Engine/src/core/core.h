@@ -44,6 +44,15 @@ namespace Myriad
         float y;
         float z;
     };
+
+    class Quaternion
+    {
+      public:
+        float x;
+        float y;
+        float z;
+        float w;
+    };
 } // namespace Myriad
 
 #endif

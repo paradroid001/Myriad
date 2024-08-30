@@ -16,3 +16,6 @@
 [submodule "Engine/vendor/catch2"]
 	path = Engine/vendor/catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "Engine/vendor/StaticTypeInfo"]
+	path = Engine/vendor/StaticTypeInfo
+	url = https://github.com/TheLartians/StaticTypeInfo.git

@@ -6,14 +6,8 @@
 
 namespace Myriad
 {
-    this is a note to tell myself where I am up to.
-    cant have an abstract class as a singleton, that wont work,
-    would have to make some service inherit from IService and from MyrSingleton.
-
-    class IService : public MyrSingleton<IService>
+    class IService
     {
-        // This using line
-        using MyrSingleton<IService>::MyrSingleton;
         /*
         private:
           static IService *_hinstance;
@@ -34,7 +28,7 @@ namespace Myriad
         virtual bool WhenStopService() = 0;
 
       public:
-        virtual ~IService() = 0;
+        virtual ~IService() {}
         // static IService *Instance() { return _hinstance; }
         bool StartService()
         {

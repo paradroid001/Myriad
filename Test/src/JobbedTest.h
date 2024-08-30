@@ -7,6 +7,7 @@ using engine = std::mt19937;
 
 #include "myriad.h"
 #include "TestGameObject.h"
+#include "PlayerGameObject.h"
 
 class RenderInitJob : public Myriad::Job
 {
@@ -39,11 +40,11 @@ class RenderJob : public Myriad::Job
 {
 private:
   Myriad::MyrHandle<Myriad::Renderer> renderer_;
-  std::vector<TestGameObject *> *p_object_ps_;
+  std::vector<Myriad::GameObject *> *p_object_ps_;
 
 public:
-  RenderJob(const char *name) : Myriad::Job(name){};
-  void Init(Myriad::MyrHandle<Myriad::Renderer> renderer, std::vector<TestGameObject *> *const p_objects)
+  RenderJob(const char *name) : Myriad::Job(name) {};
+  void Init(Myriad::MyrHandle<Myriad::Renderer> renderer, std::vector<Myriad::GameObject *> *const p_objects)
   {
     renderer_ = renderer;
     p_object_ps_ = p_objects;
@@ -55,12 +56,14 @@ protected:
     renderer_->BeginDrawing();
     renderer_->ClearBackground({0, 0, 255, 255});
 
-    for (auto &object_p : *p_object_ps_)
+    for (Myriad::GameObject *object_p : *p_object_ps_)
     {
-      object_p->Draw(*renderer_);
+      Myriad::IDrawable *d = object_p->GetDrawer();
+      if (d != nullptr)
+        d->Draw(*renderer_);
       /* The big green circle*/
-      renderer_->DrawCircle({100, 100}, 100.0f, {0, 255, 0, 255});
     }
+    renderer_->DrawCircle({100, 100}, 100.0f, {0, 255, 0, 255});
 
     renderer_->EndDrawing();
   }
@@ -69,14 +72,14 @@ protected:
 class UpdateInitJob : public Myriad::Job
 {
 private:
-  std::vector<TestGameObject *> *p_objects;
+  std::vector<Myriad::GameObject *> *p_objects;
   Myriad::Allocator *p_allocator;
   int num_objects;
 
 public:
   UpdateInitJob() : Myriad::Job("Update Init") {}
 
-  void Init(Myriad::Allocator &allocator, std::vector<TestGameObject *> &objects, int num_objects)
+  void Init(Myriad::Allocator &allocator, std::vector<Myriad::GameObject *> &objects, int num_objects)
   {
     p_objects = &objects;
     p_allocator = &allocator;
@@ -100,25 +103,38 @@ public:
       p_objects->push_back(p_tgo);
       int x = distribute_x(generator);
       int y = distribute_y(generator);
-      MYR_TRACE("Set position {0}, {1}", x, y);
-      p_tgo->SetPosition(x, y);
-      MYR_TRACE("Set velocity");
-      p_tgo->SetVelocity(50, 50);
+      // MYR_TRACE("Set position {0}, {1}", x, y);
+      Myriad::Vector3 pos;
+      pos.x = x;
+      pos.y = y;
+      pos.z = 0.0f;
+      p_tgo->GetTransform().SetPosition(pos);
+      // MYR_TRACE("Set velocity");
+      static_cast<TestGameObjectUpdater *>(p_tgo->GetUpdater())->SetVelocity(50, 50);
     }
+
+    // Init the player
+    Myriad::MyrHandle<PlayerGameObject> p = p_allocator->Alloc<PlayerGameObject>(p_allocator);
+    PlayerGameObject *p_p = p.Get();
+
+    p_objects->push_back(p_p);
+
+    // p_p->SetPosition(400, 400);
+    // p_p->SetVelocity(0, 0);
   }
 };
 
 class UpdateJob : public Myriad::Job
 {
 private:
-  std::vector<TestGameObject *> *object_ps_;
+  std::vector<Myriad::GameObject *> *object_ps_;
 
 public:
   UpdateJob(const char *name) : Myriad::Job(name)
   {
   }
 
-  void Init(std::vector<TestGameObject *> &objects)
+  void Init(std::vector<Myriad::GameObject *> &objects)
   {
     object_ps_ = &objects;
   }
@@ -154,24 +170,58 @@ public:
 protected:
   virtual void Execute() override
   {
+    Myriad::MyrEventService::GetInstance().ProcessEvents();
+
     double dt = 1.0f / 60;
     // MYR_WARN("Update");
-    for (auto p_obj : *object_ps_)
+    for (Myriad::GameObject *p_obj : *object_ps_)
     {
-      p_obj->Update(dt);
+      // p_obj->Update(dt);
+      // TestGameObject *t = static_cast<TestGameObject *>(p_obj);
+      Myriad::IUpdateable *updater = p_obj->GetUpdater();
+      if (updater != nullptr)
+        updater->Update(dt);
     }
+
+    Myriad::MyrEventService::GetInstance().ClearEvents();
   }
 };
 
 class GetInputJob : public Myriad::Job
 {
+private:
+  Myriad::KeyboardInput kb_input;
+  const int KEYCODE_A = 65;
+  const int KEYCODE_W = 87;
+  const int KEYCODE_D = 68;
+  const int KEYCODE_S = 83;
+
 public:
-  GetInputJob(const char *name) : Myriad::Job(name){};
+  GetInputJob(const char *name) : Myriad::Job(name)
+  {
+    kb_input.Init(); // TODO there is no shutdown = memory leak...
+  };
 
 protected:
   virtual void Execute() override
   {
     // MYR_WARN("Get Input");
+    if (kb_input.IsKeyDown(KEYCODE_W) || kb_input.IsKeyDown(KEYCODE_S) || kb_input.IsKeyDown(KEYCODE_A) || kb_input.IsKeyDown(KEYCODE_D))
+    {
+      float x = 0.0f;
+      float y = 0.0f;
+      if (kb_input.IsKeyDown(KEYCODE_W))
+        y -= 1.0f;
+      if (kb_input.IsKeyDown(KEYCODE_S))
+        y += 1.0f;
+      if (kb_input.IsKeyDown(KEYCODE_D))
+        x += 1.0f;
+      if (kb_input.IsKeyDown(KEYCODE_A))
+        x -= 1.0f;
+
+      InputAxisEvent *e = new InputAxisEvent(x, y);
+      e->Emit();
+    }
   }
 };
 
@@ -179,7 +229,6 @@ class JobbedTestGame
 {
 private:
   Myriad::MyrHandle<Myriad::Renderer> renderer_;
-  Myriad::MyrHandle<TestGameObject> objects_; //<-- I don't know what this is?
   Myriad::MyrHandle<Myriad::ThreadPool> pool_;
   Myriad::MyrHandle<Myriad::Window> window_;
 
@@ -202,6 +251,13 @@ public:
 
   void Run(Myriad::Allocator *allocator, Myriad::MyrAppPreferences &prefs)
   {
+    Myriad::MyrEventService *es = &(Myriad::MyrEventService::GetInstance());
+// Win32 api messes with my StartService.
+#undef StartService
+    es->StartService();
+    // This boilerplate code sucks.
+    Myriad::MyrEvent::SetEventService(&(Myriad::MyrEventService::GetInstance()));
+
     Myriad::MyrHandle<GetInputJob> inputjob = allocator->Alloc<GetInputJob>("GetInput Job");
     Myriad::MyrHandle<RenderInitJob> renderinitjob = allocator->Alloc<RenderInitJob>("Render Init Job");
     Myriad::MyrHandle<RenderJob> renderjob = allocator->Alloc<RenderJob>("Render Job");
@@ -215,11 +271,12 @@ public:
     renderinitjob->Init(prefs, window_, renderer_);
 
     // Our vector of game objects
-    std::vector<TestGameObject *> test_game_objects;
+    std::vector<Myriad::GameObject *> test_game_objects;
 
     // This needs to be inited before render. But render depends on it :()
     // MYR_INFO("Init Update Job");
-    updateinitjob->Init(*allocator, test_game_objects, 500);
+    int num_game_object = 100;
+    updateinitjob->Init(*allocator, test_game_objects, num_game_object);
     // Now we give that filled out ref to UpdateJob
     updatejob->Init(test_game_objects); // returns obj[]
 
@@ -245,7 +302,7 @@ public:
       pool_->Submit(&*updatejob);
       pool_->Submit(&*renderjob);
 
-      // run the queue.
+      // run the queue: this thread sleeps if queue is busy.
       while (pool_->IsBusy())
       {
         std::this_thread::sleep_for(
@@ -274,6 +331,7 @@ public:
     //  delete p_testgameobject;
     //}
 
+    Myriad::MyrEventService::GetInstance().StopService();
     renderer_->Shutdown();
     window_->Shutdown();
 

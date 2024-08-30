@@ -7,6 +7,10 @@
 #include <list>
 #include <map>
 
+#include <cassert>
+
+#include "core/event/MyrEventService.h"
+
 namespace Myriad
 {
     typedef enum MyrEventType
@@ -100,6 +104,7 @@ namespace Myriad
     {
       private:
         MyrEvent() { /*should not be callable*/ }
+        inline static MyrEventService *p_event_service_ = nullptr;
 
       protected:
         uint8_t type_;
@@ -110,19 +115,39 @@ namespace Myriad
         {
         }
 
+        static void SetEventService(MyrEventService *p_service)
+        {
+            MyrEvent::p_event_service_ = p_service;
+        }
+
+        static MyrEventService *GetEventService()
+        {
+            return MyrEvent::p_event_service_;
+        }
+
         uint8_t GetType() const { return type_; }
         uint8_t GetSubType() const { return subtype_; }
         uint16_t GetFullType() const { return type_ << 8 | subtype_; }
 
         template <class T>
         static void Register(uint8_t type, uint8_t subtype, T *instance,
-                             std::function<void(T *, MyrEvent *)> callback,
-                             EventDispatcher *p_dispatcher)
+                             std::function<void(T *, MyrEvent *)> callback)
         {
-            p_dispatcher->Subscribe(type, subtype, instance, callback);
+            // Instead of a passed one, we are going to use the Event Service
+            // p_dispatcher->Subscribe(type, subtype, instance, callback);
+            assert(MyrEvent::p_event_service_ != nullptr);
+            MyrEvent::p_event_service_->GetDispatcher()->Subscribe(
+                type, subtype, instance, callback);
         }
         void Unregister();
-        void Emit(EventDispatcher *e) { e->Publish(type_, subtype_, this); }
+        void Emit()
+        {
+            // So instead of using a passed event dispatcher to publish the
+            // event... e->Publish(type_, subtype_, this); We queue the event in
+            // the event service instead.
+            assert(MyrEvent::p_event_service_ != nullptr);
+            MyrEvent::p_event_service_->AddEvent(this);
+        }
         virtual ~MyrEvent() {}
     };
 } // namespace Myriad

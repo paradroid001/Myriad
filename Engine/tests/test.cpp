@@ -7,6 +7,8 @@
 #include "core/event/MyrEvent.h"
 #include "core/event/MyrEventService.h"
 #include "core/MyrTimer.h"
+#include "core/object/GameObject.h"
+#include "core/component/MyrComponent.h"
 #include <iostream>
 
 unsigned int Factorial(unsigned int number)
@@ -22,7 +24,7 @@ protected:
 
 public:
   TestCreature(uint8_t legs, uint8_t wings) : num_legs(legs), num_wings(wings) {}
-  virtual ~TestCreature(){};
+  virtual ~TestCreature() {};
 };
 class CreatureBat : public TestCreature
 {
@@ -84,7 +86,7 @@ TEST_CASE("Allocator correctly creates client classes", "[group1]")
 class MyEvent : public Myriad::MyrEvent
 {
 public:
-  MyEvent() : Myriad::MyrEvent(Myriad::MYR_EVENT_SYSTEM, 8){};
+  MyEvent() : Myriad::MyrEvent(Myriad::MYR_EVENT_SYSTEM, 8) {};
   int field1;
   float field2;
 };
@@ -130,6 +132,7 @@ TEST_CASE("Timer behaves")
 TEST_CASE("Can Make Events")
 {
   Myriad::MyrEventService::GetInstance().StartService();
+  Myriad::MyrEvent::SetEventService(&(Myriad::MyrEventService::GetInstance()));
 
   MyEvent *me = new MyEvent();
   me->field1 = 5;
@@ -137,11 +140,87 @@ TEST_CASE("Can Make Events")
   REQUIRE(me->field1 == 5);
   REQUIRE(me->field2 == 7.0f);
 
-  Myriad::EventDispatcher *ed = new Myriad::EventDispatcher();
+  // Myriad::EventDispatcher *ed = new Myriad::EventDispatcher();
   MyObject *mo = new MyObject();
 
   // This is the best we can do for now, and
-  MyEvent::Register<MyObject>(Myriad::MYR_EVENT_SYSTEM, 8, mo, &MyObject::Run, ed);
-  me->Emit(ed);
+  MyEvent::Register<MyObject>(Myriad::MYR_EVENT_SYSTEM, 8, mo, &MyObject::Run);
+  me->Emit();
+  Myriad::MyrEventService::GetInstance().ProcessEvents();
   Myriad::MyrEventService::GetInstance().StopService();
+}
+
+class TestGameObject : public Myriad::GameObject
+{
+public:
+  TestGameObject(std::string name) : Myriad::GameObject(name) {}
+};
+
+class TestComponent : public Myriad::MyrComponent
+{
+public:
+  bool ReleaseComponent() override
+  {
+    return true;
+  }
+};
+
+TEST_CASE("Make gameobjects and add / remove children")
+{
+
+  TestGameObject *tparent = new TestGameObject("Parent");
+  TestGameObject *tchild0 = new TestGameObject("Child0");
+  TestGameObject *tchild1 = new TestGameObject("Child1");
+  TestGameObject *tchild2 = new TestGameObject("Child2");
+  TestGameObject *tchild3 = new TestGameObject("Child3");
+
+  REQUIRE(tparent->NumChildren() == 0);
+  REQUIRE(tparent->AddChild(tchild0) == true);
+  REQUIRE(tparent->NumChildren() == 1);
+  REQUIRE(tparent->AddChild(tchild1) == true);
+  REQUIRE(tparent->NumChildren() == 2);
+  REQUIRE(tparent->AddChild(tchild2) == true);
+  REQUIRE(tparent->NumChildren() == 3);
+
+  REQUIRE(tparent->GetChildIndex(tchild0) == 0);
+  REQUIRE(tparent->GetChildIndex(tchild1) == 1);
+  REQUIRE(tparent->GetChildIndex(tchild2) == 2);
+
+  // Try to add child 2 again
+  REQUIRE(tparent->AddChild(tchild2) == false);
+  // Make sure there are still only 3 elements
+  REQUIRE(tparent->NumChildren() == 3);
+  // Remove child 1
+  REQUIRE(tparent->GetChild(1) == tchild1);                    // Check that child1 is at index 1
+  REQUIRE(tparent->RemoveChild(tparent->GetChild(1)) == true); // remove at index 1
+  // Make sure I can't remove it again
+  REQUIRE(tparent->RemoveChild(tchild1) == false);
+  // Child 1 should be gone now.
+  // So it should look like:
+  // parent
+  //  child0
+  //  child2
+  REQUIRE(tparent->NumChildren() == 2);
+  REQUIRE(tparent->GetChildIndex(tchild0) == 0);
+  REQUIRE(tparent->GetChildIndex(tchild2) == 1);
+  REQUIRE(tparent->GetChildIndex(tchild1) == Myriad::INVALID_CHILD_INDEX);
+}
+
+TEST_CASE("Make gameobjects and add components")
+{
+  TestGameObject *tgo = new TestGameObject("New Object");
+  TestComponent *tc = new TestComponent();
+  // tc should have no owner
+  REQUIRE(tc->GetOwner() == nullptr);
+  tgo->AddComponent(tc);
+  // tc owner should be tgo.
+  REQUIRE(tc->GetOwner() == tgo);
+  REQUIRE(tgo->GetComponentCount() == 2); // there is transform also?
+  REQUIRE(tgo->GetComponentTypeCount() == 2);
+  Myriad::Transform *t = tgo->GetComponent<Myriad::Transform>();
+  TestComponent *c = tgo->GetComponent<TestComponent>();
+  Myriad::MyrComponent *m = tgo->GetComponent<Myriad::MyrComponent>();
+  REQUIRE(t == &(tgo->GetTransform()));
+  REQUIRE(c == tc);
+  REQUIRE(m == nullptr);
 }
