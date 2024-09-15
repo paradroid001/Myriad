@@ -18,8 +18,8 @@ namespace Myriad
     class AllocatorProviderBase : public Provider
     {
       public:
-        // virtual uint16_t AssignSlot(void *vptr) = 0;
-        virtual void *Ptr(uint16_t index) = 0;
+        // virtual MyrHandle_T AssignSlot(void *vptr) = 0;
+        virtual void *Ptr(MyrHandle_T index) = 0;
     };
 
     template <class T>
@@ -64,41 +64,27 @@ namespace Myriad
             return static_cast<T *>(this)->New(dummy, args...);
         }
 
-        template <class U> MyrHandle<U> Handle(uint16_t index) const
+        template <class U> void Dealloc(MyrHandle<U> handle)
         {
-            return static_cast<T *>(this)->At(index);
+            static_cast<T *>(this)->Delete(handle);
+        }
+        template <class U> void DeallocIndex(MyrHandle_T index)
+        {
+            U *dummy;
+            static_cast<T *>(this)->DeleteIndex(dummy, index);
         }
 
-        virtual void *Ptr(uint16_t index)
+        template <class U> MyrHandle<U> Handle(MyrHandle_T index) // const
+        {
+            U *dummy;
+            return *((static_cast<T *>(this))->At(dummy, index));
+        }
+
+        virtual void *Ptr(MyrHandle_T index)
         {
             // return static_cast<T *>(this)->Get(index);
             return static_cast<T *>(this)->GetVoid(index);
         }
-
-        /*
-        template <class U> U *Ptr(uint16_t index) const
-        {
-            return static_cast<T *>(this)->Get(index);
-        }
-        */
-
-        /*
-        template <class U> MyrHandle<U> Make(U *ptr)
-        {
-            // NOTE
-            // We are using CRTP to get compile time binding to Derived.
-            //
-        https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
-            //
-            // Potentially some compilers may not like it if
-            // derived::funcname is the same as funcname,
-            // in this case MakeHandle.
-            // Could simply make derived function name
-            // MakeHandleImplementation and that would be fine,
-            // Or rename this function adjust the caller.
-            return static_cast<T *>(this)->MakeHandle(ptr);
-        }
-        */
     };
 } // namespace Myriad
 

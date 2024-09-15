@@ -71,12 +71,11 @@ public:
   {
     // tex = new Myriad::Texture2D(allocator);
     // tex->Load("res/carrot.png");
-    TestGameObjectUpdater *p_tgou = new TestGameObjectUpdater();
-    updater_ = p_tgou;
-    AddComponent(p_tgou);
-    Myriad::SpriteRenderer *p_sr = new Myriad::SpriteRenderer(allocator, "res/carrot.png");
-    drawer_ = p_sr;
-    AddComponent(p_sr);
+    updater_ = AddComponent<TestGameObjectUpdater>();
+    drawer_ = AddComponent<Myriad::SpriteRenderer>(allocator, "res/carrot.png");
+    // Myriad::SpriteRenderer *p_sr = new Myriad::SpriteRenderer(allocator, "res/carrot.png");
+    // drawer_ = p_sr;
+    // AddComponent(p_sr);
   }
   ~TestGameObject()
   {

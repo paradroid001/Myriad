@@ -275,7 +275,7 @@ public:
 
     // This needs to be inited before render. But render depends on it :()
     // MYR_INFO("Init Update Job");
-    int num_game_object = 100;
+    int num_game_object = 5000;
     updateinitjob->Init(*allocator, test_game_objects, num_game_object);
     // Now we give that filled out ref to UpdateJob
     updatejob->Init(test_game_objects); // returns obj[]

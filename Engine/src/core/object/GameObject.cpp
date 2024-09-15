@@ -10,14 +10,14 @@ namespace Myriad
     GameObject::GameObject() : MyrObject(), updater_(nullptr), drawer_(nullptr)
     {
         // TODO there's nothing to 'protect' transform component...
-        transform_ = new Transform();
-        AddComponent(transform_);
+        transform_ = AddComponent<Transform>();
+
+        // AddComponent(transform_);
     }
 
     GameObject::GameObject(const std::string name) : MyrObject(name)
     {
-        transform_ = new Transform();
-        AddComponent(transform_);
+        transform_ = AddComponent<Transform>();
     }
 
     GameObject::~GameObject()

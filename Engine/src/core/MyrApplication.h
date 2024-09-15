@@ -36,10 +36,15 @@ namespace Myriad
         // https://stackoverflow.com/questions/18860895/how-to-initialize-static-members-in-the-header
         inline static MyrAppData *_instance;
         Vector2 _screen_dimensions;
+        // TODO: add screen orientation
         size_t _target_fps;
+        // TODO: add
+        // General allocator
+        // GameObject Manager (has own allocator)
+        // Component Manager (has own allocator)
 
         // Private Constructor
-        MyrAppData(){};
+        MyrAppData() {};
 
       public:
         static MyrAppData *&Instance()

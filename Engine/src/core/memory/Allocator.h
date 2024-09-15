@@ -38,8 +38,32 @@ namespace Myriad
 
         template <class T, typename... Args> MyrHandle<T> Alloc(Args... args)
         {
-            MYR_CORE_TRACE("Allocator is allocating");
+            //MYR_CORE_TRACE("Allocator is allocating");
             return allocator_provider->Alloc<T>(args...);
+        }
+        template <class T> void Dealloc(MyrHandle<T> handle)
+        {
+            MYR_CORE_TRACE("Allocator is deallocating");
+            return allocator_provider->Dealloc<T>(handle);
+        }
+
+        // Just get the lite handle.
+        template <class T, typename... Args>
+        MyrHandle_T AllocIndex(Args... args)
+        {
+            MyrHandle<T> handle = Alloc(args...);
+            return handle.Index();
+        }
+        template <class T> void DeallocIndex(MyrHandle_T index)
+        {
+            allocator_provider->DeallocIndex<T>(index);
+        }
+
+        template <class T> T *At(MyrHandle_T index)
+        {
+            // TODO this is about the most inefficient way you could do this..
+            MyrHandle<T> handle = allocator_provider->Handle<T>(index);
+            return handle.Get();
         }
     };
 

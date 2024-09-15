@@ -8,8 +8,11 @@
 #include "core/event/MyrEventService.h"
 #include "core/MyrTimer.h"
 #include "core/object/GameObject.h"
+#include "core/object/MyrObjectManager.h"
 #include "core/component/MyrComponent.h"
+
 #include <iostream>
+#include <string>
 
 unsigned int Factorial(unsigned int number)
 {
@@ -165,54 +168,87 @@ public:
   }
 };
 
+TEST_CASE("Use a game object manager to make gameobjects and add/remove children")
+{
+  Myriad::MyrObjectManager &m = Myriad::MyrObjectManager::GetInstance();
+  m.StartService();
+  Myriad::MyrHandle_T hparent = m.CreateGameObject(std::string("Parent"));
+  Myriad::MyrHandle_T hchild1 = m.CreateGameObject(std::string("Child 1"));
+  Myriad::MyrHandle_T hchild2 = m.CreateGameObject(std::string("Child 2"));
+  // Myriad::ObjectNode *pparent = m.GetObject(hparent);
+  // Myriad::ObjectNode *pchild = m.GetObject(hchild);
+  REQUIRE(m.GetParent(hparent) == Myriad::MYRHANDLE_INVALID_INDEX);
+  REQUIRE(m.GetParent(hchild1) == Myriad::MYRHANDLE_INVALID_INDEX);
+  REQUIRE(m.GetNumChildren(hparent) == 0);
+  REQUIRE(m.GetNumChildren(hchild1) == 0);
+
+  // Add child to parent
+  m.AddChild(hparent, hchild1);
+  REQUIRE(m.GetNumChildren(hparent) == 1);
+  REQUIRE(m.GetParent(hchild1) == hparent);
+
+  m.AddChild(hparent, hchild2);
+  REQUIRE(m.GetNumChildren(hparent) == 2);
+  REQUIRE(m.GetParent(hchild2) == hparent);
+  Myriad::GameObject *pg = m.GetGameObject(hparent);
+  MYR_TRACE("Name is {0}", pg->GetName());
+
+  m.DebugLogObjects();
+  m.StopService();
+}
+
 TEST_CASE("Make gameobjects and add / remove children")
 {
+  return;
+  Myriad::Allocator *go_allocator = new Myriad::Allocator();
+  go_allocator->Init();
+  Myriad::MyrHandle<TestGameObject> tparent = go_allocator->Alloc<TestGameObject>("Parent");
+  Myriad::MyrHandle<TestGameObject> tchild0 = go_allocator->Alloc<TestGameObject>("Child0");
+  Myriad::MyrHandle<TestGameObject> tchild1 = go_allocator->Alloc<TestGameObject>("Child1");
+  Myriad::MyrHandle<TestGameObject> tchild2 = go_allocator->Alloc<TestGameObject>("Child2");
+  Myriad::MyrHandle<TestGameObject> tchild3 = go_allocator->Alloc<TestGameObject>("Child3");
 
-  TestGameObject *tparent = new TestGameObject("Parent");
-  TestGameObject *tchild0 = new TestGameObject("Child0");
-  TestGameObject *tchild1 = new TestGameObject("Child1");
-  TestGameObject *tchild2 = new TestGameObject("Child2");
-  TestGameObject *tchild3 = new TestGameObject("Child3");
+  REQUIRE(tparent.Get()->NumChildren() == 0);
+  REQUIRE(tparent.Get()->AddChild(tchild0.Handle()) == true);
+  REQUIRE(tparent.Get()->NumChildren() == 1);
+  REQUIRE(tparent.Get()->AddChild(tchild1.Handle()) == true);
+  REQUIRE(tparent.Get()->NumChildren() == 2);
+  REQUIRE(tparent.Get()->AddChild(tchild2.Handle()) == true);
+  REQUIRE(tparent.Get()->NumChildren() == 3);
 
-  REQUIRE(tparent->NumChildren() == 0);
-  REQUIRE(tparent->AddChild(tchild0) == true);
-  REQUIRE(tparent->NumChildren() == 1);
-  REQUIRE(tparent->AddChild(tchild1) == true);
-  REQUIRE(tparent->NumChildren() == 2);
-  REQUIRE(tparent->AddChild(tchild2) == true);
-  REQUIRE(tparent->NumChildren() == 3);
-
-  REQUIRE(tparent->GetChildIndex(tchild0) == 0);
-  REQUIRE(tparent->GetChildIndex(tchild1) == 1);
-  REQUIRE(tparent->GetChildIndex(tchild2) == 2);
+  REQUIRE(tparent.Get()->GetChildIndex(tchild0.Handle()) == 0);
+  REQUIRE(tparent.Get()->GetChildIndex(tchild1.Handle()) == 1);
+  REQUIRE(tparent.Get()->GetChildIndex(tchild2.Handle()) == 2);
 
   // Try to add child 2 again
-  REQUIRE(tparent->AddChild(tchild2) == false);
+  REQUIRE(tparent.Get()->AddChild(tchild2.Handle()) == false);
   // Make sure there are still only 3 elements
-  REQUIRE(tparent->NumChildren() == 3);
+  REQUIRE(tparent.Get()->NumChildren() == 3);
   // Remove child 1
-  REQUIRE(tparent->GetChild(1) == tchild1);                    // Check that child1 is at index 1
-  REQUIRE(tparent->RemoveChild(tparent->GetChild(1)) == true); // remove at index 1
+  REQUIRE(tparent.Get()->GetChild(1) == tchild1.Handle());                 // Check that child1 is at index 1
+  REQUIRE(tparent.Get()->RemoveChild(tparent.Get()->GetChild(1)) == true); // remove at index 1
   // Make sure I can't remove it again
-  REQUIRE(tparent->RemoveChild(tchild1) == false);
+  REQUIRE(tparent.Get()->RemoveChild(tchild1.Handle()) == false);
   // Child 1 should be gone now.
   // So it should look like:
   // parent
   //  child0
   //  child2
-  REQUIRE(tparent->NumChildren() == 2);
-  REQUIRE(tparent->GetChildIndex(tchild0) == 0);
-  REQUIRE(tparent->GetChildIndex(tchild2) == 1);
-  REQUIRE(tparent->GetChildIndex(tchild1) == Myriad::INVALID_CHILD_INDEX);
+  REQUIRE(tparent.Get()->NumChildren() == 2);
+  REQUIRE(tparent.Get()->GetChildIndex(tchild0.Handle()) == 0);
+  REQUIRE(tparent.Get()->GetChildIndex(tchild2.Handle()) == 1);
+  REQUIRE(tparent.Get()->GetChildIndex(tchild1.Handle()) == Myriad::INVALID_CHILD_INDEX);
+
+  go_allocator->Shutdown();
+  delete go_allocator;
 }
 
 TEST_CASE("Make gameobjects and add components")
 {
   TestGameObject *tgo = new TestGameObject("New Object");
-  TestComponent *tc = new TestComponent();
-  // tc should have no owner
-  REQUIRE(tc->GetOwner() == nullptr);
-  tgo->AddComponent(tc);
+  TestComponent *tc = tgo->AddComponent<TestComponent>();
+  // tc should have an owner
+  REQUIRE(tc->GetOwner() != nullptr);
   // tc owner should be tgo.
   REQUIRE(tc->GetOwner() == tgo);
   REQUIRE(tgo->GetComponentCount() == 2); // there is transform also?

@@ -2,7 +2,9 @@
 #define TEST_OBJECTSTEST_H
 
 #include "myriad.h"
+
 #include <string>
+#include <cassert>
 
 class ObjectsTest
 {
@@ -18,9 +20,19 @@ public:
     Myriad::MyrHandle<Myriad::GameObject> gameobj2 = allocator.Alloc<Myriad::GameObject>("2");
     Myriad::MyrHandle<Myriad::GameObject> gameobj3 = allocator.Alloc<Myriad::GameObject>("3");
 
+    // TODO: this is totally going to break because these need their own
+    // manager. But for the sake of compiling, I'll make the syntax work so that
+    // these use the correct MyrHandle_T ids.
+    // So just in case this gets run, I will put a failing assert in here.
+    assert(1 == 0);
+    /*
     gameobj1->AddChild(&*gameobj2);
     gameobj1->AddChild(&*gameobj2); // should be error
     gameobj2->AddChild(&*gameobj3);
+    */
+    gameobj1->AddChild(gameobj2.Handle());
+    gameobj1->AddChild(gameobj2.Handle()); // should be error
+    gameobj2->AddChild(gameobj3.Handle());
   }
 };
 

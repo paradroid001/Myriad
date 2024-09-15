@@ -12,23 +12,25 @@
 
 namespace Myriad
 {
+    const MyrHandle_T MYRHANDLE_INVALID_INDEX = 0;
     // A handle is a pointer abstraction, but only gives you an index
     // It does need to know the allocator that allocated it, though.
     template <class T> class MYR_API MyrHandle
     {
       private:
-        uint16_t index_;
+        MyrHandle_T index_;
         AllocatorProviderBase *p_allocator_provider_;
 
       public:
         MyrHandle()
-            : index_(0)
+            : index_(MYRHANDLE_INVALID_INDEX)
         {} // an index of 0 is invalid, that is the address of the allocator.
-        MyrHandle(int idx, AllocatorProviderBase *allocator_provider)
+        MyrHandle(MyrHandle_T idx, AllocatorProviderBase *allocator_provider)
             : index_(idx), p_allocator_provider_(allocator_provider)
         {
         }
-        ~MyrHandle() { MYR_CORE_TRACE("MyrHandle destructor - doing nothing"); }
+        ~MyrHandle()
+        { /*MYR_CORE_TRACE("MyrHandle destructor - doing nothing");*/ }
         /*
          * Returns the pointer.
          */
@@ -38,6 +40,8 @@ namespace Myriad
             // Ptr returns a void*, so we have to cast it.
             return static_cast<T *>(p_allocator_provider_->Ptr(index_));
         }
+
+        inline MyrHandle_T Handle() const { return index_; }
 
         // -> operator, returns T*
         T *operator->() const { return Get(); }
