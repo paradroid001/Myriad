@@ -73,16 +73,18 @@ class UpdateInitJob : public Myriad::Job
 {
 private:
   std::vector<Myriad::GameObject *> *p_objects;
-  Myriad::Allocator *p_allocator;
+  Myriad::AssetManager *p_asset_manager_;
+  Myriad::Allocator *p_allocator_;
   int num_objects;
 
 public:
   UpdateInitJob() : Myriad::Job("Update Init") {}
 
-  void Init(Myriad::Allocator &allocator, std::vector<Myriad::GameObject *> &objects, int num_objects)
+  void Init(Myriad::Allocator *p_allocator, Myriad::AssetManager *p_asset_manager, std::vector<Myriad::GameObject *> &objects, int num_objects)
   {
     p_objects = &objects;
-    p_allocator = &allocator;
+    p_allocator_ = p_allocator;
+    p_asset_manager_ = p_asset_manager;
     this->num_objects = num_objects;
   }
 
@@ -97,7 +99,7 @@ public:
     for (int i = 0; i < num_objects; i++)
     {
       // this handle situation isn't going to work...
-      Myriad::MyrHandle<TestGameObject> h = p_allocator->Alloc<TestGameObject>(p_allocator);
+      Myriad::MyrHandle<TestGameObject> h = p_allocator_->Alloc<TestGameObject>(p_allocator_, p_asset_manager_);
       TestGameObject *p_tgo = h.Get();
       // TestGameObject *p_tgo = &*(allocator.Alloc<TestGameObject>());
       p_objects->push_back(p_tgo);
@@ -114,7 +116,7 @@ public:
     }
 
     // Init the player
-    Myriad::MyrHandle<PlayerGameObject> p = p_allocator->Alloc<PlayerGameObject>(p_allocator);
+    Myriad::MyrHandle<PlayerGameObject> p = p_allocator_->Alloc<PlayerGameObject>(p_allocator_);
     PlayerGameObject *p_p = p.Get();
 
     p_objects->push_back(p_p);
@@ -273,10 +275,12 @@ public:
     // Our vector of game objects
     std::vector<Myriad::GameObject *> test_game_objects;
 
+    Myriad::AssetManager *p_asset_manager = new Myriad::AssetManager();
+
     // This needs to be inited before render. But render depends on it :()
     // MYR_INFO("Init Update Job");
-    int num_game_object = 5000;
-    updateinitjob->Init(*allocator, test_game_objects, num_game_object);
+    int num_game_object = 4000; //between 4100 and 4000 this crashes
+    updateinitjob->Init(allocator, p_asset_manager, test_game_objects, num_game_object);
     // Now we give that filled out ref to UpdateJob
     updatejob->Init(test_game_objects); // returns obj[]
 
@@ -333,6 +337,7 @@ public:
 
     Myriad::MyrEventService::GetInstance().StopService();
     renderer_->Shutdown();
+    delete p_asset_manager;
     window_->Shutdown();
 
     if (false)

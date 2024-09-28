@@ -5,7 +5,7 @@
 #include "core/IDrawable.h"
 #include "core/component/MyrComponent.h"
 #include "core/core.h"
-#include "core/memory/Allocator.h"
+#include "asset/AssetManager.h"
 #include "rendering/Renderer.h"
 #include <string>
 
@@ -15,11 +15,11 @@ namespace Myriad
     {
       protected:
         std::string texture_path_;
-        Texture2D *p_tex_;
-        Allocator *p_allocator_;
+        TexHandle_T h_tex_;
+        AssetManager *p_asset_manager_;
 
       public:
-        SpriteRenderer(Allocator *p_allocator, std::string texture_path);
+        SpriteRenderer(AssetManager *p_asset_manager, std::string texture_path);
         virtual ~SpriteRenderer();
 
         // MyrComponent

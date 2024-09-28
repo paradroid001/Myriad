@@ -32,6 +32,7 @@
 #include "asset/MyrAsset.h"
 #include "asset/Texture2D.h"
 #include "asset/TextureProvider.h"
+#include "asset/AssetManager.h"
 
 // Interfaces
 #include "core/IDrawable.h"

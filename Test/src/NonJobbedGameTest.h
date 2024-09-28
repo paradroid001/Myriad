@@ -58,11 +58,13 @@ public:
     std::uniform_int_distribution<u32> distribute_x(0, Myriad::MyrAppData::Instance()->GetScreenDimensions().x);
     std::uniform_int_distribution<u32> distribute_y(0, Myriad::MyrAppData::Instance()->GetScreenDimensions().y);
 
+    Myriad::AssetManager *p_asset_manager = new Myriad::AssetManager();
+
     Myriad::MyrHandle<TestGameObject> objects[num_objects];
     for (int i = 0; i < num_objects; i++)
     {
       // this handle situation isn't going to work...
-      objects[i] = allocator.Alloc<TestGameObject>(&allocator);
+      objects[i] = allocator.Alloc<TestGameObject>(&allocator, p_asset_manager);
 
       // objects[i]->SetPosition(distribute_x(generator), distribute_y(generator));
       // objects[i]->SetVelocity(50, 50);
@@ -101,6 +103,7 @@ public:
 
     // delete &win; // should cause Window destructor to run.
     renderer->Shutdown();
+    delete p_asset_manager;
     win->Shutdown();
   }
 };

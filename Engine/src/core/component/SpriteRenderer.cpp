@@ -1,6 +1,6 @@
 #include "core/component/SpriteRenderer.h"
+#include "asset/AssetManager.h"
 #include "core/component/Transform.h"
-#include "core/memory/Allocator.h"
 #include "io/Log.h"
 #include "rendering/Renderer.h"
 // TODO: until GetComponent<>
@@ -8,9 +8,10 @@
 
 namespace Myriad
 {
-    SpriteRenderer::SpriteRenderer(Allocator *p_allocator,
+    SpriteRenderer::SpriteRenderer(AssetManager *p_asset_manager,
                                    std::string texture_path)
-        : MyrComponent(), texture_path_(texture_path), p_allocator_(p_allocator)
+        : MyrComponent(), texture_path_(texture_path),
+          p_asset_manager_(p_asset_manager)
     {
     }
     SpriteRenderer::~SpriteRenderer()
@@ -24,16 +25,14 @@ namespace Myriad
         // Init the component
         MyrComponent::InitComponent(owner);
         // Load the texture
-        p_tex_ = new Myriad::Texture2D(p_allocator_);
-        p_tex_->Load(texture_path_);
+        h_tex_ = p_asset_manager_->GetTexture("res/carrot.png");
         // TODO should return false if can't find the tex.
         return true;
     }
     bool SpriteRenderer::ReleaseComponent()
     {
         // TODO should return correctly here in case of problems
-        p_tex_->Unload();
-        delete p_tex_;
+        p_asset_manager_->ReleaseTexture(h_tex_);
         return true;
     }
 
@@ -41,6 +40,7 @@ namespace Myriad
     {
         GameObject *g = static_cast<GameObject *>(owner_);
         Vector3 p = g->GetTransform().GetPosition();
-        renderer.DrawTexture(*p_tex_, {p.x, p.y}, {255, 255, 255, 255});
+        renderer.DrawTexture(*p_asset_manager_->GetTexturePointer(h_tex_),
+                             {p.x, p.y}, {255, 255, 255, 255});
     }
 } // namespace Myriad

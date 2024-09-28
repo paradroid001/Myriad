@@ -67,12 +67,12 @@ class TestGameObject : public Myriad::GameObject
   // Myriad::SpriteRenderer *p_sprite_renderer_;
 
 public:
-  TestGameObject(Myriad::Allocator *allocator) : Myriad::GameObject()
+  TestGameObject(Myriad::Allocator *allocator, Myriad::AssetManager *p_asset_manager) : Myriad::GameObject()
   {
     // tex = new Myriad::Texture2D(allocator);
     // tex->Load("res/carrot.png");
     updater_ = AddComponent<TestGameObjectUpdater>();
-    drawer_ = AddComponent<Myriad::SpriteRenderer>(allocator, "res/carrot.png");
+    drawer_ = AddComponent<Myriad::SpriteRenderer>(p_asset_manager, "res/carrot.png");
     // Myriad::SpriteRenderer *p_sr = new Myriad::SpriteRenderer(allocator, "res/carrot.png");
     // drawer_ = p_sr;
     // AddComponent(p_sr);
