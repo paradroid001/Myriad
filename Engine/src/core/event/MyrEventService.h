@@ -2,7 +2,6 @@
 #define MYRIAD_EVEMT_MYREVENTSERVICE
 
 #include "core/IService.h"
-#include "core/MyrSingleton.h"
 #include "core/core.h"
 // #include "core/event/MyrEvent.h"
 #include <vector>
@@ -13,14 +12,8 @@ namespace Myriad
     class MyrEvent;
     class EventDispatcher;
 
-    class MYR_API MyrEventService : public IService,
-                                    public MyrSingleton<MyrEventService>
+    class MYR_API MyrEventService : public IService
     {
-
-        // This using line prevents errors finding
-        // the myrsingleton constructor..
-        using MyrSingleton<MyrEventService>::MyrSingleton;
-
       private:
         EventDispatcher *dispatcher_;
         std::vector<MyrEvent *> events_;

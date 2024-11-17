@@ -15,11 +15,11 @@
 #include "core/memory/MyrHandle.h"
 #include "io/Log.h"
 
-#include "static_type_info.h"
+// #include "static_type_info.h"
 
 namespace Myriad
 {
-    class MyrObjectManager; //fwd
+    class MyrObjectManager; // fwd
 
     // A base class for objects.
     class MYR_API MyrObject
@@ -45,15 +45,14 @@ namespace Myriad
         bool destroyed_;
         std::vector<MyrHandle_T> children_;
         std::vector<MyrComponent *> components_;
-        std::unordered_map<static_type_info::TypeID, MyrComponent *>
-            component_map_;
+        std::unordered_map<uint16_t, MyrComponent *> component_map_;
         MyrObjectManager *p_object_manager_;
 
       public:
         // TODO: These constructors could be private, so that
         // the only way to instantiate these is with an allocator
-        MyrObject();
-        MyrObject(const std::string object_name);
+        MyrObject(MyrObjectManager *p_mgr);
+        MyrObject(const std::string object_name, MyrObjectManager *p_mgr);
 
         virtual ~MyrObject() { MYR_CORE_TRACE("Destructing a MyrObject."); }
 
@@ -79,16 +78,15 @@ namespace Myriad
             T *component = new T(args...);
             if (AddComponentInternal(component))
             {
-                component_map_[static_type_info::getTypeID<T>()] = component;
+                component_map_[component->GetType()] = component;
                 return component;
             }
             return nullptr;
         }
         template <typename T> T *GetComponent()
         {
-            std::unordered_map<static_type_info::TypeID,
-                               MyrComponent *>::iterator search =
-                component_map_.find(static_type_info::getTypeID<T>());
+            std::unordered_map<uint16_t, MyrComponent *>::iterator search =
+                component_map_.find(T::type);
             if (search == component_map_.end())
                 return nullptr;
             return static_cast<T *>(search->second);

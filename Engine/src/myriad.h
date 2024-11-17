@@ -42,6 +42,7 @@
 // Objects
 #include "core/object/GameObject.h"
 #include "core/object/MyrObject.h"
+#include "core/object/MyrObjectManager.h"
 
 // Components
 #include "core/component/MyrComponent.h"

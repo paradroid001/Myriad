@@ -1,17 +1,18 @@
 #ifndef MYRIAD_CORE_COMPONENT_SPRITERENDERER_H
 #define MYRIAD_CORE_COMPONENT_SPRITERENDERER_H
 
+#include "asset/AssetManager.h"
 #include "asset/Texture2D.h"
 #include "core/IDrawable.h"
 #include "core/component/MyrComponent.h"
 #include "core/core.h"
-#include "asset/AssetManager.h"
 #include "rendering/Renderer.h"
 #include <string>
 
 namespace Myriad
 {
-    class MYR_API SpriteRenderer : public MyrComponent, public IDrawable
+    class MYR_API SpriteRenderer : public MyrComponentBase<SpriteRenderer>,
+                                   public IDrawable
     {
       protected:
         std::string texture_path_;

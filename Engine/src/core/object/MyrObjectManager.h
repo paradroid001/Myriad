@@ -15,8 +15,6 @@
 
 namespace Myriad
 {
-    class MyrObject; // fwd declare
-
     static const uint32_t MAX_CHILDREN = 500;
     static const uint32_t INVALID_CHILD_INDEX = MAX_CHILDREN + 1;
     static const uint32_t MAX_COMPONENTS = 10;
@@ -84,13 +82,12 @@ namespace Myriad
         }
     };
 
-    class MYR_API MyrObjectManager : public IService,
-                                     public MyrSingleton<MyrObjectManager>
+    class MyrObject; // fwd declare
+    // class GameObject; // fwd declare
+
+    class MYR_API MyrObjectManager : public IService
     {
         friend MyrObject; // myrobject can call our non-public functiona
-        // This using line prevents errors finding the
-        // myrsingleton constructor
-        using MyrSingleton<MyrObjectManager>::MyrSingleton;
 
       protected:
         Allocator allocator_; // We need our own allocator.
@@ -104,13 +101,10 @@ namespace Myriad
                            ObjectNode *child);
 
       public:
-        // MyrObjectManager(); I can't declare my own constructor because of
-        // singleton
+        // MyrObjectManager(); //use default
         ~MyrObjectManager();
         template <typename... Args> MyrHandle_T CreateGameObject(Args... args);
-
         GameObject *GetGameObject(MyrHandle_T);
-
         // Flag a child to be destroyed.
         // This will remove it from the heirarchy
         // and all children will be destroyed.
@@ -127,7 +121,7 @@ namespace Myriad
         // Remove a child from a parent.
         // Return the new child count
         uint16_t RemoveChild(MyrHandle_T parent, MyrHandle_T child);
-
+        // TODO remove this when we have better debugging.
         void DebugLogObjects();
     };
 
@@ -143,6 +137,8 @@ namespace Myriad
 
         nodes_[handle] = ObjectNode(handle, nullptr);
         // We can do this because we are a friend of the class
+        // GameObject is fwd declared, but by the time this template
+        // is compiled, it should have a concrete declaration.
         g->SetHandle(handle);
         return handle;
     }

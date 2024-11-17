@@ -23,7 +23,7 @@ namespace Myriad
           } // private constructor
         */
       protected:
-        bool started_;
+        bool started_ = false;
         virtual bool WhenStartService() = 0;
         virtual bool WhenStopService() = 0;
 
@@ -32,15 +32,23 @@ namespace Myriad
         // static IService *Instance() { return _hinstance; }
         bool StartService()
         {
-            bool ret = WhenStartService();
-            started_ = true;
-            return ret;
+            if (!started_)
+            {
+                bool ret = WhenStartService();
+                started_ = true;
+                return ret;
+            }
+            return true;
         }
         bool StopService()
         {
-            bool ret = WhenStopService();
-            started_ = false;
-            return ret;
+            if (started_)
+            {
+                bool ret = WhenStopService();
+                started_ = false;
+                return ret;
+            }
+            return true;
         }
     };
 

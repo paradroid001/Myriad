@@ -8,11 +8,17 @@ project("MyriadEngine" LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "Myriad is a Game
 #header only spdlog:
 #target_include_directories("MyriadEngine" PUBLIC )
 
-set(PLATFORM Desktop)
+#Platform will have been set by kit?
+if(CMAKE_SYSTEM_NAME STREQUAL Emscripten) #set by emscripten build chain
+set(PLATFORM Web) # CACHE STRING "Platform to build for")
+else()
+set(PLATFORM Desktop) # CACHE STRING "Platform to build for")
+endif()
 
 #We don't want raylib's examples built. This option is picked up by raylib's CMakeLists.txt
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(vendor/raylib)
+
 
 #add_library(${PROJECT_NAME} SHARED) # Make a dynamic lib
 #target_compile_definitions(${PROJECT_NAME} PRIVATE MYR_BUILD_DLL)
@@ -21,6 +27,7 @@ add_library(${PROJECT_NAME} STATIC) # Make a static lib
 #set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
 #set(CMAKE_CXX_STANDARD 17)
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
+
 if(CMAKE_SYSTEM_NAME STREQUAL Windows)
 target_link_options(${PROJECT_NAME} PRIVATE -static-libgcc -lopengl32 -lgdi32 -lwinmm)
 endif()
@@ -28,7 +35,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/spdlog/")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/StaticTypeInfo/include/")
+#target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/StaticTypeInfo/include/")
 
 #define MY_SOURCES to be all my globbed cpp files.
 file(GLOB_RECURSE MYRIAD_SOURCES CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp")
@@ -44,7 +51,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/myriad.h)
 # since we're compiling the myriad library, it needs to know it's 'internal'
 target_compile_definitions(${PROJECT_NAME} PRIVATE MYRIAD_INTERNAL)
 target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall)
-
 #
 # TESTS
 #
@@ -60,4 +66,9 @@ target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vend
 target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
 #link against Catch2, and against the Engine
 target_link_libraries(EngineTests PRIVATE Catch2::Catch2WithMain ${PROJECT_NAME})
-target_compile_options(EngineTests PRIVATE -std=c++17 -Wall)
+#target_compile_options(EngineTests PRIVATE -std=c++17 -Wall)
+
+if (EMSCRIPTEN)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --preload-file ${CMAKE_CURRENT_LIST_DIR}/../res/@res/ -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1")
+    set(CMAKE_EXECUTABLE_SUFFIX ".html") # This line is used to set your executable to build with the emscripten html template so that you can directly open it.
+endif ()

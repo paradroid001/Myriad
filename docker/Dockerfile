@@ -36,8 +36,9 @@ RUN apt-get install -yq libx11-dev \
 RUN groupadd -g 1000 myriad
 RUN useradd -u 1000 -g myriad -ms /bin/bash myriad
 USER myriad
-
 WORKDIR /home/myriad
+
+### ZIG
 RUN wget https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz
 RUN tar xf zig-linux-x86_64-0.13.0.tar.xz
 RUN ln -s zig-linux-x86_64-0.13.0 zig
@@ -48,7 +49,17 @@ ENV PATH="/home/myriad/zig:$PATH"
 COPY zig_c_windows.sh /home/myriad
 COPY zig_cpp_windows.sh /home/myriad
 
+### Emscripten
+#RUN git clone https://github.com/emscripten-core/emsdk.git
+RUN wget https://github.com/emscripten-core/emsdk/archive/refs/tags/3.1.71.zip
+RUN unzip 3.1.71.zip
+WORKDIR /home/myriad/emsdk-3.1.71
+RUN ./emsdk install latest
+RUN ./emsdk activate latest
+RUN . ./emsdk_env.sh
 
+### Doxygen
+WORKDIR /home/myriad
 RUN wget https://www.doxygen.nl/files/doxygen-1.9.8.linux.bin.tar.gz
 RUN tar xf doxygen-1.9.8.linux.bin.tar.gz
 RUN ln -s doxygen-1.9.8 doxygen

@@ -16,6 +16,11 @@ namespace Myriad
         owner_ = owner;
         return true;
     }
+    bool MyrComponent::ReleaseComponent()
+    {
+        // TODO.
+        return true;
+    }
 
     MyrObject *MyrComponent::GetOwner() const { return owner_; }
     void MyrComponent::Enable() {}

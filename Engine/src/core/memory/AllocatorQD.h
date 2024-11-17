@@ -17,7 +17,7 @@
 namespace Myriad
 {
 
-#define MAX_HANDLES 4096
+#define MAX_HANDLES 16384
 
     class MemRecordBase
     {
@@ -168,6 +168,10 @@ namespace Myriad
         {
             // MYR_CORE_TRACE("Allocator {0:x} is creating a new handle.",
             //                (size_t)this);
+            // TODO: we aren't actually checking
+            //      if next_index is < MAX_HANDLES.
+            //      so if you allocate too many things,
+            //      this segfaults (somewhere, eventually)
             MyrHandle<T> *p_handle = new MyrHandle<T>(next_index, this);
 
             MemRecord<T> *p_memrecord =
@@ -176,7 +180,6 @@ namespace Myriad
 
             // TODO will it let me exec this code?
             // ptrs_[next_index] = new T(args...);
-
             next_index += 1;
             return *p_handle; // return the created handle.
             // TODO nothing actually cleans up these handles.
@@ -185,7 +188,8 @@ namespace Myriad
         {
             // myrhandle->Index() holds the index it is at.
             T *dummy;
-            DeleteIndex(dummy, handle.Index());
+            // MyrHandle.Handle() returns the MyrHandle_T
+            DeleteIndex(dummy, handle.Handle());
         }
         template <class T> void DeleteIndex(T *dummy, MyrHandle_T index)
         {
@@ -193,7 +197,8 @@ namespace Myriad
             //  deleting that memrecord will trigger the actual object's
             //  destructor.
             // then set the slot at index to nullptr
-            MemRecord<T> *p_memrecord = memrecords_[index];
+            MemRecord<T> *p_memrecord =
+                static_cast<MemRecord<T> *>(memrecords_[index]);
             if (p_memrecord != nullptr)
             {
                 delete p_memrecord;

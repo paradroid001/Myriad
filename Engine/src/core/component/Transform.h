@@ -6,7 +6,7 @@
 
 namespace Myriad
 {
-    class MYR_API Transform : public MyrComponent
+    class MYR_API Transform : public MyrComponentBase<Transform>
     {
       protected:
         Vector3 position_;
@@ -15,7 +15,7 @@ namespace Myriad
 
       public:
         Transform()
-            : MyrComponent(), position_({0, 0, 0}), rotation_({0, 0, 0, 0}),
+            : MyrComponentBase(), position_({0, 0, 0}), rotation_({0, 0, 0, 0}),
               scale_({1, 1, 1})
         {
             /*

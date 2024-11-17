@@ -5,15 +5,18 @@
 
 #include "core/component/Transform.h"
 #include "core/object/MyrObject.h"
+// #include "core/object/MyrObjectManager.h"
 #include "io/Log.h"
 
-//TODO temporary, should go once I add GetComponent<>
-#include "core/IUpdateable.h"
+// TODO temporary, should go once I add GetComponent<>
 #include "core/IDrawable.h"
+#include "core/IUpdateable.h"
 // #include "rendering/Renderer.h"
 
 namespace Myriad
 {
+    class MyrObjectManager; // fwd declare
+
     class MYR_API GameObject : public MyrObject
     {
       protected:
@@ -28,8 +31,8 @@ namespace Myriad
         IDrawable *drawer_;
 
       public:
-        GameObject();
-        GameObject(const std::string name);
+        GameObject(MyrObjectManager *p_mgr);
+        GameObject(const std::string name, MyrObjectManager *p_mgr);
         virtual ~GameObject();
         Transform &GetTransform() const;
         // Temporary

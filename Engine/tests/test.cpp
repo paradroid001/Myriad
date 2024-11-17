@@ -27,6 +27,8 @@ protected:
 
 public:
   TestCreature(uint8_t legs, uint8_t wings) : num_legs(legs), num_wings(wings) {}
+  inline uint8_t GetNumLegs() { return num_legs; }
+  inline uint8_t GetNumWings() { return num_wings; }
   virtual ~TestCreature() {};
 };
 class CreatureBat : public TestCreature
@@ -78,6 +80,12 @@ TEST_CASE("Allocator correctly creates client classes", "[group1]")
   for (int i = num_creatures / 2; i < num_creatures; i++)
   {
     creatures[i] = (allocator->Alloc<CreatureBat>()).Get();
+  }
+  for (int i = 0; i < num_creatures; i++)
+  {
+    REQUIRE(creatures[i] != nullptr);
+    REQUIRE(creatures[i]->GetNumLegs() == 2);
+    REQUIRE(creatures[i]->GetNumWings() == 2);
   }
 
   // There aren't actually any tests here, I just want to know that
@@ -134,8 +142,9 @@ TEST_CASE("Timer behaves")
 
 TEST_CASE("Can Make Events")
 {
-  Myriad::MyrEventService::GetInstance().StartService();
-  Myriad::MyrEvent::SetEventService(&(Myriad::MyrEventService::GetInstance()));
+  Myriad::MyrEventService *p_event_service = new Myriad::MyrEventService();
+  Myriad::MyrEvent::SetEventService(p_event_service);
+  p_event_service->StartService();
 
   MyEvent *me = new MyEvent();
   me->field1 = 5;
@@ -149,17 +158,18 @@ TEST_CASE("Can Make Events")
   // This is the best we can do for now, and
   MyEvent::Register<MyObject>(Myriad::MYR_EVENT_SYSTEM, 8, mo, &MyObject::Run);
   me->Emit();
-  Myriad::MyrEventService::GetInstance().ProcessEvents();
-  Myriad::MyrEventService::GetInstance().StopService();
+  p_event_service->ProcessEvents();
+  p_event_service->StopService();
+  delete p_event_service;
 }
 
 class TestGameObject : public Myriad::GameObject
 {
 public:
-  TestGameObject(std::string name) : Myriad::GameObject(name) {}
+  TestGameObject(std::string name, Myriad::MyrObjectManager *p_mgr) : Myriad::GameObject(name, p_mgr) {}
 };
 
-class TestComponent : public Myriad::MyrComponent
+class TestComponent : public Myriad::MyrComponentBase<TestComponent>
 {
 public:
   bool ReleaseComponent() override
@@ -170,36 +180,38 @@ public:
 
 TEST_CASE("Use a game object manager to make gameobjects and add/remove children")
 {
-  Myriad::MyrObjectManager &m = Myriad::MyrObjectManager::GetInstance();
-  m.StartService();
-  Myriad::MyrHandle_T hparent = m.CreateGameObject(std::string("Parent"));
-  Myriad::MyrHandle_T hchild1 = m.CreateGameObject(std::string("Child 1"));
-  Myriad::MyrHandle_T hchild2 = m.CreateGameObject(std::string("Child 2"));
+  Myriad::MyrObjectManager *m = new Myriad::MyrObjectManager();
+  m->StartService();
+  Myriad::MyrHandle_T hparent = m->CreateGameObject(std::string("Parent"), m);
+  Myriad::MyrHandle_T hchild1 = m->CreateGameObject(std::string("Child 1"), m);
+  Myriad::MyrHandle_T hchild2 = m->CreateGameObject(std::string("Child 2"), m);
   // Myriad::ObjectNode *pparent = m.GetObject(hparent);
   // Myriad::ObjectNode *pchild = m.GetObject(hchild);
-  REQUIRE(m.GetParent(hparent) == Myriad::MYRHANDLE_INVALID_INDEX);
-  REQUIRE(m.GetParent(hchild1) == Myriad::MYRHANDLE_INVALID_INDEX);
-  REQUIRE(m.GetNumChildren(hparent) == 0);
-  REQUIRE(m.GetNumChildren(hchild1) == 0);
+  REQUIRE(m->GetParent(hparent) == Myriad::MYRHANDLE_INVALID_INDEX);
+  REQUIRE(m->GetParent(hchild1) == Myriad::MYRHANDLE_INVALID_INDEX);
+  REQUIRE(m->GetNumChildren(hparent) == 0);
+  REQUIRE(m->GetNumChildren(hchild1) == 0);
 
   // Add child to parent
-  m.AddChild(hparent, hchild1);
-  REQUIRE(m.GetNumChildren(hparent) == 1);
-  REQUIRE(m.GetParent(hchild1) == hparent);
+  m->AddChild(hparent, hchild1);
+  REQUIRE(m->GetNumChildren(hparent) == 1);
+  REQUIRE(m->GetParent(hchild1) == hparent);
 
-  m.AddChild(hparent, hchild2);
-  REQUIRE(m.GetNumChildren(hparent) == 2);
-  REQUIRE(m.GetParent(hchild2) == hparent);
-  Myriad::GameObject *pg = m.GetGameObject(hparent);
+  m->AddChild(hparent, hchild2);
+  REQUIRE(m->GetNumChildren(hparent) == 2);
+  REQUIRE(m->GetParent(hchild2) == hparent);
+  Myriad::GameObject *pg = m->GetGameObject(hparent);
   MYR_TRACE("Name is {0}", pg->GetName());
 
-  m.DebugLogObjects();
-  m.StopService();
+  m->DebugLogObjects();
+  m->StopService();
+  delete m;
 }
 
 TEST_CASE("Make gameobjects and add / remove children")
 {
   return;
+  /*
   Myriad::Allocator *go_allocator = new Myriad::Allocator();
   go_allocator->Init();
   Myriad::MyrHandle<TestGameObject> tparent = go_allocator->Alloc<TestGameObject>("Parent");
@@ -241,11 +253,13 @@ TEST_CASE("Make gameobjects and add / remove children")
 
   go_allocator->Shutdown();
   delete go_allocator;
+  */
 }
 
 TEST_CASE("Make gameobjects and add components")
 {
-  TestGameObject *tgo = new TestGameObject("New Object");
+  Myriad::MyrObjectManager *m = new Myriad::MyrObjectManager();
+  TestGameObject *tgo = new TestGameObject("New Object", m);
   TestComponent *tc = tgo->AddComponent<TestComponent>();
   // tc should have an owner
   REQUIRE(tc->GetOwner() != nullptr);
@@ -255,8 +269,9 @@ TEST_CASE("Make gameobjects and add components")
   REQUIRE(tgo->GetComponentTypeCount() == 2);
   Myriad::Transform *t = tgo->GetComponent<Myriad::Transform>();
   TestComponent *c = tgo->GetComponent<TestComponent>();
-  Myriad::MyrComponent *m = tgo->GetComponent<Myriad::MyrComponent>();
+  // Myriad::MyrComponent *mc = tgo->GetComponent<Myriad::MyrComponentBase>();
   REQUIRE(t == &(tgo->GetTransform()));
   REQUIRE(c == tc);
-  REQUIRE(m == nullptr);
+  // REQUIRE(mc == nullptr);
+  delete m;
 }

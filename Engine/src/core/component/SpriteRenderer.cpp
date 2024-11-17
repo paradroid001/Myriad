@@ -10,7 +10,7 @@ namespace Myriad
 {
     SpriteRenderer::SpriteRenderer(AssetManager *p_asset_manager,
                                    std::string texture_path)
-        : MyrComponent(), texture_path_(texture_path),
+        : MyrComponentBase(), texture_path_(texture_path),
           p_asset_manager_(p_asset_manager)
     {
     }

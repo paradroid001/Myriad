@@ -3,7 +3,7 @@
 
 #include "myriad.h"
 
-class TestGameObjectUpdater : public Myriad::MyrComponent, public Myriad::IUpdateable
+class TestGameObjectUpdater : public Myriad::MyrComponentBase<TestGameObjectUpdater>, public Myriad::IUpdateable
 {
 private:
   Myriad::Vector2 velocity_;
@@ -67,7 +67,7 @@ class TestGameObject : public Myriad::GameObject
   // Myriad::SpriteRenderer *p_sprite_renderer_;
 
 public:
-  TestGameObject(Myriad::Allocator *allocator, Myriad::AssetManager *p_asset_manager) : Myriad::GameObject()
+  TestGameObject(Myriad::Allocator *allocator, Myriad::AssetManager *p_asset_manager, Myriad::MyrObjectManager *p_mgr) : Myriad::GameObject(p_mgr)
   {
     // tex = new Myriad::Texture2D(allocator);
     // tex->Load("res/carrot.png");

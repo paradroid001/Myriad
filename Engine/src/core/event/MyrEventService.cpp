@@ -6,7 +6,10 @@ namespace Myriad
 {
     MyrEventService::~MyrEventService()
     {
-        delete dispatcher_;
+        if (dispatcher_ != nullptr)
+        {
+            delete dispatcher_;
+        }
         MYR_CORE_INFO("MyrEventService Destructing");
     }
 

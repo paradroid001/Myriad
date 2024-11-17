@@ -215,3 +215,11 @@ allocator.Alloc<GameObjec>(pos, rot, scale);
 - No singletons - if something needs access to a thing, it gets passed in.
   - therefore there can be permissions around this: you can pass things in const etc.
 - Get multithreading working first, because that sorts out all the permission stuff (passing/injection of things that are needed).
+
+## TODO 20241005 (at GCAP)
+
+- I want there to be a global app state or object that holds
+  - allocators, object managers, threadpool
+  - init it with a prefs object, that affects how the services are initialised.
+  - the subsystems (allocators, managers, etc) should not be singletons. I want to control their lifetime, and the capacity of the allocators (for example)
+  - I guess the game should be able to be single or multi threaded.

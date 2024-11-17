@@ -74,17 +74,19 @@ class UpdateInitJob : public Myriad::Job
 private:
   std::vector<Myriad::GameObject *> *p_objects;
   Myriad::AssetManager *p_asset_manager_;
+  Myriad::MyrObjectManager *p_object_manager_;
   Myriad::Allocator *p_allocator_;
   int num_objects;
 
 public:
   UpdateInitJob() : Myriad::Job("Update Init") {}
 
-  void Init(Myriad::Allocator *p_allocator, Myriad::AssetManager *p_asset_manager, std::vector<Myriad::GameObject *> &objects, int num_objects)
+  void Init(Myriad::Allocator *p_allocator, Myriad::AssetManager *p_asset_manager, Myriad::MyrObjectManager *p_object_manager, std::vector<Myriad::GameObject *> &objects, int num_objects)
   {
     p_objects = &objects;
     p_allocator_ = p_allocator;
     p_asset_manager_ = p_asset_manager;
+    p_object_manager_ = p_object_manager;
     this->num_objects = num_objects;
   }
 
@@ -99,7 +101,7 @@ public:
     for (int i = 0; i < num_objects; i++)
     {
       // this handle situation isn't going to work...
-      Myriad::MyrHandle<TestGameObject> h = p_allocator_->Alloc<TestGameObject>(p_allocator_, p_asset_manager_);
+      Myriad::MyrHandle<TestGameObject> h = p_allocator_->Alloc<TestGameObject>(p_allocator_, p_asset_manager_, p_object_manager_);
       TestGameObject *p_tgo = h.Get();
       // TestGameObject *p_tgo = &*(allocator.Alloc<TestGameObject>());
       p_objects->push_back(p_tgo);
@@ -116,7 +118,7 @@ public:
     }
 
     // Init the player
-    Myriad::MyrHandle<PlayerGameObject> p = p_allocator_->Alloc<PlayerGameObject>(p_allocator_);
+    Myriad::MyrHandle<PlayerGameObject> p = p_allocator_->Alloc<PlayerGameObject>(p_allocator_, p_object_manager_);
     PlayerGameObject *p_p = p.Get();
 
     p_objects->push_back(p_p);
@@ -172,7 +174,8 @@ public:
 protected:
   virtual void Execute() override
   {
-    Myriad::MyrEventService::GetInstance().ProcessEvents();
+    Myriad::MyrApplication::GetEngine()->GetEventService()->ProcessEvents();
+    // Myriad::MyrEventService::GetInstance().ProcessEvents();
 
     double dt = 1.0f / 60;
     // MYR_WARN("Update");
@@ -185,7 +188,7 @@ protected:
         updater->Update(dt);
     }
 
-    Myriad::MyrEventService::GetInstance().ClearEvents();
+    Myriad::MyrApplication::GetEngine()->GetEventService()->ClearEvents();
   }
 };
 
@@ -246,19 +249,19 @@ public:
 
   void Init(Myriad::Allocator *allocator)
   {
-    pool_ = allocator->Alloc<Myriad::ThreadPool>(1); // single threaded
-    window_ = allocator->Alloc<Myriad::Window>(allocator);
-    renderer_ = allocator->Alloc<Myriad::Renderer>();
+    // pool_ = allocator->Alloc<Myriad::ThreadPool>(1); // single threaded
+    // window_ = allocator->Alloc<Myriad::Window>(allocator);
+    // renderer_ = allocator->Alloc<Myriad::Renderer>();
   }
 
   void Run(Myriad::Allocator *allocator, Myriad::MyrAppPreferences &prefs)
   {
-    Myriad::MyrEventService *es = &(Myriad::MyrEventService::GetInstance());
-// Win32 api messes with my StartService.
-#undef StartService
-    es->StartService();
-    // This boilerplate code sucks.
-    Myriad::MyrEvent::SetEventService(&(Myriad::MyrEventService::GetInstance()));
+    // Myriad::MyrEventService *es = &(Myriad::MyrEventService::GetInstance());
+    // Win32 api messes with my StartService.
+    // #undef StartService
+    //    es->StartService();
+    //    // This boilerplate code sucks.
+    //    Myriad::MyrEvent::SetEventService(&(Myriad::MyrEventService::GetInstance()));
 
     Myriad::MyrHandle<GetInputJob> inputjob = allocator->Alloc<GetInputJob>("GetInput Job");
     Myriad::MyrHandle<RenderInitJob> renderinitjob = allocator->Alloc<RenderInitJob>("Render Init Job");
@@ -269,18 +272,25 @@ public:
     // Allow the live app data to know the dimensions of the created window.
     Myriad::MyrAppData::Instance()->UpdateScreenDimensions(prefs.screen_dimensions);
 
+    Myriad::MyrEngine *p_engine = Myriad::MyrApplication::GetEngine();
+
+    window_ = p_engine->GetWindowHandle();
+    pool_ = p_engine->GetThreadPoolHandle();
+    renderer_ = p_engine->GetRendererHandle();
+
     // MYR_INFO("Init Render Init Job");
     renderinitjob->Init(prefs, window_, renderer_);
 
     // Our vector of game objects
     std::vector<Myriad::GameObject *> test_game_objects;
 
-    Myriad::AssetManager *p_asset_manager = new Myriad::AssetManager();
+    Myriad::AssetManager *p_asset_manager = p_engine->GetAssetManager(); // new Myriad::AssetManager();
+    Myriad::MyrObjectManager *p_object_manager = p_engine->GetObjectManager();
 
     // This needs to be inited before render. But render depends on it :()
     // MYR_INFO("Init Update Job");
-    int num_game_object = 4000; //between 4100 and 4000 this crashes
-    updateinitjob->Init(allocator, p_asset_manager, test_game_objects, num_game_object);
+    int num_game_object = 10;
+    updateinitjob->Init(allocator, p_asset_manager, p_object_manager, test_game_objects, num_game_object);
     // Now we give that filled out ref to UpdateJob
     updatejob->Init(test_game_objects); // returns obj[]
 
@@ -324,7 +334,7 @@ public:
       ++total_frames;
     }
 
-    MYR_INFO("Closed Window");
+    MYR_INFO("User closed Window");
 
     // Before we kill the GL context,
     // Let's get rid of all the TestGameObjects, and dealloc their
@@ -335,10 +345,9 @@ public:
     //  delete p_testgameobject;
     //}
 
-    Myriad::MyrEventService::GetInstance().StopService();
-    renderer_->Shutdown();
-    delete p_asset_manager;
-    window_->Shutdown();
+    // Myriad::MyrEventService::GetInstance().StopService();
+    // renderer_->Shutdown();
+    // window_->Shutdown();
 
     if (false)
     {

@@ -25,7 +25,7 @@ private:
   float speed_ = 50.0f;
 
 public:
-  PlayerGameObject(Myriad::Allocator *allocator) : Myriad::GameObject()
+  PlayerGameObject(Myriad::Allocator *allocator, Myriad::MyrObjectManager *p_mgr) : Myriad::GameObject(p_mgr)
   {
     tex = new Myriad::Texture2D(allocator);
     tex->Load("res/carrot.png");

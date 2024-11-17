@@ -4,23 +4,21 @@
 #include "io/Log.h"
 #include <cstdint>
 
-
 namespace Myriad
 {
-    MyrObject::MyrObject() : hself_(MYRHANDLE_INVALID_INDEX),
-              hparent_(MYRHANDLE_INVALID_INDEX), name_("None"),
-              destroyed_(false)
+    MyrObject::MyrObject(MyrObjectManager *p_mgr)
+        : hself_(MYRHANDLE_INVALID_INDEX), hparent_(MYRHANDLE_INVALID_INDEX),
+          name_("None"), destroyed_(false)
     {
-        p_object_manager_ = &MyrObjectManager::GetInstance();
+        p_object_manager_ = p_mgr; //&MyrObjectManager::GetInstance();
     }
 
-    MyrObject::MyrObject(const std::string object_name)
-            : hself_(MYRHANDLE_INVALID_INDEX),
-              hparent_(MYRHANDLE_INVALID_INDEX), name_(object_name),
-              destroyed_(false)
-        { /*Nothing*/
-            p_object_manager_ = &MyrObjectManager::GetInstance();
-        } // private constructor - you can't create these.
+    MyrObject::MyrObject(const std::string object_name, MyrObjectManager *p_mgr)
+        : hself_(MYRHANDLE_INVALID_INDEX), hparent_(MYRHANDLE_INVALID_INDEX),
+          name_(object_name), destroyed_(false)
+    {
+        p_object_manager_ = p_mgr; //&MyrObjectManager::GetInstance();
+    } // private constructor - you can't create these.
 
     void MyrObject::SetParent(MyrHandle_T parent)
     {

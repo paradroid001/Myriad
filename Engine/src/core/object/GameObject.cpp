@@ -1,5 +1,6 @@
 #include "core/object/GameObject.h"
 #include "core/component/Transform.h"
+#include "core/object/MyrObjectManager.h"
 
 // TODO temporary, should go once I add GetComponent<>
 #include "core/IDrawable.h"
@@ -7,7 +8,8 @@
 
 namespace Myriad
 {
-    GameObject::GameObject() : MyrObject(), updater_(nullptr), drawer_(nullptr)
+    GameObject::GameObject(MyrObjectManager *p_mgr)
+        : MyrObject(p_mgr), updater_(nullptr), drawer_(nullptr)
     {
         // TODO there's nothing to 'protect' transform component...
         transform_ = AddComponent<Transform>();
@@ -15,7 +17,8 @@ namespace Myriad
         // AddComponent(transform_);
     }
 
-    GameObject::GameObject(const std::string name) : MyrObject(name)
+    GameObject::GameObject(const std::string name, MyrObjectManager *p_mgr)
+        : MyrObject(name, p_mgr)
     {
         transform_ = AddComponent<Transform>();
     }
