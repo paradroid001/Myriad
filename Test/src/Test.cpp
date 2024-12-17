@@ -84,7 +84,7 @@ public:
     prefs.num_threads = 1; // I haven't figured out multithreaded yet.
     InitEngine(prefs);     // init the engine with the pre-populated prefs
 
-    if (!prefs.threaded)
+    if (true || !prefs.threaded)
     {
       // The basic, non jobbed game test
       BasicNonJobbedGameTest();

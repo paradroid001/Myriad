@@ -15,7 +15,7 @@ namespace Myriad
       public:
         MyrComponent() : owner_(nullptr)
         {
-            MYR_CORE_INFO("Yes, MyrComponent constructor is being hit");
+            // MYR_CORE_INFO("Yes, MyrComponent constructor is being hit");
         }
         // Commenting out this constructor, nobody wants to
         // create a component this way.

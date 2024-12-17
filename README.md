@@ -219,7 +219,30 @@ allocator.Alloc<GameObjec>(pos, rot, scale);
 ## TODO 20241005 (at GCAP)
 
 - I want there to be a global app state or object that holds
+
   - allocators, object managers, threadpool
   - init it with a prefs object, that affects how the services are initialised.
   - the subsystems (allocators, managers, etc) should not be singletons. I want to control their lifetime, and the capacity of the allocators (for example)
   - I guess the game should be able to be single or multi threaded.
+
+  ## TODO 20241122
+
+  SO:
+  We're just not going to be able to guarantee that web will support threads.
+  We can still come up with some smart 'submit things to the runloop' with deppendencies,
+  which will work in threaded and nonthreaded environments, there should probably
+  just be an option to do it yourself, custom, however you want.
+  Seems like the easiest path would be to have base methods in MyriadApplication,
+  being Init and RunLoop or something similar, and being able to override
+  them if you want.
+
+The engine should have a few overriding design principles:
+
+1. By default it can initialise everything, provide global systems (allocator, resource manager, etc) and provide a threaded or nonthreaded job system and runloop to which you can submit jobs if you like. BUT. You should always be able to override - I don't want the standard init, I don't want the standard runloop, etc.
+
+Other things that need to be done:
+
+1. Separate out all the headers into an include directory, so client apps can include this bundle.
+2. Logging probably needs to be sorted out, once and for all.
+3. Config files and other serialisation/deserialisation is probably a good idea, nice and early.
+4. Can probably remove the runtime type id system, although components haven't been heavily tested..

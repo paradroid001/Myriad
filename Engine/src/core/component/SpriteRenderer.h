@@ -28,7 +28,7 @@ namespace Myriad
         virtual bool ReleaseComponent() override;
 
         // IDrawable
-        virtual void Draw(Renderer &renderer);
+        virtual void Draw(Renderer &renderer) override;
     };
 } // namespace Myriad
 

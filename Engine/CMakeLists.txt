@@ -8,13 +8,6 @@ project("MyriadEngine" LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "Myriad is a Game
 #header only spdlog:
 #target_include_directories("MyriadEngine" PUBLIC )
 
-#Platform will have been set by kit?
-if(CMAKE_SYSTEM_NAME STREQUAL Emscripten) #set by emscripten build chain
-set(PLATFORM Web) # CACHE STRING "Platform to build for")
-else()
-set(PLATFORM Desktop) # CACHE STRING "Platform to build for")
-endif()
-
 #We don't want raylib's examples built. This option is picked up by raylib's CMakeLists.txt
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(vendor/raylib)
@@ -28,9 +21,10 @@ add_library(${PROJECT_NAME} STATIC) # Make a static lib
 #set(CMAKE_CXX_STANDARD 17)
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
 
-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-target_link_options(${PROJECT_NAME} PRIVATE -static-libgcc -lopengl32 -lgdi32 -lwinmm)
-endif()
+#if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+#target_link_options(${PROJECT_NAME} PRIVATE -static-libgcc -lopengl32 -lgdi32 -lwinmm)
+#endif()
+
 # I tried INTERFACE here instead of PUBLIC, and it didn't work.
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/spdlog/")
@@ -68,7 +62,7 @@ target_include_directories(EngineTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vend
 target_link_libraries(EngineTests PRIVATE Catch2::Catch2WithMain ${PROJECT_NAME})
 #target_compile_options(EngineTests PRIVATE -std=c++17 -Wall)
 
-if (EMSCRIPTEN)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --preload-file ${CMAKE_CURRENT_LIST_DIR}/../res/@res/ -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1")
-    set(CMAKE_EXECUTABLE_SUFFIX ".html") # This line is used to set your executable to build with the emscripten html template so that you can directly open it.
-endif ()
+#if (EMSCRIPTEN)
+#    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1")
+#    set(CMAKE_EXECUTABLE_SUFFIX ".html") # This line is used to set your executable to build with the emscripten html template so that you can directly open it.
+#endif ()
