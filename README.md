@@ -246,3 +246,5 @@ Other things that need to be done:
 2. Logging probably needs to be sorted out, once and for all.
 3. Config files and other serialisation/deserialisation is probably a good idea, nice and early.
 4. Can probably remove the runtime type id system, although components haven't been heavily tested..
+5. Events get created in application code with new, and never deleted. May need event manager to pool and reuse them.
+6. The situation with handles is a bit unweildy if you just want a big vector full of all your handles, of all different types. Makes pointers seem far better. Is there a better way?

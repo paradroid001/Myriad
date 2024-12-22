@@ -26,7 +26,6 @@ namespace Myriad
         h_window_ = p_allocator_general_->Alloc<Window>(p_allocator_general_);
         h_renderer_ = p_allocator_general_->Alloc<Renderer>();
         // Start an event service
-        // p_event_service_ = &(MyrEventService::GetInstance());
         // Create (but not start) an event service.
         p_event_service_ = new MyrEventService();
 
@@ -35,7 +34,6 @@ namespace Myriad
         p_event_service_->StartService();
         // So myrevents know where to send data...
         MyrEvent::SetEventService(p_event_service_);
-
         is_shutdown_ = false;
     }
 
@@ -44,6 +42,7 @@ namespace Myriad
         if (!is_shutdown_)
         {
             // stop the event service.
+            // We don't want any new events.
             p_event_service_->StopService();
             // then, stop all the threads.
             // will only have been inited if threaded.

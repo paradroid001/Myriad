@@ -18,7 +18,7 @@ add_subdirectory(vendor/raylib)
 add_library(${PROJECT_NAME} STATIC) # Make a static lib
 
 #set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
-#set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
 
 #if(CMAKE_SYSTEM_NAME STREQUAL Windows)

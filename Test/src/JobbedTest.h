@@ -224,6 +224,8 @@ protected:
       if (kb_input.IsKeyDown(KEYCODE_A))
         x -= 1.0f;
 
+      //TODO this is A memory leak, these are never cleaned up.
+      //See the event manager TODO for details
       InputAxisEvent *e = new InputAxisEvent(x, y);
       e->Emit();
     }

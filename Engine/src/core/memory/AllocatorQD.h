@@ -187,7 +187,7 @@ namespace Myriad
         template <class T> void Delete(MyrHandle<T> handle)
         {
             // myrhandle->Index() holds the index it is at.
-            T *dummy;
+            T *dummy = nullptr; //initialise dummy to not get warnings.
             // MyrHandle.Handle() returns the MyrHandle_T
             DeleteIndex(dummy, handle.Handle());
         }

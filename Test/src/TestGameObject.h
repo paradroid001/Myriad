@@ -61,21 +61,12 @@ void TestGameObjectUpdater::Update(float dt)
 
 class TestGameObject : public Myriad::GameObject
 {
-  // private:
-  //    Myriad::Texture2D *tex;
-  // TestGameObjectUpdater *p_test_object_updater_;
-  // Myriad::SpriteRenderer *p_sprite_renderer_;
 
 public:
   TestGameObject(Myriad::Allocator *allocator, Myriad::AssetManager *p_asset_manager, Myriad::MyrObjectManager *p_mgr) : Myriad::GameObject(p_mgr)
   {
-    // tex = new Myriad::Texture2D(allocator);
-    // tex->Load("res/carrot.png");
     updater_ = AddComponent<TestGameObjectUpdater>();
     drawer_ = AddComponent<Myriad::SpriteRenderer>(p_asset_manager, "res/carrot.png");
-    // Myriad::SpriteRenderer *p_sr = new Myriad::SpriteRenderer(allocator, "res/carrot.png");
-    // drawer_ = p_sr;
-    // AddComponent(p_sr);
   }
   ~TestGameObject()
   {

@@ -17,12 +17,33 @@ public:
   inline float GetAxisY() const { return axis_.y; }
 };
 
+//An updater component for the player
+class PlayerUpdaterComponent : public Myriad::MyrComponentBase<PlayerUpdaterComponent>, public Myriad::IUpdateable
+{
+  public:
+    Myriad::Vector2 *p_owner_input;
+    float speed = 50.0f;
+    
+    virtual void Update(float dt=0) override
+    {
+      if (p_owner_input != nullptr)
+      {
+        Myriad::Vector3 pos = static_cast<Myriad::GameObject *>(owner_)->GetTransform().GetPosition();
+        //get the owner's input, and use that to move.
+        pos.x += p_owner_input->x * speed * dt;
+        pos.y += p_owner_input->y * speed * dt;
+        static_cast<Myriad::GameObject *>(owner_)->GetTransform().SetPosition(pos);
+      }  
+    }
+};
+
+
 class PlayerGameObject : public Myriad::GameObject
 {
 private:
   Myriad::Texture2D *tex;
   Myriad::Vector2 input_;
-  float speed_ = 50.0f;
+  float speed_ = 150.0f;
 
 public:
   PlayerGameObject(Myriad::Allocator *allocator, Myriad::MyrObjectManager *p_mgr) : Myriad::GameObject(p_mgr)
@@ -31,6 +52,12 @@ public:
     tex->Load("res/carrot.png");
     input_.x = 0;
     input_.y = 0;
+    drawer_ = AddComponent<Myriad::SpriteRenderer>(Myriad::MyrApplication::GetEngine()->GetAssetManager(), "res/carrot.png");
+    updater_ = AddComponent<PlayerUpdaterComponent>();
+    //TODO this is really doddy.
+    static_cast<PlayerUpdaterComponent*>(updater_)->p_owner_input = &input_;
+    static_cast<PlayerUpdaterComponent*>(updater_)->speed = speed_;
+    
     InputAxisEvent::Register<PlayerGameObject>(Myriad::MYR_EVENT_INPUT, EVENT_TYPE_KEYBOARD, this, &PlayerGameObject::OnInput);
   }
   ~PlayerGameObject()
@@ -45,10 +72,15 @@ public:
 
   void OnInput(Myriad::MyrEvent *p_event)
   {
-    MYR_INFO("OnInput Called");
+    //MYR_INFO("OnInput Called");
     InputAxisEvent *p_axis_event = static_cast<InputAxisEvent *>(p_event);
     input_.x = p_axis_event->GetAxisX();
     input_.y = p_axis_event->GetAxisY();
+  }
+
+  Myriad::Vector2 GetInput()
+  {
+    return input_;
   }
 };
 

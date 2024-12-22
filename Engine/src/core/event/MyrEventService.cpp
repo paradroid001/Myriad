@@ -40,5 +40,10 @@ namespace Myriad
                                  p_event);
         }
     }
-    void MyrEventService::ClearEvents() { events_.clear(); }
+    void MyrEventService::ClearEvents()
+    {
+        //TODO: either these events need to be deleted OR
+        //the event manager holds an event pool and reuses them. 
+        events_.clear();
+    }
 } // namespace Myriad

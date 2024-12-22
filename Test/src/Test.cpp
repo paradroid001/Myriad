@@ -121,15 +121,3 @@ Myriad::MyrApplication *Myriad::CreateApplication()
 {
   return new MyriadTest();
 }
-
-/*
-OK.The task from here is :
-1. Can I get res directory to be copied to the build dir ?
-  See : https : // www.youtube.com/watch?v=sTuIRzrB2dA
-2. Can I then edit the way stuff gets launched to use the right dir context when running the binary?
-  Edit the kits, or settings.json, or something ?
-3. Can I still maintain GDB when doing this ?
-4. Can I have builds go to build dirs that are per platform / variant, e.g : build / x86_64_windows_gnu / Debug ?
-  Can I then maintain GDB this way ? should be as simple as :
-  "cmake.buildDirectory": "${workspaceFolder}/build/${buildKit}/${buildType}",
-*/

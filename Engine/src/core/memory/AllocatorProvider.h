@@ -76,7 +76,7 @@ namespace Myriad
 
         template <class U> MyrHandle<U> Handle(MyrHandle_T index) // const
         {
-            U *dummy;
+            U *dummy = nullptr; //initialise it to stop warnings.
             return *((static_cast<T *>(this))->At(dummy, index));
         }
 
