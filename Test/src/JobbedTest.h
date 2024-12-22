@@ -95,8 +95,8 @@ public:
     std::random_device os_seed;
     const u32 seed = os_seed();
     engine generator(seed);
-    std::uniform_int_distribution<u32> distribute_x(0, Myriad::MyrAppData::Instance()->GetScreenDimensions().x);
-    std::uniform_int_distribution<u32> distribute_y(0, Myriad::MyrAppData::Instance()->GetScreenDimensions().y);
+    std::uniform_int_distribution<u32> distribute_x(0, Myriad::MyrApplication::GetAppData()->GetScreenDimensions().x);
+    std::uniform_int_distribution<u32> distribute_y(0, Myriad::MyrApplication::GetAppData()->GetScreenDimensions().y);
     MYR_TRACE("Generating Objects");
     for (int i = 0; i < num_objects; i++)
     {
@@ -270,7 +270,7 @@ public:
     Myriad::MyrHandle<UpdateJob> updatejob = allocator->Alloc<UpdateJob>("Update Job");
 
     // Allow the live app data to know the dimensions of the created window.
-    Myriad::MyrAppData::Instance()->UpdateScreenDimensions(prefs.screen_dimensions);
+    Myriad::MyrApplication::GetAppData()->UpdateScreenDimensions(prefs.screen_dimensions);
 
     Myriad::MyrEngine *p_engine = Myriad::MyrApplication::GetEngine();
 

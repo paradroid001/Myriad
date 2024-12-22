@@ -29,28 +29,13 @@ namespace Myriad
     class MYR_API MyrAppData
     {
       private:
-        // inlining the static var meant I didn't have to
-        // declare it in a cpp file.
-        // https://stackoverflow.com/questions/18860895/how-to-initialize-static-members-in-the-header
-        inline static MyrAppData *_instance;
         Vector2 _screen_dimensions;
         // TODO: add screen orientation
         size_t _target_fps;
         // TODO: add
 
-        // Private Constructor
-        MyrAppData() {};
-
       public:
-        static MyrAppData *&Instance()
-        {
-            if (_instance == 0)
-                _instance = new MyrAppData();
-            return _instance;
-        }
-
-        void Init(MyrAppPreferences *p_prefs) {}
-
+        MyrAppData(MyrAppPreferences &prefs) {};
         void UpdateScreenDimensions(Vector2 &dimensions)
         {
             _screen_dimensions.x = dimensions.x;

@@ -34,7 +34,7 @@ public:
 
 void TestGameObjectUpdater::Update(float dt)
 {
-  Myriad::Vector2 screendims = Myriad::MyrAppData::Instance()->GetScreenDimensions();
+  Myriad::Vector2 screendims = Myriad::MyrApplication::GetAppData()->GetScreenDimensions();
   float WIDTH = screendims.x;
   float HEIGHT = screendims.y;
   Myriad::Vector3 pos = static_cast<Myriad::GameObject *>(owner_)->GetTransform().GetPosition();

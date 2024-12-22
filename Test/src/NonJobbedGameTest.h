@@ -15,26 +15,30 @@ class NonJobbedGameTest
 public:
   void Run(Myriad::Allocator &allocator, Myriad::MyrAppPreferences &prefs)
   {
-    Myriad::AssetManager *p_asset_manager = new Myriad::AssetManager();
-    Myriad::MyrObjectManager *p_mgr = new Myriad::MyrObjectManager();
+    // Myriad::AssetManager *p_asset_manager = new Myriad::AssetManager();
+    // Myriad::MyrObjectManager *p_mgr = new Myriad::MyrObjectManager();
+    Myriad::AssetManager *p_asset_manager = Myriad::MyrApplication::GetEngine()->GetAssetManager();
+    Myriad::MyrObjectManager *p_mgr = Myriad::MyrApplication::GetEngine()->GetObjectManager();
     Myriad::MyrHandle<int> hint = allocator.Alloc<int>();
     MYR_TRACE("alloc renderer");
-    Myriad::MyrHandle<Myriad::Renderer> renderer = allocator.Alloc<Myriad::Renderer>();
+    // Myriad::MyrHandle<Myriad::Renderer> renderer = allocator.Alloc<Myriad::Renderer>();
+    Myriad::MyrHandle<Myriad::Renderer> renderer = Myriad::MyrApplication::GetEngine()->GetRendererHandle();
     renderer->Init();
-    Myriad::MyrHandle<Myriad::Window> win = allocator.Alloc<Myriad::Window>(&allocator);
+    // Myriad::MyrHandle<Myriad::Window> win = allocator.Alloc<Myriad::Window>(&allocator);
+    Myriad::MyrHandle<Myriad::Window> win = Myriad::MyrApplication::GetEngine()->GetWindowHandle();
     MYR_TRACE("Made a window");
     win->SetFPS(60);
     win->Init(prefs.screen_dimensions.x, prefs.screen_dimensions.y, "Test Window");
     // Allow the live app data to know the dimensions of the created window.
-    Myriad::MyrAppData::Instance()->UpdateScreenDimensions(prefs.screen_dimensions);
+    Myriad::MyrApplication::GetAppData()->UpdateScreenDimensions(prefs.screen_dimensions);
 
     *hint = 0; // start count at 0
     int num_objects = 4000;
     std::random_device os_seed;
     const u32 seed = os_seed();
     engine generator(seed);
-    std::uniform_int_distribution<u32> distribute_x(0, Myriad::MyrAppData::Instance()->GetScreenDimensions().x);
-    std::uniform_int_distribution<u32> distribute_y(0, Myriad::MyrAppData::Instance()->GetScreenDimensions().y);
+    std::uniform_int_distribution<u32> distribute_x(0, Myriad::MyrApplication::GetAppData()->GetScreenDimensions().x);
+    std::uniform_int_distribution<u32> distribute_y(0, Myriad::MyrApplication::GetAppData()->GetScreenDimensions().y);
 
     Myriad::MyrHandle<TestGameObject> objects[num_objects];
     for (int i = 0; i < num_objects; i++)
@@ -81,7 +85,6 @@ public:
     // delete &win; // should cause Window destructor to run.
     renderer->Shutdown();
     win->Shutdown();
-    delete p_asset_manager;
   }
 };
 

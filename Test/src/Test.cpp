@@ -75,16 +75,23 @@ public:
     auto objtest = allocator_ptr->Alloc<ObjectsTest>();
     objtest->Run(*allocator_ptr);
   }
-
-  void Run()
+  /*
+    MYRIAD :
+    -I feel like engine, appdata etc should be handles.
+    - the render provider within renderer is also not a handle.
+    - the non jobbed flow is shutting down the renderer, this is deleting the renderer.Is this what we want ?
+    -i feel like myr prefs, myr app data etc need copy constructors.Check rule of 3
+  */
+  void
+  Run()
   {
     prefs.screen_dimensions = {800, 600};
     prefs.target_fps = 60;
-    prefs.threaded = false;
+    prefs.threaded = true;
     prefs.num_threads = 1; // I haven't figured out multithreaded yet.
     InitEngine(prefs);     // init the engine with the pre-populated prefs
 
-    if (true || !prefs.threaded)
+    if (!prefs.threaded)
     {
       // The basic, non jobbed game test
       BasicNonJobbedGameTest();

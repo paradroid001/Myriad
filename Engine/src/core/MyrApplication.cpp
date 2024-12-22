@@ -16,6 +16,7 @@ namespace Myriad
 
     void MyrApplication::InitEngine(MyrAppPreferences &prefs)
     {
+        p_appdata_ = new MyrAppData(prefs);
         p_engine_ = new MyrEngine(prefs);
     }
     void MyrApplication::ShutdownEngine()
@@ -24,6 +25,11 @@ namespace Myriad
         {
             delete p_engine_;
             p_engine_ = nullptr;
+        }
+        if (p_appdata_)
+        {
+            delete p_appdata_;
+            p_appdata_ = nullptr;
         }
     }
 } // namespace Myriad

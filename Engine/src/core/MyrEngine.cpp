@@ -22,10 +22,9 @@ namespace Myriad
             assert(prefs.num_threads == 1);
             h_pool_ =
                 p_allocator_general_->Alloc<ThreadPool>(prefs.num_threads);
-            h_window_ =
-                p_allocator_general_->Alloc<Window>(p_allocator_general_);
-            h_renderer_ = p_allocator_general_->Alloc<Renderer>();
         }
+        h_window_ = p_allocator_general_->Alloc<Window>(p_allocator_general_);
+        h_renderer_ = p_allocator_general_->Alloc<Renderer>();
         // Start an event service
         // p_event_service_ = &(MyrEventService::GetInstance());
         // Create (but not start) an event service.

@@ -38,6 +38,9 @@ namespace Myriad
         {
             // return static_cast<T *>(p_allocator_provider_->Ptr(index_));
             // Ptr returns a void*, so we have to cast it.
+            if (p_allocator_provider_ == nullptr)
+                return nullptr;
+
             return static_cast<T *>(p_allocator_provider_->Ptr(index_));
         }
 

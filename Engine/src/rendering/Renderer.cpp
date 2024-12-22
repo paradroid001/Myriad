@@ -30,7 +30,11 @@ namespace Myriad
     bool Renderer::Shutdown()
     {
         // allocator.Shutdown();
-        delete render_provider;
+        if (render_provider != nullptr)
+        {
+            delete render_provider;
+            render_provider = nullptr;
+        }
         return true;
     }
 
