@@ -28,11 +28,12 @@
 #include "core/thread/ThreadPoolJobSystem.h"
 
 // Assets
+#include "asset/AssetManager.h"
 #include "asset/AssetProvider.h"
+#include "asset/Font.h"
 #include "asset/MyrAsset.h"
 #include "asset/Texture2D.h"
 #include "asset/TextureProvider.h"
-#include "asset/AssetManager.h"
 
 // Interfaces
 #include "core/IDrawable.h"
@@ -47,6 +48,7 @@
 // Components
 #include "core/component/MyrComponent.h"
 #include "core/component/SpriteRenderer.h"
+#include "core/component/TextRenderer.h"
 
 // IO
 #include "io/Log.h"

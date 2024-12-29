@@ -1,6 +1,7 @@
 #ifndef MYRIAD_RENDERING_RENDERPROVIDER_H
 #define MYRIAD_RENDERING_RENDERPROVIDER_H
 
+#include "asset/Font.h"      //for fonts
 #include "asset/Texture2D.h" //for texture2d
 #include "core/Provider.h"
 #include "core/core.h" //for types
@@ -26,7 +27,11 @@ namespace Myriad
         virtual void DrawCircle(Vector2 pos, float radius,
                                 MyrColour colour) = 0;
 
-        virtual void DrawTexture(Texture2D tex, Vector2 pos, MyrColour colour) = 0;
+        virtual void DrawTexture(Texture2D tex, Vector2 pos,
+                                 MyrColour colour) = 0;
+
+        virtual void DrawText(Font font, std::string text, Vector2 pos,
+                              int size, MyrColour colour) = 0;
 
         /*
         // Drawing-related functions

@@ -21,6 +21,8 @@ namespace Myriad
         virtual void DrawCircle(Vector2 pos, float radius,
                                 MyrColour colour) override;
         virtual void DrawTexture(Texture2D tex, Vector2 pos, MyrColour colour);
+        virtual void DrawText(Font font, std::string text, Vector2 pos,
+                              int size, MyrColour colour);
     };
 } // namespace Myriad
 
@@ -46,6 +48,14 @@ void Myriad::RenderProviderRaylib::DrawTexture(Texture2D tex, Vector2 pos,
     // I can make this cast because I know tex is a raylib texture object.
     ::Texture2D t = *(static_cast<::Texture2D *>(tex.GetTexPtr()));
     ::DrawTexture(t, pos.x, pos.y, {colour.r, colour.g, colour.b, colour.a});
+}
+void Myriad::RenderProviderRaylib::DrawText(Font font, std::string text,
+                                            Vector2 pos, int size,
+                                            MyrColour colour)
+{
+    // I could get the font but let's just do a default draw
+    ::DrawText(text.c_str(), pos.x, pos.y, size,
+               {colour.r, colour.g, colour.b, colour.a});
 }
 
 #endif

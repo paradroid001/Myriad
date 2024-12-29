@@ -37,7 +37,7 @@ public:
     std::uniform_int_distribution<u32> distribute_x(0, Myriad::MyrApplication::GetAppData()->GetScreenDimensions().x);
     std::uniform_int_distribution<u32> distribute_y(0, Myriad::MyrApplication::GetAppData()->GetScreenDimensions().y);
 
-    Myriad::MyrHandle<TestGameObject> objects[num_objects]; //plus 1 for player obj.
+    Myriad::MyrHandle<TestGameObject> objects[num_objects]; // plus 1 for player obj.
     for (int i = 0; i < num_objects; i++)
     {
       // this handle situation isn't going to work...
@@ -47,8 +47,8 @@ public:
       static_cast<TestGameObjectUpdater *>(objects[i]->GetUpdater())->SetVelocity(50, 50);
     }
 
-    Myriad::MyrHandle<PlayerGameObject> player = allocator.Alloc<PlayerGameObject>(&allocator, p_mgr);
-    
+    Myriad::MyrHandle_T player_h = allocator.AllocIndex<PlayerGameObject>(&allocator, p_mgr);
+    // Myriad::MyrHandle<PlayerGameObject> player = allocator.Alloc<PlayerGameObject>(&allocator, p_mgr);
 
     Myriad::KeyboardInput kb_input;
     const int KEYCODE_A = 65;
@@ -72,12 +72,11 @@ public:
         if (kb_input.IsKeyDown(KEYCODE_A))
           x -= 1.0f;
 
-        //TODO this is A memory leak, these are never cleaned up.
-        //See the event manager TODO for details
+        // TODO this is A memory leak, these are never cleaned up.
+        // See the event manager TODO for details
         InputAxisEvent *e = new InputAxisEvent(x, y);
         e->Emit();
       }
-    
 
       Myriad::MyrApplication::GetEngine()->GetEventService()->ProcessEvents();
       ++(*hint);
@@ -88,7 +87,7 @@ public:
         // Myriad::Vector2 v = static_cast<TestGameObjectUpdater *>(objects[i]->GetUpdater())->GetVelocity();
         // MYR_INFO("vel is {0}, {1}", v.x, v.y);
       }
-      player->GetUpdater()->Update(1.0f / 60);
+      allocator.At<PlayerGameObject>(player_h)->GetUpdater()->Update(1.0f / 60);
       if (*hint % 60 == 0)
       {
         // MYR_INFO("HINT is {0}", *hint);
@@ -102,7 +101,7 @@ public:
       {
         objects[i]->GetDrawer()->Draw(*renderer);
       }
-      player->GetDrawer()->Draw(*renderer);
+      allocator.At<PlayerGameObject>(player_h)->GetDrawer()->Draw(*renderer);
       renderer->EndDrawing();
       Myriad::MyrApplication::GetEngine()->GetEventService()->ClearEvents();
     }

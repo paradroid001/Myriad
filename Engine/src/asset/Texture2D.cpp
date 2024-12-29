@@ -26,6 +26,7 @@ namespace Myriad
         // This is causing a segfault
         // if (texture_provider != nullptr)
         //     delete texture_provider;
+        // TODO once this is fixed, look at the other asset providers.
     }
 
     bool Texture2D::Init() { return texture_provider->Init(); }

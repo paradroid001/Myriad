@@ -2,10 +2,11 @@
 #define MYRIAD_RENDERING_RENDERER_H
 
 // #include "core/AllocatorService.h"
+#include "asset/Font.h"
+#include "asset/Texture2D.h"
 #include "core/core.h"
 #include "core/memory/MyrHandle.h"
 #include "rendering/RenderProvider.h"
-#include "asset/Texture2D.h"
 
 namespace Myriad
 {
@@ -29,8 +30,10 @@ namespace Myriad
         virtual void DrawCircle(Vector2 pos, float radius,
                                 MyrColour colour) override;
 
-        virtual void DrawTexture(Texture2D tex, Vector2 pos, MyrColour colour) override;
-
+        virtual void DrawTexture(Texture2D tex, Vector2 pos,
+                                 MyrColour colour) override;
+        virtual void DrawText(Font font, std::string text, Vector2 pos,
+                              int size, MyrColour colour) override;
     };
 } // namespace Myriad
 #endif

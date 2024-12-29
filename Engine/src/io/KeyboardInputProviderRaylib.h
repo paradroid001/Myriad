@@ -12,7 +12,7 @@ namespace Myriad
     class MYR_API KeyboardInputProviderRaylib : public KeyboardInputProvider
     {
       public:
-        ~KeyboardInputProviderRaylib(){}
+        ~KeyboardInputProviderRaylib() {}
         bool Shutdown() override;
         bool Init() override;
         bool IsKeyPressed(keycode_t key) override;
@@ -47,7 +47,7 @@ namespace Myriad
     }
     bool KeyboardInputProviderRaylib::IsKeyUp(keycode_t key)
     {
-        return IsKeyUp(key);
+        return ::IsKeyUp(key);
     }
 } // namespace Myriad
 

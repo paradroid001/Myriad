@@ -8,7 +8,12 @@
 
 namespace Myriad
 {
-    AssetManager::AssetManager() { MYR_CORE_INFO("Asset Manager Constructed"); }
+    AssetManager::AssetManager()
+    {
+        MYR_CORE_INFO("Asset Manager Constructed");
+        map_font_paths_.clear();
+        map_fonts_.clear();
+    }
     AssetManager::~AssetManager() { MYR_CORE_INFO("Asset Manager Destructed"); }
 
     /*
@@ -18,8 +23,8 @@ namespace Myriad
     TexHandle_T AssetManager::GetTexture(std::string path)
     {
         TexHandle_T ret = TEXHANDLE_INVALID;
-        MapPath2Handle_T::iterator path_search = map_paths_.find(path);
-        if (path_search != map_paths_.end())
+        MapPath2TexHandle_T::iterator path_search = map_tex_paths_.find(path);
+        if (path_search != map_tex_paths_.end())
         {
             MapHandle2Texture_T::iterator handle_search =
                 map_textures_.find(path_search->second);
@@ -56,7 +61,7 @@ namespace Myriad
                 texture_nodes_[textures_allocated_].count = 1;
 
                 map_textures_[handle] = &texture_nodes_[textures_allocated_];
-                map_paths_[path] = handle;
+                map_tex_paths_[path] = handle;
                 textures_allocated_ += 1;
                 ret = handle;
             }
@@ -71,6 +76,63 @@ namespace Myriad
 
     void AssetManager::ReleaseTexture(TexHandle_T handle)
     {
-        MYR_CORE_INFO("Asked to release tex handle {0}", handle);
+        MYR_CORE_INFO("Asked to release tex handle {0} (did nothing)", handle);
+    }
+
+    FontHandle_T AssetManager::GetFont(std::string path)
+    {
+        FontHandle_T ret = FONTHANDLE_INVALID;
+        MapPath2FontHandle_T::iterator path_search = map_font_paths_.find(path);
+        if (path_search != map_font_paths_.end())
+        {
+            MapHandle2Font_T::iterator handle_search =
+                map_fonts_.find(path_search->second);
+            if (handle_search != map_fonts_.end())
+            {
+                ret = handle_search->first;
+            }
+            else
+            {
+                MYR_CORE_ERROR("Loaded font path found with no asset");
+            }
+        }
+        else
+        {
+            // it didn't exist
+            // Create it
+            MyrHandle<Font> h = font_allocator_.Alloc<Font>(&font_allocator_);
+            Font *pfont = h.Get();
+            MyrHandle_T handle = h.Handle();
+            // Load it
+            bool success = pfont->Load(path);
+            if (!success)
+            {
+                MYR_CORE_ERROR("Could not load font {0}", path);
+            }
+            else
+            {
+                MYR_CORE_INFO("Loaded font {0}", path);
+                {
+                    font_nodes_[fonts_allocated_].asset = pfont;
+                    font_nodes_[fonts_allocated_].count = 1;
+
+                    map_fonts_[handle] = &font_nodes_[fonts_allocated_];
+                    map_font_paths_[path] = handle;
+                    fonts_allocated_ += 1;
+                    ret = handle;
+                }
+            }
+        }
+        return ret;
+    }
+
+    Font *AssetManager::GetFontPointer(FontHandle_T handle)
+    {
+        return font_allocator_.At<Font>(handle);
+    }
+
+    void AssetManager::ReleaseFont(FontHandle_T handle)
+    {
+        MYR_CORE_INFO("Asked to release font handle {0}, did nothing", handle);
     }
 } // namespace Myriad

@@ -20,6 +20,7 @@ namespace Myriad
         bool Shutdown() override;
         bool Load(const std::string path) override;
         bool Unload() override;
+        // A texture provider provides...
         void *GetTexPtr() override;
     };
 } // namespace Myriad

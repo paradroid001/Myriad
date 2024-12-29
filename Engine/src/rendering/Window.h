@@ -17,12 +17,12 @@ namespace Myriad
       public:
         Window(Allocator *allocator);
         ~Window();
-        bool Init() override { return true;} // TODO this is useless.
-        bool Init(int w, int h, const char *title);
-        void SetFPS(int fps);
-        bool ShouldClose();
-        void Close();
-        bool Shutdown();
+        bool Init() override { return true; } // TODO this is useless.
+        bool Init(int w, int h, const char *title) override;
+        void SetFPS(int fps) override;
+        bool ShouldClose() override;
+        void Close() override;
+        bool Shutdown() override;
     };
 } // namespace Myriad
 

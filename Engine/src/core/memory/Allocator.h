@@ -38,7 +38,7 @@ namespace Myriad
 
         template <class T, typename... Args> MyrHandle<T> Alloc(Args... args)
         {
-            //MYR_CORE_TRACE("Allocator is allocating");
+            // MYR_CORE_TRACE("Allocator is allocating");
             return allocator_provider->Alloc<T>(args...);
         }
         template <class T> void Dealloc(MyrHandle<T> handle)
@@ -51,8 +51,8 @@ namespace Myriad
         template <class T, typename... Args>
         MyrHandle_T AllocIndex(Args... args)
         {
-            MyrHandle<T> handle = Alloc(args...);
-            return handle.Index();
+            MyrHandle<T> handle = Alloc<T>(args...);
+            return handle.Handle();
         }
         template <class T> void DeallocIndex(MyrHandle_T index)
         {

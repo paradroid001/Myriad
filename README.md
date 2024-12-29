@@ -248,3 +248,5 @@ Other things that need to be done:
 4. Can probably remove the runtime type id system, although components haven't been heavily tested..
 5. Events get created in application code with new, and never deleted. May need event manager to pool and reuse them.
 6. The situation with handles is a bit unweildy if you just want a big vector full of all your handles, of all different types. Makes pointers seem far better. Is there a better way?
+7. We don't seem to be checking for errors when loading textures, fonts, etc (so the !success path in AssetManager will never get executed?). There's also a note to say a delete in the texture provider destructor causes a segfault: should get to the bottom of this beforer too long. For textures, we don't look like we're doing anything for UnloadTexture - should we be? We also have max textures and max fonts, and the idea of invalid handles: are we using these? We should really be configuring them elsewhere, probably not in assetmanager.h. Textures are also hardcoded to load res/carrot.png
+8. The asset manager is going to end up with a lot of repeated code for each asset type.

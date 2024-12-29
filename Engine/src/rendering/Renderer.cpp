@@ -1,4 +1,5 @@
 #include "rendering/Renderer.h"
+#include "asset/Font.h"
 #include "asset/Texture2D.h"
 
 #ifdef MYRIAD_INTERNAL
@@ -51,5 +52,11 @@ namespace Myriad
     void Renderer::DrawTexture(Texture2D tex, Vector2 pos, MyrColour colour)
     {
         render_provider->DrawTexture(tex, pos, colour);
+    }
+
+    void Renderer::DrawText(Font font, std::string text, Vector2 pos, int size,
+                            MyrColour colour)
+    {
+        render_provider->DrawText(font, text, pos, size, colour);
     }
 } // namespace Myriad
