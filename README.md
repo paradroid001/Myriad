@@ -250,3 +250,10 @@ Other things that need to be done:
 6. The situation with handles is a bit unweildy if you just want a big vector full of all your handles, of all different types. Makes pointers seem far better. Is there a better way?
 7. We don't seem to be checking for errors when loading textures, fonts, etc (so the !success path in AssetManager will never get executed?). There's also a note to say a delete in the texture provider destructor causes a segfault: should get to the bottom of this beforer too long. For textures, we don't look like we're doing anything for UnloadTexture - should we be? We also have max textures and max fonts, and the idea of invalid handles: are we using these? We should really be configuring them elsewhere, probably not in assetmanager.h. Textures are also hardcoded to load res/carrot.png
 8. The asset manager is going to end up with a lot of repeated code for each asset type.
+
+
+Restructure:
+0. Update zig, raylib, spdlog.
+1. Put spdlog, raylib, json, flecs? in their own shared libraries. Not sure flecs is used right now, and StaticTypeInfo can probably be deleted. Make sure this still compiles and runs on all platforms.
+2. Move includes into their own directory - this should be anything an external program needs to include. Only cpp and internal headers should be in src.
+3. The logging situation is ridiculous. There should be a standard logging interface, and you can plug providers into it, and configure them to act at different logging levels.
