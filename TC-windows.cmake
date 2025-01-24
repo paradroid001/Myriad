@@ -4,4 +4,4 @@ set(CMAKE_SYSTEM_NAME Windows)
 set(UNIX off)
 #If we turn this off, all the dllimport/export stuff is turned
 #off. Will only work with static libs
-#add_compile_definitions(MYR_PLATFORM_WINDOWS)
+add_compile_definitions(MYR_PLATFORM_WINDOWS)

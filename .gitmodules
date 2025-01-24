@@ -19,3 +19,9 @@
 [submodule "Engine/vendor/StaticTypeInfo"]
 	path = Engine/vendor/StaticTypeInfo
 	url = https://github.com/TheLartians/StaticTypeInfo.git
+[submodule "Engine/vendor/cereal"]
+	path = Engine/vendor/cereal
+	url = https://github.com/USCiLab/cereal.git
+[submodule "Engine/vendor/Remotery"]
+	path = Engine/vendor/Remotery
+	url = https://github.com/Celtoys/Remotery.git

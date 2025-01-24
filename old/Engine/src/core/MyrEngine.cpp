@@ -30,7 +30,7 @@ namespace Myriad
         p_event_service_ = new MyrEventService();
 
         // Win32 api messes with my StartService.
-#undef StartService
+        // #undef StartService
         p_event_service_->StartService();
         // So myrevents know where to send data...
         MyrEvent::SetEventService(p_event_service_);

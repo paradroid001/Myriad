@@ -24,5 +24,23 @@
       "PLATFORM": "Web"
     },
     "isTrusted": true
+  },
+  {
+    "name": "x86_64-linux-gnu-GCC",
+    "toolchainFile": "TC-linux.cmake",
+    "environmentVariables": {
+      "CC": "/usr/bin/gcc",
+      "CXX": "/usr/bin/g++"
+    },
+    "isTrusted": true
+  },
+  {
+    "name": "x86_64-windows-gnu-GCC",
+    "toolchainFile": "TC-windows.cmake",
+    "environmentVariables": {
+      "CC": "/usr/bin/x86_64-w64-mingw32-gcc",
+      "CXX": "/usr/bin/x86_64-w64-mingw32-g++"
+    },
+    "isTrusted": true
   }
 ]
