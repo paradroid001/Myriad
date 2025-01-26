@@ -6,6 +6,7 @@
 #include "core/MyrEntityManager.h"
 #include "core/MyrProfiling.h"
 #include "core/MyrGameEngine.h"
+#include "util/MyrTimer.h"
 
 namespace Myriad
 {
@@ -15,12 +16,21 @@ namespace Myriad
     MyrProfiler profiler_;
     MyrGameEngine engine_;
 
+    MyrTimer update_timer_;
+    MyrTimer render_timer_;
+    MyrTimer frame_timer_;
+
   public:
     MyrGameApplication();
     virtual ~MyrGameApplication();
     virtual void Run();
 
     virtual EngineConfig_t Setup() = 0; //<-- Runs before we init the engine.
+
+    virtual inline uint32_t GetUpdateTimeMS() { return update_timer_.Time(); }
+    virtual inline uint32_t GetRenderTimeMS() { return render_timer_.Time(); }
+    virtual inline uint32_t GetFrameTimeMS() { return frame_timer_.Time(); }
+    virtual inline uint32_t GetFrameElapsedMS() { return frame_timer_.Elapsed(); }
 
     /* INIT */
     virtual void Init(EngineConfig_t config); //<-- We init the engine here

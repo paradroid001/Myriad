@@ -30,10 +30,11 @@ namespace Myriad
   }
   bool Window::Close()
   {
-    return true;
+    return p_window_provider_->Close();
   }
   void Window::SetFPS(int fps)
   {
+    p_window_provider_->SetFPS(fps);
   }
   WindowState_t Window::GetWindowState()
   {

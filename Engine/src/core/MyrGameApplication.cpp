@@ -1,7 +1,6 @@
 #include "core/MyrGameApplication.h"
 #include "core/MyrGameEngine.h"
-#include <iostream>
-
+#include "io/MyrLogging.h"
 namespace Myriad
 {
   MyrGameApplication::MyrGameApplication() {
@@ -9,7 +8,7 @@ namespace Myriad
   };
   MyrGameApplication::~MyrGameApplication()
   {
-    std::cout << "Myr Game Application Destructor" << std::endl;
+    MYR_CORE_INFO("Myr Game Application Destructor");
   };
 
   void MyrGameApplication::Run()
@@ -19,12 +18,19 @@ namespace Myriad
     Start();
     while (engine_.IsRunning())
     {
+      frame_timer_.Start();
+      update_timer_.Start();
+
       PreUpdate();
       Update();
       PostUpdate();
+      update_timer_.Stop();
+      render_timer_.Start();
       PreRender();
       Render();
       PostRender();
+      render_timer_.Stop();
+      frame_timer_.Stop();
     }
     PreShutdown();
     Shutdown();
@@ -56,7 +62,10 @@ namespace Myriad
   // Runs before shutdown
   void MyrGameApplication::PreShutdown() {}
   // Shuts down the engine, releases all engine data structures
-  void MyrGameApplication::Shutdown() {}
+  void MyrGameApplication::Shutdown()
+  {
+    MYR_CORE_INFO("GameApplication Shutdown should de-init the engine?");
+  }
   // Run after shutdown
   void MyrGameApplication::PostShutdown() {}
 

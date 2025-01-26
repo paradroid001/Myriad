@@ -6,6 +6,7 @@
 
 // Core
 #include "core/core.h"
+#include "core/MyrAlloc.h"
 #include "core/MyrApplication.h"
 #include "core/MyrGameApplication.h"
 #include "core/MyrEntryPoint.h"
@@ -13,6 +14,10 @@
 
 // gfx
 #include "gfx/Window.h"
+
+// Asset
+#include "asset/Texture2D.h"
+#include "asset/Font.h"
 
 // #include "core/ISerialisable.h"
 #include "core/MyrEntity.h"
@@ -25,6 +30,9 @@
 #include "io/ILogger.h"
 #include "io/MyrLogging.h"
 #include "io/LoggingProviderSpdLog.h"
+
+// Util
+#include "util/MyrTimer.h"
 
 // Game
 #include "game/Transform.h"

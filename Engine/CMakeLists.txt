@@ -17,6 +17,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJ
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 target_sources(${PROJECT_NAME} PRIVATE
+    # CORE
     src/core/MyrApplication.cpp
     src/core/MyrGameApplication.cpp
     src/core/MyrEntity.cpp
@@ -25,13 +26,29 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/core/MyrProfiling.cpp
     src/core/MyrGameObject.cpp
     src/core/MyrGameEngine.cpp
+    # IO
     src/io/MyrLogging.cpp
     src/io/LoggingProviderSpdLog.cpp
+
+    # ASSETS
+    src/asset/AssetManager.cpp
+    src/asset/Font.cpp
+    src/asset/Texture2D.cpp
+    #if raylib..
+    #normally you'd only compile this if MYRIAD_RENDERER == 1
+    src/asset/FontProviderRaylib.cpp
+    src/asset/TextureProviderRaylib.cpp
+    src/gfx/RendererProviderRaylib.cpp
+
+    # GFX
     src/gfx/WindowProviderRaylib.cpp
     src/gfx/Window.cpp
     src/gfx/Renderer.cpp
-    #normally you'd only compile this if MYRIAD_RENDERER == 1
-    src/gfx/RendererProviderRaylib.cpp
+
+    # UTIL
+    src/util/MyrRandom.cpp
+
+    # GAME
     src/game/Transform.cpp
     src/game/GameObject.cpp
     #vendor/Remotery/lib/Remotery.c
@@ -46,7 +63,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/v
 #We don't want raylib's examples built. This option is picked up by raylib's CMakeLists.txt
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 #Build raylib as a shared lib?: We can't do this with zig c++ due to unsupported rpath-link.
-set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+# build raylib PIC: this should only be off if directly linking exe against static raylib (never)
+set(WITH_PIC ON CACHE BOOL "" FORCE)
 
 add_subdirectory(vendor/raylib)
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")

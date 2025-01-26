@@ -2,9 +2,15 @@
 #include "io/MyrLogging.h"
 namespace Myriad
 {
+  MyrGameEngine *MyrGameEngine::s_Engine = nullptr; // defined in translation unit.
+
   MyrGameEngine::MyrGameEngine()
   {
     MYR_CORE_TRACE("Engine constructor");
+    if (s_Engine == nullptr)
+      s_Engine = this;
+    else
+      MYR_CORE_ERROR("FATAL: Engine instance was already set");
   }
 
   MyrGameEngine::~MyrGameEngine()

@@ -7,7 +7,7 @@
 
 namespace Myriad
 {
-  class MYR_API IRendererProvider : public IRenderer, public IProvider
+  class MYR_API IRendererProvider : public IRenderer, public IProvider, public IRenderFunctionsInternal
   {
   public:
     virtual ~IRendererProvider() = 0;
@@ -23,6 +23,10 @@ namespace Myriad
 
     virtual void DrawCircle(Vector2 pos, float radius,
                             MyrColour colour) = 0;
+    virtual void DrawTexture(Texture2D tex, Vector2 pos,
+                             MyrColour colour) = 0;
+    virtual void DrawText(Font font, std::string text, Vector2 pos,
+                          int size, MyrColour colour) = 0;
   };
 }
 

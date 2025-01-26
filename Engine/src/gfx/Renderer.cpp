@@ -3,6 +3,10 @@
 #include "gfx/IRenderer.h"
 #include "gfx/IRendererProvider.h"
 #include "io/MyrLogging.h"
+#include "core/MyrGameEngine.h" //to ref back tot GE
+#include "asset/AssetManager.h" //to access assets from ids
+#include "asset/Texture2D.h"
+#include "asset/Font.h"
 
 #ifdef MYRIAD_RENDERER
 #if MYRIAD_RENDERER == 1 // raylib
@@ -27,6 +31,13 @@ namespace Myriad
     MYR_CORE_ERROR("MYRIAD_RENDERER not defined in config")
 #endif
   }
+
+  Renderer::Renderer(MyrGameEngine *engine) : Renderer()
+  {
+    p_engine_ = engine;
+    p_asset_manager_ = &(p_engine_->GetAssetManager());
+  }
+
   Renderer::~Renderer()
   {
     delete p_renderer_provider_;
@@ -46,5 +57,24 @@ namespace Myriad
   void Renderer::DrawCircle(Vector2 pos, float radius, MyrColour colour)
   {
     p_renderer_provider_->DrawCircle(pos, radius, colour);
+  }
+  void Renderer::DrawTexture(TexHandle_T h_tex, Vector2 pos, MyrColour colour)
+  {
+    Texture2D *p_tex = p_asset_manager_->GetTexturePointer(h_tex);
+    if (p_tex != nullptr)
+      p_renderer_provider_->DrawTexture(*p_tex, pos, colour);
+    else
+      MYR_CORE_ERROR("Retrieved texture was null");
+  }
+
+  void Renderer::DrawText(FontHandle_T h_font, std::string text, Vector2 pos, int size, MyrColour colour)
+  {
+    Font *p_font = p_asset_manager_->GetFontPointer(h_font);
+    if (p_font != nullptr)
+    {
+      p_renderer_provider_->DrawText(*p_font, text, pos, size, colour);
+    }
+    else
+      MYR_CORE_ERROR("Retrieved font was null");
   }
 }

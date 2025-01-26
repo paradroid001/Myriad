@@ -3,6 +3,74 @@
 #include "basic_logger.h"
 #include <cstring>
 
+struct TestGameObjectBaseData
+{
+  MYR_ID_t id;
+  bool started;
+  bool alive;
+  Myriad::TexHandle_T texid;
+  Myriad::Vector2 pos;
+  Myriad::Vector2 movement;
+  float movespeed;
+};
+class TestGameObjectBase
+{
+protected:
+  TestGameObjectBaseData *data;
+
+public:
+  TestGameObjectBase()
+  {
+    data = new TestGameObjectBaseData();
+    data->started = false;
+  }
+  ~TestGameObjectBase()
+  {
+    Myriad::MyrGameEngine::Engine()->GetAssetManager().ReleaseTexture(data->texid);
+  }
+  void Start()
+  {
+    data->texid = Myriad::MyrGameEngine::Engine()->GetAssetManager().GetTexture("res/carrot.png");
+    data->pos.x = Myriad::MyrRandom::Float(0, 800);
+    data->pos.y = Myriad::MyrRandom::Float(0, 600);
+    data->movement.x = 1;
+    data->movement.y = 1;
+    data->started = true;
+    data->alive = true;
+    data->movespeed = 30;
+  }
+  void Update(float dt)
+  {
+    data->pos.x += data->movement.x * data->movespeed * dt;
+    data->pos.y += data->movement.y * data->movespeed * dt;
+    // Bounce around
+    if (data->pos.x > 800 || data->pos.x < 0)
+    {
+      data->movement.x = -data->movement.x;
+    }
+    if (data->pos.y > 600 || data->pos.y < 0)
+    {
+      data->movement.y = -data->movement.y;
+    }
+  }
+  void Render(Myriad::Renderer &renderer)
+  {
+    renderer.DrawTexture(data->texid, data->pos, {255, 255, 255, 255});
+  }
+  bool IsStarted()
+  {
+    if (data != nullptr && data->started)
+      return true;
+    return false;
+  }
+  bool IsAlive()
+  {
+    if (data != nullptr && data->alive)
+      return true;
+    return false;
+  }
+};
+
 class MyComponent : public Myriad::MyrComponent
 {
 protected:
@@ -33,6 +101,13 @@ public:
 
 class MyriadExample : public Myriad::MyrGameApplication
 {
+
+private:
+  MYR_ID_t texture1_id;
+  MYR_ID_t font1_id;
+  std::vector<TestGameObjectBase *> v_gameobjects;
+  std::stringstream stats_string_;
+
 public:
   virtual ~MyriadExample() {}
 
@@ -50,12 +125,26 @@ public:
 
   Myriad::EngineConfig_t Setup() override
   {
-    return {
-        {800.0f, 600.0f}, "Test", false, 0};
+    Myriad::EngineConfig_t config;
+    config.window_title = "Test";
+    config.screen_dimensions = {800, 600};
+    config.threads_enabled = false;
+    config.num_threads = 0;
+    config.fps = 60;
+    config.asset_root_path = "res";
+    return config;
   }
 
   virtual void Start() override
   {
+    texture1_id = engine_.GetAssetManager().GetTexture("res/carrot.png");
+    font1_id = engine_.GetAssetManager().GetFont("res/dejavu.fnt");
+
+    int num_objects = 5000;
+    for (int i = 0; i < num_objects; i++)
+    {
+      v_gameobjects.push_back(new TestGameObjectBase());
+    }
     return;
     /*
     MYR_TRACE("Hello, world! {0} {1} {2}", "args:", 7, 14.78);
@@ -109,11 +198,56 @@ public:
     */
   }
 
+  void Update() override
+  {
+    for (auto p : v_gameobjects)
+    {
+      if (p != nullptr)
+      {
+        if (!p->IsStarted())
+        {
+          p->Start();
+        }
+        else
+        {
+          p->Update(1.0f / 60.f);
+        }
+      }
+    }
+  }
+
   void Render() override
   {
     engine_.GetRenderer().BeginDrawing();
     engine_.GetRenderer().ClearBackground({127, 127, 127, 255});
+
+    for (auto p : v_gameobjects)
+    {
+      if (p != nullptr && p->IsStarted() && p->IsAlive())
+      {
+        p->Render(engine_.GetRenderer());
+      }
+    }
+
+    stats_string_.str("");
+    stats_string_ << "Frame Time: " << GetFrameElapsedMS() << "ms";
+
+    engine_.GetRenderer().DrawTexture(texture1_id, {100, 100}, {255, 255, 255, 255});
+    engine_.GetRenderer().DrawText(font1_id, stats_string_.str(), {20, 20}, 25, {255, 255, 255, 255});
     engine_.GetRenderer().EndDrawing();
+  }
+
+  void PreShutdown() override
+  {
+    for (auto p : v_gameobjects)
+    {
+      if (p != nullptr)
+      {
+        delete p;
+        p = nullptr;
+        MYR_TRACE("Preshutdown Deleted object");
+      }
+    }
   }
 };
 
