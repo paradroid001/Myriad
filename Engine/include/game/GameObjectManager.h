@@ -1,13 +1,17 @@
 #ifndef MYRIAD_GAME_GAMEOBJECTMANAGER_H
 #define MYRIAD_GAME_GAMEOBJECTMANAGER_H
 
-#include "core/MyrGameObject.h" //for MyrObjectManager
+#include "core/core.h"
+#include "core/config.h"
+#include "core/MyrObjectManager.h"
+#include "core/MyrAlloc.h"
 #include "io/MyrLogging.h"
 #include <unordered_map>
 #include <vector>
 
 namespace Myriad
 {
+  /*
   template <typename T>
   class MYR_API GameObjectRecord
   {
@@ -37,9 +41,9 @@ namespace Myriad
   {
   protected:
     // The object map
-    std::unordered_map<MyrObjectID_t, T *> object_map_;
+    std::unordered_map<MYR_ID_t, T *> object_map_;
     // The next assignable id
-    MyrObjectID_t next_id_;
+    MYR_ID_t next_id_;
 
   public:
     GameObjectManager() : next_id_(0)
@@ -51,7 +55,7 @@ namespace Myriad
       MYR_CORE_TRACE("GameObjectManager destructor");
     }
 
-    MyrObjectID_t CreateObject() override
+    MYR_ID_t CreateObject() override
     {
       if (next_id_ < MYR_OBJECT_INVALID)
       {
@@ -64,7 +68,7 @@ namespace Myriad
       return MYR_OBJECT_INVALID;
     }
     // void Destroy(MyrGameObject *object) override;
-    void DestroyObjectById(MyrObjectID_t id) override
+    void DestroyObjectById(MYR_ID_t id) override
     {
       if (object_map_.find(id) != object_map_.end())
       {
@@ -76,7 +80,7 @@ namespace Myriad
         }
       }
     }
-    T *GetObject(MyrObjectID_t id) override
+    T *GetObject(MYR_ID_t id) override
     {
       // find the object
       if (object_map_.find(id) != object_map_.end())
@@ -86,13 +90,14 @@ namespace Myriad
       return nullptr;
     }
 
-    bool AddChild(MyrObjectID_t parent, MyrObjectID_t child) override
+    bool AddChild(MYR_ID_t parent, MYR_ID_t child) override
     {
       // if the parent exists and the child exists
       // and the child isn't already part of the parent
       return false;
     }
   };
+  */
 }
 
 #endif

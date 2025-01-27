@@ -1,7 +1,6 @@
-#include "core/MyrGameObject.h"
+#include "core/IMyrGameObject.h"
 
 namespace Myriad
 {
-  MyrGameObject::~MyrGameObject() {};       // must provide function body for pure v destructor.
-  MyrObjectManager::~MyrObjectManager() {}; // same thing.
+  IMyrGameObject::~IMyrGameObject() {}; // must provide function body for pure v destructor.
 }

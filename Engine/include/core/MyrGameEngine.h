@@ -4,13 +4,15 @@
 #include "core/core.h"
 #include <cstdint>
 
-#include "core/MyrEntityManager.h"
 #include "gfx/Renderer.h"
 #include "gfx/Window.h"
 #include "asset/AssetManager.h"
+#include "core/MyrEvent.h"
+#include "io/KeyboardInput.h"
 #include "util/MyrRandom.h"
 #include "game/GameObjectManager.h"
 #include "game/GameObject.h"
+#include "core/MyrEntityManager.h" //not yet used...
 
 namespace Myriad
 {
@@ -32,10 +34,12 @@ namespace Myriad
     Renderer renderer_{this};
     Window window_;
     // GameObjectManager<GameObject> object_manager_;
-    // MyrEntityManager entity_manager_;
+    //  MyrEntityManager entity_manager_;
     AssetManager asset_manager_;
-    static MyrGameEngine *s_Engine;
+    MyrEventService event_service_;
+    KeyboardInput keyboard_;
     MyrRandom random_;
+    static MyrGameEngine *s_Engine;
 
   public:
     MyrGameEngine();
@@ -51,6 +55,8 @@ namespace Myriad
     inline Renderer &GetRenderer() { return renderer_; }
     inline Window &GetWindow() { return window_; }
     inline AssetManager &GetAssetManager() { return asset_manager_; }
+    inline MyrEventService &GetEventService() { return event_service_; }
+    inline KeyboardInput &Input() { return keyboard_; }
     // inline GameObjectManager<GameObject> &GetObjectManager() { return object_manager_; }
     // inline MyrEntityManager &GetEntityManager() { return entity_manager_; }
   };

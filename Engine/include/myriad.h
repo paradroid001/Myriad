@@ -11,6 +11,7 @@
 #include "core/MyrGameApplication.h"
 #include "core/MyrEntryPoint.h"
 #include "core/MyrGameEngine.h"
+#include "core/MyrEvent.h"
 
 // gfx
 #include "gfx/Window.h"
@@ -23,7 +24,7 @@
 #include "core/MyrEntity.h"
 #include "core/MyrEntityManager.h"
 #include "core/MyrComponent.h"
-#include "core/MyrGameObject.h"
+#include "core/IMyrGameObject.h"
 #include "game/GameObject.h"
 
 // IO

@@ -26,9 +26,11 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/core/MyrProfiling.cpp
     src/core/MyrGameObject.cpp
     src/core/MyrGameEngine.cpp
+    src/core/MyrEvent.cpp
     # IO
     src/io/MyrLogging.cpp
     src/io/LoggingProviderSpdLog.cpp
+    src/io/KeyboardInput.cpp
 
     # ASSETS
     src/asset/AssetManager.cpp

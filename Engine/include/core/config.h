@@ -19,6 +19,28 @@ typedef uint32_t MYR_ID_t;
 #define MYRIAD_ENTITY_INVALID_ID 0xFFFFFFFF - 1
 #define MYRIAD_COMPONENT_INVALID_ID 0xFFFFFFFF - 1
 
+// An event id is 16 bits wide,
+// 8 bits for type, 8 for subtype.
+// Changes to this would require changes in MyrEvent.h
+typedef uint16_t MYREVENT_TYPE_t;
+typedef uint8_t MYREVENT_PRIMARYTYPE_t;
+typedef uint8_t MYREVENT_SUBTYPE_t;
+
+namespace Myriad
+{
+  typedef enum MyrEventTypes
+  {
+    MYR_EVENT_NONE = 0,
+    MYR_EVENT_TIMER = 1,            // timers
+    MYR_EVENT_SYSTEM = 2,           // close window, resize, hot reload, etc
+    MYR_EVENT_INPUT = 4,            // keypress, mouse, etc
+    MYR_EVENT_OBJECT = 8,           // Object destroy, creation, etc
+    MYR_EVENT_FRAME_LIFECYCLE = 16, // on frameX, on renderX, on updateX
+    MYR_EVENT_USER = 32,            // user defined events in user scripts.
+    MYR_EVENT_CUSTOM = 64           // custom events (?)
+  } MyrEventTypes;
+}
+
 // PROFILING
 // Options:
 // MYRIAD_PROFILING: off = 0, on = 1

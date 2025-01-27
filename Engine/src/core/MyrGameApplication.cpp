@@ -21,6 +21,13 @@ namespace Myriad
       frame_timer_.Start();
       update_timer_.Start();
 
+      engine_.GetEventService().ProcessEvents();
+      // TODO: this is problematic: event handlers
+      //  may have created more events.
+      //  Might be better if events just pop themselves
+      //  out of the queue once they've been handled,
+      //  rather than needing a clear events step.
+      engine_.GetEventService().ClearEvents();
       PreUpdate();
       Update();
       PostUpdate();

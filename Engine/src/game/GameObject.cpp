@@ -2,14 +2,14 @@
 
 namespace Myriad
 {
-  GameObject::GameObject(MyrObjectID_t id) : MyrGameObject(), id_(id)
+  GameObject::GameObject(MYR_ID_t id) : IMyrGameObject(), id_(id)
   {
   }
   GameObject::~GameObject()
   {
   }
 
-  MyrObjectID_t GameObject::GetID() const { return id_; }
-  MyrObjectManager *GameObject::GetManager() { return manager_; }
+  MYR_ID_t GameObject::GetID() const { return id_; }
+  void *GameObject::GetManager() { return nullptr; }
 
 }

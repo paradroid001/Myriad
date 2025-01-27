@@ -2,26 +2,26 @@
 #define MYRIAD_CORE_GAMEOJECT_H
 
 #include "core/core.h"
-#include "core/MyrGameObject.h"
+#include "core/IMyrGameObject.h"
 #include "game/GameObjectManager.h"
 #include <cstdint>
 
 namespace Myriad
 {
-  class MYR_API GameObject : public MyrGameObject
+  class MYR_API GameObject : public IMyrGameObject
   {
   protected:
-    MyrObjectID_t id_;
-    GameObjectManager<GameObject> *manager_;
+    MYR_ID_t id_;
+    // GameObjectManager<GameObject> *manager_;
 
   public:
-    GameObject(MyrObjectID_t id);
+    GameObject(MYR_ID_t id);
     virtual ~GameObject();
 
-    friend GameObjectManager<GameObject>;
+    // friend GameObjectManager<GameObject>;
 
-    MyrObjectID_t GetID() const override;
-    MyrObjectManager *GetManager() override; // const seems hard when returning pointers.
+    MYR_ID_t GetID() const override;
+    void *GetManager() override; // const seems hard when returning pointers.
 
     // Children
     // virtual bool AddChild(MyrObjectID_t childid) override;

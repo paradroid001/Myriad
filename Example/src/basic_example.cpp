@@ -3,73 +3,8 @@
 #include "basic_logger.h"
 #include <cstring>
 
-struct TestGameObjectBaseData
-{
-  MYR_ID_t id;
-  bool started;
-  bool alive;
-  Myriad::TexHandle_T texid;
-  Myriad::Vector2 pos;
-  Myriad::Vector2 movement;
-  float movespeed;
-};
-class TestGameObjectBase
-{
-protected:
-  TestGameObjectBaseData *data;
-
-public:
-  TestGameObjectBase()
-  {
-    data = new TestGameObjectBaseData();
-    data->started = false;
-  }
-  ~TestGameObjectBase()
-  {
-    Myriad::MyrGameEngine::Engine()->GetAssetManager().ReleaseTexture(data->texid);
-  }
-  void Start()
-  {
-    data->texid = Myriad::MyrGameEngine::Engine()->GetAssetManager().GetTexture("res/carrot.png");
-    data->pos.x = Myriad::MyrRandom::Float(0, 800);
-    data->pos.y = Myriad::MyrRandom::Float(0, 600);
-    data->movement.x = 1;
-    data->movement.y = 1;
-    data->started = true;
-    data->alive = true;
-    data->movespeed = 30;
-  }
-  void Update(float dt)
-  {
-    data->pos.x += data->movement.x * data->movespeed * dt;
-    data->pos.y += data->movement.y * data->movespeed * dt;
-    // Bounce around
-    if (data->pos.x > 800 || data->pos.x < 0)
-    {
-      data->movement.x = -data->movement.x;
-    }
-    if (data->pos.y > 600 || data->pos.y < 0)
-    {
-      data->movement.y = -data->movement.y;
-    }
-  }
-  void Render(Myriad::Renderer &renderer)
-  {
-    renderer.DrawTexture(data->texid, data->pos, {255, 255, 255, 255});
-  }
-  bool IsStarted()
-  {
-    if (data != nullptr && data->started)
-      return true;
-    return false;
-  }
-  bool IsAlive()
-  {
-    if (data != nullptr && data->alive)
-      return true;
-    return false;
-  }
-};
+#include "TestGameObjectBase.h"
+#include "TestGamePlayer.h"
 
 class MyComponent : public Myriad::MyrComponent
 {
@@ -137,14 +72,15 @@ public:
 
   virtual void Start() override
   {
-    texture1_id = engine_.GetAssetManager().GetTexture("res/carrot.png");
+    // texture1_id = engine_.GetAssetManager().GetTexture("res/Druid.png");
     font1_id = engine_.GetAssetManager().GetFont("res/dejavu.fnt");
 
-    int num_objects = 5000;
+    int num_objects = 50;
     for (int i = 0; i < num_objects; i++)
     {
       v_gameobjects.push_back(new TestGameObjectBase());
     }
+    v_gameobjects.push_back(new TestGamePlayer());
     return;
     /*
     MYR_TRACE("Hello, world! {0} {1} {2}", "args:", 7, 14.78);
