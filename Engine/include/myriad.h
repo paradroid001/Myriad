@@ -9,7 +9,7 @@
 #include "core/MyrAlloc.h"
 #include "core/MyrApplication.h"
 #include "core/MyrGameApplication.h"
-#include "core/MyrEntryPoint.h"
+// #include "core/MyrEntryPoint.h"
 #include "core/MyrGameEngine.h"
 #include "core/MyrEvent.h"
 

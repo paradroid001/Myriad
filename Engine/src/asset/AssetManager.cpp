@@ -41,7 +41,7 @@ namespace Myriad
     {
       // it didn't exist.
       // Create it
-      MYR_ID_t tex_id = texture_allocator_.Alloc();
+      MYR_ID_t tex_id = texture_allocator_.Alloc<Texture2D>();
       Texture2D *p_tex = texture_allocator_.Get(tex_id);
       // load it
       bool success = p_tex->Load(path);
@@ -96,7 +96,7 @@ namespace Myriad
     {
       // it didn't exist
       // Create it
-      MYR_ID_t font_id = font_allocator_.Alloc();
+      MYR_ID_t font_id = font_allocator_.Alloc<Font>();
       Font *pfont = font_allocator_.Get(font_id);
       // Load it
       bool success = pfont->Load(path);

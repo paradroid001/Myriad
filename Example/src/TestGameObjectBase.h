@@ -1,5 +1,14 @@
-#pragma once
-#include "myriad.h"
+#ifndef _fdklsjkfjjdsklf_
+#define _fdklsjkfjjdsklf_
+
+#include "core/MyrAlloc.h"
+#include "core/MyrObjectManager.h"
+#include "util/MyrRandom.h"
+#include "core/MyrGameEngine.h"
+#include "core/core.h"
+#include "gfx/Renderer.h"
+#include "asset/AssetManager.h"
+
 struct TestGameObjectBaseData
 {
   MYR_ID_t id;
@@ -14,7 +23,7 @@ class TestGameObjectBase
 {
 protected:
   TestGameObjectBaseData *data;
-
+  inline static MYR_ID_t s_id_pool_ = 0;
   void UpdateMovement(float dt)
   {
     data->pos.x += data->movement.x * data->movespeed * dt;
@@ -25,12 +34,14 @@ public:
   TestGameObjectBase()
   {
     data = new TestGameObjectBaseData();
+    data->id = s_id_pool_++;
     data->started = false;
   }
   virtual ~TestGameObjectBase()
   {
     Myriad::MyrGameEngine::Engine()->GetAssetManager().ReleaseTexture(data->texid);
   }
+  inline MYR_ID_t GetId() const { return data->id; }
   virtual void Start()
   {
     data->texid = Myriad::MyrGameEngine::Engine()->GetAssetManager().GetTexture("res/carrot.png");
@@ -73,3 +84,5 @@ public:
     return false;
   }
 };
+
+#endif

@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION "3.18.4")
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE
 #src/basic_logger.cpp
+src/TestGameObjectManager.cpp
 src/basic_example.cpp
 )
 

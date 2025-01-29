@@ -1,10 +1,13 @@
 #include "myriad.h"
+#include "core/MyrEntryPoint.h"
+
 #include <iostream>
 #include "basic_logger.h"
 #include <cstring>
 
 #include "TestGameObjectBase.h"
 #include "TestGamePlayer.h"
+#include "TestGameObjectManager.h"
 
 class MyComponent : public Myriad::MyrComponent
 {
@@ -42,6 +45,7 @@ private:
   MYR_ID_t font1_id;
   std::vector<TestGameObjectBase *> v_gameobjects;
   std::stringstream stats_string_;
+  TestGameObjectManager object_manager_;
 
 public:
   virtual ~MyriadExample() {}
@@ -78,9 +82,10 @@ public:
     int num_objects = 50;
     for (int i = 0; i < num_objects; i++)
     {
-      v_gameobjects.push_back(new TestGameObjectBase());
+      object_manager_.CreateObject<TestGameObjectBase>();
     }
-    v_gameobjects.push_back(new TestGamePlayer());
+    object_manager_.CreateObject<TestGamePlayer>();
+
     return;
     /*
     MYR_TRACE("Hello, world! {0} {1} {2}", "args:", 7, 14.78);
@@ -136,7 +141,7 @@ public:
 
   void Update() override
   {
-    for (auto p : v_gameobjects)
+    for (auto p : object_manager_)
     {
       if (p != nullptr)
       {
@@ -154,14 +159,15 @@ public:
 
   void Render() override
   {
+    Myriad::Renderer &r = engine_.GetRenderer();
     engine_.GetRenderer().BeginDrawing();
     engine_.GetRenderer().ClearBackground({127, 127, 127, 255});
 
-    for (auto p : v_gameobjects)
+    for (auto p : object_manager_)
     {
       if (p != nullptr && p->IsStarted() && p->IsAlive())
       {
-        p->Render(engine_.GetRenderer());
+        p->Render(r);
       }
     }
 
