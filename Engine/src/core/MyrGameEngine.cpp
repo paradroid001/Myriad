@@ -1,4 +1,6 @@
 #include "core/MyrGameEngine.h"
+#include "game/oc/GameObject.h" //so I can set static vars
+#include "game/oc/Component.h"
 #include "io/MyrLogging.h"
 
 namespace Myriad
@@ -40,15 +42,33 @@ namespace Myriad
     window_.Init(static_cast<int>(config.screen_dimensions.x), static_cast<int>(config.screen_dimensions.y), config.window_title);
     window_.SetFPS(config.fps);
     keyboard_.Init();
+
+    // create the GameObject Manager
+    p_game_object_manager_ = new GameObjectManager(config.max_gameobject_slots);
+    p_component_manager_ = new ComponentManager(config.max_component_slots);
+
+    // 3. GameObject needs to know what managers to use
+    GameObject::SetObjectManager(p_game_object_manager_);
+    GameObject::SetComponenttManager(p_component_manager_);
+    // 4. Component needs to know what mamagers to use.
+    ComponentBase::SetObjectManager(p_game_object_manager_);
+    ComponentBase::SetComponentManager(p_component_manager_);
+    ComponentBase::SetAssetManager(&asset_manager_);
+
     return true;
   }
   bool MyrGameEngine::Shutdown()
   {
+    keyboard_.Shutdown();
+
     if (window_.GetWindowState() != WindowState_t::CLOSED)
     {
       window_.Close();
     }
-    keyboard_.Shutdown();
+
+    delete p_component_manager_;
+    delete p_game_object_manager_;
+
     return true;
   }
 }

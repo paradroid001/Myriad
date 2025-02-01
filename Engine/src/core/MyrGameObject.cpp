@@ -1,4 +1,4 @@
-#include "core/IMyrGameObject.h"
+#include "game/IMyrGameObject.h"
 
 namespace Myriad
 {

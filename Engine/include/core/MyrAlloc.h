@@ -2,6 +2,8 @@
 #define MYRIAD_CORE_ALLOC_H
 
 #include "core/core.h"
+#include "core/MyrObjectManager.h"
+#include "io/MyrLogging.h"
 #include <unordered_map>
 #include <vector>
 #include <iterator> //to provide custom iterator
@@ -32,9 +34,13 @@ namespace Myriad
       }
     }
 
-    void Init(MYR_ID_t slots)
+    // The MyrObjectManagerBase will be passed along to
+    // the allocator provider: a null pointer will mean
+    // the provider will not try to contact the manager on
+    // create etc.
+    void Init(MYR_ID_t slots, MyrObjectManagerBase *ptr)
     {
-      p_allocator_provider_ = new U(slots);
+      p_allocator_provider_ = new U(slots, ptr);
     }
 
     // We have a Derived template param - we want this because
@@ -120,20 +126,23 @@ namespace Myriad
     };
 
   protected:
+    MyrObjectManagerBase *p_manager_;
     MYR_ID_t max_slots_;
-    MYR_ID_t next_slot_;
-    MYR_ID_t used_slots_;
-    MYR_ID_t next_id_;
+    MYR_ID_t next_slot_;  // first free slot (i.e. either next unused, or from a deletion)
+    MYR_ID_t used_slots_; // high watermark, num used slots, is index of first OOB slot.
+    MYR_ID_t next_id_;    // monotonically increasing ids.
     std::vector<T *> vector_;
-    std::unordered_map<MYR_ID_t, T *> map_;
+    // the map is of MYR_ID_t to a pair: the slot id, and the actual pointer.
+    std::unordered_map<MYR_ID_t, std::pair<MYR_ID_t, T *>> map_;
 
   public:
     TypeAllocatorDynamic() : AllocatorProviderBase(), max_slots_(0), next_slot_(0), used_slots_(0), next_id_(0)
     {
     }
-    TypeAllocatorDynamic(MYR_ID_t slots) : TypeAllocatorDynamic()
+    TypeAllocatorDynamic(MYR_ID_t slots, MyrObjectManagerBase *p_man) : TypeAllocatorDynamic()
     {
       max_slots_ = slots;
+      p_manager_ = p_man;
       vector_.reserve(max_slots_);
       for (MYR_ID_t i = 0; i < max_slots_; i++)
       {
@@ -156,39 +165,83 @@ namespace Myriad
       // next_id = 0;
     }
 
-    Iterator begin() { return Iterator(&vector_[0]); }        // address of 0th element
-    Iterator end() { return Iterator(&vector_[next_slot_]); } // address of first OOB element
+    Iterator begin() { return Iterator(&vector_[0]); }         // address of 0th element
+    Iterator end() { return Iterator(&vector_[used_slots_]); } // address of first OOB element
 
     template <typename Derived, typename... Args>
     MYR_ID_t Alloc(Derived *dummy, Args... args)
     {
-      // find the first free slot
-      if (next_slot_ != MYRIAD_INVALID_ID)
+
+      // Find the first free slot and put a new object there.
+      // The only reason we wouldn't alloc an object is if we are out of space.
+      if (next_slot_ != MYRIAD_INVALID_ID) // make sure we're not off the end.
       {
         // stick this object there.
         T *p_obj = static_cast<T *>(new Derived(args...));
+        MYR_ID_t newobjid = next_id_++; // get a new id
         vector_[next_slot_] = p_obj;
-        map_[next_slot_] = vector_[next_slot_];
-        MYR_ID_t ret = next_id_;
-        next_id_++;
-        next_slot_++;
-        used_slots_++;
-        return ret;
+        map_[newobjid] = {next_slot_, p_obj}; // the std::pair is slot, pointer
+        // if this is a new slot use:
+        // increment next_slot_ and used_slots_
+        if (next_slot_ == used_slots_)
+        {
+          next_slot_++;
+          used_slots_++;
+        }
+        // if backfilling (i.e. filling a hole from delete):
+        //- update next_slot_ to next nullptr slot.
+        //- don't increase used_slots_ (high water mark)
+        else if (next_slot_ < used_slots_)
+        {
+          MYR_ID_t pos = next_slot_ + 1; // start from slot after just allocated one
+          while (vector_[pos] != nullptr)
+          {
+            pos += 1;
+          }
+          next_slot_ = pos; // next slot should now be first null slot.
+        }
+        if (next_slot_ > used_slots_)
+        {
+          MYR_CORE_ERROR("Slot allocation has gone wrong");
+        }
+        // Notify the manager, if we have one
+        if (p_manager_ != nullptr)
+        {
+          p_manager_->OnObjectCreate(newobjid, p_obj);
+        }
+        return newobjid;
       }
       return MYRIAD_INVALID_ID;
     }
     void Destroy(MYR_ID_t id)
     {
-      // TODO
-      // update the vector
-      // update the map
+      auto it = map_.find(id);
+      if (it != map_.end())
+      {
+        MYR_ID_t slotnum = it->second.first;
+        T *ptr = it->second.second;
+        // we found the record. Delete it.
+        delete ptr;
+        // set the slot in the vector equal to nullptr
+        vector_[slotnum] = nullptr;
+        // if that slot num is lower than next_slot_, adjust next_slot:
+        if (slotnum < next_slot_)
+          next_slot_ = slotnum;
+        // erase this record from the map.
+        map_.erase(it);
+      }
+      else
+      {
+        MYR_CORE_ERROR("No mem record exists for id {0}", id);
+      }
     }
 
     T *Get(MYR_ID_t id)
     {
-      if (id < max_slots_ && id < used_slots_)
+      auto it = map_.find(id);
+      if (it != map_.end())
       {
-        return map_[id];
+        return it->second.second; // ptr is the second in the pair
       }
       return nullptr;
     }

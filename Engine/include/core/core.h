@@ -42,6 +42,8 @@ namespace Myriad
   public:
     float x;
     float y;
+    Vector2(float x, float y) : x(x), y(y) {}
+    Vector2() : Vector2(0.0f, 0.0f) {};
   };
 
   class Vector3

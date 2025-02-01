@@ -7,8 +7,8 @@ namespace Myriad
   AssetManager::AssetManager()
   {
     MYR_CORE_INFO("Asset Manager Constructed");
-    texture_allocator_.Init(MAX_TEXTURES);
-    font_allocator_.Init(MAX_FONTS);
+    texture_allocator_.Init(MAX_TEXTURES, nullptr);
+    font_allocator_.Init(MAX_FONTS, nullptr);
     map_font_paths_.clear();
     map_fonts_.clear();
   }

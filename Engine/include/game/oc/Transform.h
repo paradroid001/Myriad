@@ -2,11 +2,11 @@
 #define MYRIAD_GAME_TRANSFORM_H
 
 #include "core/core.h"
-#include "core/MyrComponent.h"
+#include "game/oc/Component.h"
 
-namespace Myriad
+namespace Myriad::ObjectComponent
 {
-  class Transform : public MyrComponent
+  class MYR_API Transform : public Component<Transform>
   {
   protected:
     Vector3 position_;
@@ -16,10 +16,13 @@ namespace Myriad
   public:
     Transform();
     virtual ~Transform();
+    void Init(Vector3 pos);
     inline Vector3 GetPosition() const { return position_; }
     inline Quaternion GetRotation() const { return rotation_; }
     inline Vector3 GetScale() const { return scale_; }
     void SetPosition(float x, float y, float z);
+
+    void Update(float dt) override;
   };
 }
 

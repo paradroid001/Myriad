@@ -2,11 +2,8 @@
 #define MYRIAD_CORE_MYRENTRYPOINT_H
 
 #include "core/MyrApplication.h"
-// #include "io/Log.h"
 
-extern Myriad::MyrApplication *Myriad::CreateApplication(); // defined in
-                                                            // client.
-
+extern Myriad::MyrApplication *Myriad::CreateApplication();
 int main(int argc, char **argv)
 {
   /*

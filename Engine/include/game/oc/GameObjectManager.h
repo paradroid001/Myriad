@@ -5,12 +5,40 @@
 #include "core/config.h"
 #include "core/MyrObjectManager.h"
 #include "core/MyrAlloc.h"
+#include "game/oc/GameObject.h"
 #include "io/MyrLogging.h"
+
 #include <unordered_map>
 #include <vector>
 
-namespace Myriad
+namespace Myriad::ObjectComponent
 {
+  using namespace Myriad;
+  typedef TypeAllocatorDynamic<GameObject> GOAlloc_t;
+
+  /*
+   * A class that keeps track of game objects and allows them to be
+   * have parent / child heirarchies.
+   */
+  class GameObjectManager : public MyrObjectManager<GameObject, GOAlloc_t>
+  {
+  public:
+    GameObjectManager(MYR_ID_t max_slots);
+    ~GameObjectManager();
+    // MyrObjectManager Methods
+    void DestroyObjectById(MYR_ID_t id) override;
+    GameObject *GetObject(MYR_ID_t id) override;
+    void OnObjectCreate(MYR_ID_t id, void *ptr) override;
+    // Iterator methods
+    auto begin() noexcept
+    {
+      return p_allocator_->begin();
+    }
+    auto end() noexcept
+    {
+      return p_allocator_->end();
+    }
+  };
   /*
   template <typename T>
   class MYR_API GameObjectRecord

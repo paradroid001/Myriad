@@ -6,6 +6,7 @@ add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE
 #src/basic_logger.cpp
 src/TestGameObjectManager.cpp
+src/BounceBehaviour.cpp
 src/basic_example.cpp
 )
 

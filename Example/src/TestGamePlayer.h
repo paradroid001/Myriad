@@ -25,7 +25,7 @@ public:
     const int KEYCODE_S = 83;
     Myriad::KeyboardInput &kb = Myriad::MyrGameEngine::Engine()->Input();
 
-    Myriad::Vector2 mov = {0};
+    Myriad::Vector2 mov = {0, 0};
     if (kb.IsKeyDown(KEYCODE_A))
       mov.x -= 1;
     if (kb.IsKeyDown(KEYCODE_D))

@@ -10,12 +10,15 @@
 #include "core/MyrEvent.h"
 #include "io/KeyboardInput.h"
 #include "util/MyrRandom.h"
-#include "game/GameObjectManager.h"
-#include "game/GameObject.h"
-#include "core/MyrEntityManager.h" //not yet used...
+#include "game/oc/GameObjectManager.h"
+// #include "game/oc/GameObject.h"
+#include "game/oc/ComponentManager.h"
 
 namespace Myriad
 {
+  // This namespace brings in GameObjectManager, GameObject, ComponentManager
+  using namespace Myriad::ObjectComponent;
+
   typedef struct EngineConfig_t
   {
     Vector2 screen_dimensions;
@@ -24,8 +27,24 @@ namespace Myriad
     const char *asset_root_path;
     bool threads_enabled;
     uint8_t num_threads;
+    MYR_ID_t max_gameobject_slots;
+    MYR_ID_t max_component_slots;
 
   } EngineConfig_t;
+
+  // This class is to pass around so there's a single
+  // point of reference for the main systems.
+  typedef struct MYR_API EngineResources_t
+  {
+    Renderer *p_renderer;
+    Window *p_window;
+    AssetManager *p_asset_manager;
+    GameObjectManager *p_game_object_manager;
+    ComponentManager *p_component_manager;
+    MyrEventService *p_event_service;
+    KeyboardInput p_keyboard_input_;
+    MyrRandom p_random;
+  } EngineResources_t;
 
   class MYR_API MyrGameEngine
   {
@@ -33,12 +52,13 @@ namespace Myriad
     EngineConfig_t engine_config_;
     Renderer renderer_{this};
     Window window_;
-    // GameObjectManager<GameObject> object_manager_;
-    //  MyrEntityManager entity_manager_;
     AssetManager asset_manager_;
     MyrEventService event_service_;
     KeyboardInput keyboard_;
     MyrRandom random_;
+    GameObjectManager *p_game_object_manager_;
+    ComponentManager *p_component_manager_;
+
     static MyrGameEngine *s_Engine;
 
   public:
@@ -57,7 +77,9 @@ namespace Myriad
     inline AssetManager &GetAssetManager() { return asset_manager_; }
     inline MyrEventService &GetEventService() { return event_service_; }
     inline KeyboardInput &Input() { return keyboard_; }
-    // inline GameObjectManager<GameObject> &GetObjectManager() { return object_manager_; }
+    inline GameObjectManager &GetGameObjectManager() { return *p_game_object_manager_; }
+    inline ComponentManager &GetComponentManager() { return *p_component_manager_; }
+
     // inline MyrEntityManager &GetEntityManager() { return entity_manager_; }
   };
 }

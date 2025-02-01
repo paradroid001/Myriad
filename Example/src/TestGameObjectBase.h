@@ -1,13 +1,7 @@
 #ifndef _fdklsjkfjjdsklf_
 #define _fdklsjkfjjdsklf_
 
-#include "core/MyrAlloc.h"
-#include "core/MyrObjectManager.h"
-#include "util/MyrRandom.h"
-#include "core/MyrGameEngine.h"
-#include "core/core.h"
-#include "gfx/Renderer.h"
-#include "asset/AssetManager.h"
+#include "myriad.h"
 
 struct TestGameObjectBaseData
 {

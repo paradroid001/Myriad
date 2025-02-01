@@ -3,7 +3,7 @@
 
 #include "core/core.h"
 #include <cstdint>
-#include "MyrObjectManager.h"
+#include "core/MyrObjectManager.h"
 
 // This is the base interface for game objects, no matter how they are backed.
 namespace Myriad

@@ -24,7 +24,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/core/MyrComponent.cpp
     src/core/MyrEntityManager.cpp
     src/core/MyrProfiling.cpp
-    src/core/MyrGameObject.cpp
+    src/core/MyrGameObject.cpp #this just defines the IMyrGameObject destructor.
     src/core/MyrGameEngine.cpp
     src/core/MyrEvent.cpp
     # IO
@@ -40,19 +40,24 @@ target_sources(${PROJECT_NAME} PRIVATE
     #normally you'd only compile this if MYRIAD_RENDERER == 1
     src/asset/FontProviderRaylib.cpp
     src/asset/TextureProviderRaylib.cpp
-    src/gfx/RendererProviderRaylib.cpp
 
     # GFX
     src/gfx/WindowProviderRaylib.cpp
     src/gfx/Window.cpp
     src/gfx/Renderer.cpp
+    src/gfx/RendererProviderRaylib.cpp
 
     # UTIL
     src/util/MyrRandom.cpp
 
     # GAME
-    src/game/Transform.cpp
-    src/game/GameObject.cpp
+    src/game/oc/GameObject.cpp
+    src/game/oc/GameObjectManager.cpp
+    src/game/oc/Component.cpp
+    src/game/oc/ComponentManager.cpp
+    #   components
+    src/game/oc/Transform.cpp
+    src/game/oc/SpriteRenderer.cpp
     #vendor/Remotery/lib/Remotery.c
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})

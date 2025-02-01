@@ -16,12 +16,14 @@ public:
   // Iterator:
   auto begin() noexcept
   {
-    return p_allocator->begin();
+    return p_allocator_->begin();
   }
   auto end() noexcept
   {
-    return p_allocator->end();
+    return p_allocator_->end();
   }
+
+  void OnObjectCreate(MYR_ID_t id, void *ptr) override;
 
   void DestroyObjectById(MYR_ID_t id) override;
   TestGameObjectBase *GetObject(MYR_ID_t id) override;
