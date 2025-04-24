@@ -49,8 +49,8 @@ namespace Myriad
 
     // 3. GameObject needs to know what managers to use
     GameObject::SetObjectManager(p_game_object_manager_);
-    GameObject::SetComponenttManager(p_component_manager_);
-    // 4. Component needs to know what mamagers to use.
+    GameObject::SetComponentManager(p_component_manager_);
+    // 4. Component needs to know what managers to use.
     ComponentBase::SetObjectManager(p_game_object_manager_);
     ComponentBase::SetComponentManager(p_component_manager_);
     ComponentBase::SetAssetManager(&asset_manager_);

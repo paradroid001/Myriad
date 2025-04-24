@@ -7,6 +7,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 #src/basic_logger.cpp
 src/TestGameObjectManager.cpp
 src/BounceBehaviour.cpp
+src/TestMovementBehaviour.cpp
 src/basic_example.cpp
 )
 

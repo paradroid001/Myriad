@@ -44,7 +44,7 @@ namespace Myriad::ObjectComponent
       else
         MYR_CORE_ERROR("GameObject::s_object_manager was already set!");
     }
-    static void SetComponenttManager(ComponentManager *ptr)
+    static void SetComponentManager(ComponentManager *ptr)
     {
       if (s_component_manager_ == nullptr)
         s_component_manager_ = ptr;

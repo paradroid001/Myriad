@@ -82,6 +82,37 @@ namespace Myriad
 
     // inline MyrEntityManager &GetEntityManager() { return entity_manager_; }
   };
-}
+
+  // So these are the convenience
+  // Functions that we expect userland
+  // to use.
+
+  // inline KeyboardInput &Input()
+  //{
+  //   return MyrGameEngine::Engine()->Input();
+  // }
+  // extern KeyboardInput &Input = MyrGameEngine::Engine()->Input();
+
+  struct
+  {
+    float width;
+    float height;
+  } Screen;
+
+  struct
+  {
+    inline bool IsKeyDown(KeyCode_t k) { return MyrGameEngine::Engine()->Input().IsKeyDown(k); }
+  } Input;
+
+  inline MYR_ID_t CreateObject()
+  {
+    return MyrGameEngine::Engine()->GetGameObjectManager().CreateObject<GameObject>();
+  }
+  inline GameObject *GetObject(MYR_ID_t id)
+  {
+    return MyrGameEngine::Engine()->GetGameObjectManager().GetObject(id);
+  }
+
+} // end namespace
 
 #endif
