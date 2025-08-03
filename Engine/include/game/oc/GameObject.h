@@ -34,8 +34,8 @@ namespace Myriad::ObjectComponent
     GameObject(MYR_ID_t id);
     virtual ~GameObject();
 
-    void Update(float dt);
-    void Render(Renderer &renderer);
+    virtual void Update(float dt);
+    virtual void Render(Renderer &renderer);
 
     static void SetObjectManager(GameObjectManager *ptr)
     {

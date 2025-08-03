@@ -23,9 +23,10 @@ public:
     const int KEYCODE_W = 87;
     const int KEYCODE_D = 68;
     const int KEYCODE_S = 83;
-    Myriad::KeyboardInput &kb = Myriad::MyrGameEngine::Engine()->Input();
 
     Myriad::Vector2 mov = {0, 0};
+    // Myriad::KeyboardInput &kb = Myriad::MyrGameEngine::Engine()->Input();
+    /*
     if (kb.IsKeyDown(KEYCODE_A))
       mov.x -= 1;
     if (kb.IsKeyDown(KEYCODE_D))
@@ -34,6 +35,16 @@ public:
       mov.y -= 1;
     if (kb.IsKeyDown(KEYCODE_S))
       mov.y += 1;
+    */
+    if (Myriad::Input.IsKeyDown(KEYCODE_A))
+      mov.x -= 1;
+    if (Myriad::Input.IsKeyDown(KEYCODE_D))
+      mov.x += 1;
+    if (Myriad::Input.IsKeyDown(KEYCODE_W))
+      mov.y -= 1;
+    if (Myriad::Input.IsKeyDown(KEYCODE_S))
+      mov.y += 1;
+
     data->movement = mov;
     UpdateMovement(dt);
   }

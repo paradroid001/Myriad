@@ -45,4 +45,32 @@
 #include "game/oc/Transform.h"
 #include "game/oc/SpriteRenderer.h"
 
+namespace Myriad
+{
+  inline static MyrGameEngine &Engine()
+  {
+    return *MyrGameEngine::Engine();
+  }
+
+  inline static Myriad::AssetManager &Assets()
+  {
+    return MyrGameEngine::Engine()->GetAssetManager();
+  }
+
+  inline static Myriad::ComponentManager &Components()
+  {
+    return MyrGameEngine::Engine()->GetComponentManager();
+  }
+
+  inline static Myriad::GameObjectManager &GameObjects()
+  {
+    return MyrGameEngine::Engine()->GetGameObjectManager();
+  }
+
+  inline static Myriad::MyrEventService &Events()
+  {
+    return MyrGameEngine::Engine()->GetEventService();
+  }
+}
+
 #endif

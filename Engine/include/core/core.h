@@ -46,6 +46,40 @@ namespace Myriad
     Vector2() : Vector2(0.0f, 0.0f) {};
   };
 
+  template <typename V, typename D>
+  class Rect
+  {
+  public:
+    V pos;
+    V anchor;
+    V size;
+    Rect() : size(), pos(), anchor() {}
+    Rect(D sizex, D sizey) : size(sizex, sizey), pos(), anchor() {}
+    Rect(V size, V pos) : size(size), pos(pos), anchor() {}
+    Rect(V size, V pos, V anchor) : size(size), pos(pos), anchor(anchor) {}
+    inline D Top() { return pos.y - anchor.y; }
+    inline D Bottom() { return pos.y - anchor.y + size.y; }
+    inline D Left() { return pos.x - anchor.x; }
+    inline D Right() { return pos.x - anchor.x + size.x; }
+  };
+
+  class Rect2D : Rect<Vector2, float>
+  {
+  };
+
+  class IVector2
+  {
+  public:
+    int x;
+    int y;
+    IVector2(int x, int y) : x(x), y(y) {}
+    IVector2() : IVector2(0, 0) {}
+  };
+
+  class IRect2D : public Rect<IVector2, int>
+  {
+  };
+
   class Vector3
   {
   public:
