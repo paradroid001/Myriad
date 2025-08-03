@@ -25,3 +25,9 @@
 [submodule "Engine/vendor/Remotery"]
 	path = Engine/vendor/Remotery
 	url = https://github.com/Celtoys/Remotery.git
+[submodule "Editor/vendor/imgui"]
+	path = Editor/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "Editor/vendor/rlImGui"]
+	path = Editor/vendor/rlImGui
+	url = https://github.com/raylib-extras/rlImGui
