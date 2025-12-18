@@ -5,8 +5,9 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CXX_STANDARD 17)
 
 
+# The libws2_32 is needed for Remotery
 if(CMAKE_SYSTEM_NAME EQUAL Windows)
-target_link_options(-static-libgcc -lopengl32 -lgdi32 -lwinmm)
+target_link_options(-static-libgcc -lopengl32 -lgdi32 -lwinmm -libws2_32)
 endif()
 set(EMSCRIPTEN_PTHREADS_COMPILER_FLAGS "")
 #set(EMSCRIPTEN_PTHREADS_COMPILER_FLAGS "-pthread")

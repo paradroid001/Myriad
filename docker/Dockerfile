@@ -21,6 +21,9 @@ RUN apt-get update -yqq && \
 
 RUN apt install -yq zip unzip
 
+# Mingw
+RUN apt install mingw-w64
+
 #libx11-dev .................   for X11/Xlib.h
 #mesa-common-dev........        for GL/glx.h
 #libglu1-mesa-dev .....         for GL/glu.h

@@ -8,6 +8,8 @@
 #include "asset/Texture2D.h"
 #include "asset/Font.h"
 
+#include "core/MyrProfiling.h"
+
 #ifdef MYRIAD_RENDERER
 #if MYRIAD_RENDERER == 1 // raylib
 #include "gfx/RendererProviderRaylib.h"
@@ -44,22 +46,27 @@ namespace Myriad
   }
   void Renderer::ClearBackground(MyrColour colour)
   {
+    MyrProfileScoped(Renderer__ClearBackground);
     p_renderer_provider_->ClearBackground(colour);
   }
   void Renderer::BeginDrawing()
   {
+    MyrProfileScoped(Renderer__BeginDrawing);
     p_renderer_provider_->BeginDrawing();
   }
   void Renderer::EndDrawing()
   {
+    MyrProfileScoped(Renderer__EndDrawing);
     p_renderer_provider_->EndDrawing();
   }
   void Renderer::DrawCircle(Vector2 pos, float radius, MyrColour colour)
   {
+    MyrProfileScoped(Renderer__Circle);
     p_renderer_provider_->DrawCircle(pos, radius, colour);
   }
   void Renderer::DrawTexture(TexHandle_T h_tex, Vector2 pos, MyrColour colour)
   {
+    MyrProfileScoped(Renderer__DrawTexture);
     Texture2D *p_tex = p_asset_manager_->GetTexturePointer(h_tex);
     if (p_tex != nullptr)
       p_renderer_provider_->DrawTexture(*p_tex, pos, colour);
@@ -69,6 +76,8 @@ namespace Myriad
 
   void Renderer::DrawText(FontHandle_T h_font, std::string text, Vector2 pos, int size, MyrColour colour)
   {
+    MyrProfileScoped(Renderer__DrawText);
+
     Font *p_font = p_asset_manager_->GetFontPointer(h_font);
     if (p_font != nullptr)
     {

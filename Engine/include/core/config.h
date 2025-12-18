@@ -43,9 +43,13 @@ namespace Myriad
 
 // PROFILING
 // Options:
-// MYRIAD_PROFILING: off = 0, on = 1
-// MYRIAD_PROFILER: none = 0, remotery = 1
-#define MYRIAD_PROFILER 0
-#define MYRIAD_PROFILING 0
+// MYRIAD_PROFILING: OFF | ON
+// MYRIAD_PROFILER: none | remotery
+#define PROFILING_ON 1
+#define PROFILING_OFF 0
+#define PROFILER_NONE 0
+#define PROFILER_REMOTERY 1
+#define MYRIAD_PROFILING PROFILING_OFF
+#define MYRIAD_PROFILER PROFILER_NONE
 
 #endif

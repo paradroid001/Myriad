@@ -1,5 +1,6 @@
 #include "game/oc/Transform.h"
 #include "io/MyrLogging.h"
+#include "core/MyrProfiling.h"
 
 namespace Myriad::ObjectComponent
 {

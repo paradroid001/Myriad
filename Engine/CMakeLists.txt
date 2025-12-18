@@ -6,16 +6,43 @@ project("MyriadEngine" LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "Myriad is a Game
 #
 # Make a dynamic lib
 add_library(${PROJECT_NAME} SHARED)
+#add_library(${PROJECT_NAME} STATIC)
+
 #make sure dllimport/export is generated on windows
 target_compile_definitions(${PROJECT_NAME} PRIVATE MYR_BUILD_DLL)
- # since we're compiling the myriad library, it needs to know it's 'internal'
+
+# since we're compiling the myriad library, it needs to know it's 'internal'
 target_compile_definitions(${PROJECT_NAME} PRIVATE MYRIAD_INTERNAL)
 set(CMAKE_CXX_STANDARD 17)
-target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall)
+#target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
+
 #set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
-
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+
+
+### Remotery (profiling)
+# So normally we would want to use a "Remotery" sub project
+# but cmake doesn't seem to be able to do this, and wants to
+# add "file level dependencies" instead.
+# So we add these to the root project instead.
+#add_dependencies(${PROJECT_NAME}, "Remotery")
+#project("Remotery")
+#target_include_directories("Remotery" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Remotery/lib/")
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Remotery/lib/")
+# The libws2_32 is needed for Remotery
+if(CMAKE_SYSTEM_NAME EQUAL Windows)
+#target_link_options("Remotery" -lwinmm -libws2_32)
+target_link_options(${PROJECT_NAME} -lwinmm -libws2_32)
+endif()
+
+
+#target_sources(${PROJECT_NAME} PRIVATE
+#    #   profiling - remotery
+#    vendor/Remotery/lib/Remotery.c
+#)
+
 target_sources(${PROJECT_NAME} PRIVATE
     # CORE
     src/core/MyrApplication.cpp
@@ -58,12 +85,10 @@ target_sources(${PROJECT_NAME} PRIVATE
     #   components
     src/game/oc/Transform.cpp
     src/game/oc/SpriteRenderer.cpp
-    #vendor/Remotery/lib/Remotery.c
+
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER include/myriad.h)
-### Remotery (profiling)
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Remotery/lib/")
 
 ### RAYLIB
 #

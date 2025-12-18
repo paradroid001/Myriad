@@ -153,7 +153,9 @@ public:
     }
 
     // Process Events
-    Myriad::MyrGameEngine::Engine()->GetEventService().ProcessEvents();
+    Myriad::MyrGameEngine::Engine()
+        ->GetEventService()
+        .ProcessEvents();
   }
 
   void Render() override

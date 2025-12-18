@@ -63,7 +63,6 @@ namespace Myriad
     template <typename T, typename... Args>
     static MyrEntity *CreateEntity(Args... args)
     {
-      PROFILE_SCOPED
       if (s_this_->next_entity_id_ < MYRIAD_MAX_ENTITIES - 1)
       {
         // No need to new, it's already happened - statically declared.
@@ -87,7 +86,6 @@ namespace Myriad
     template <typename T, typename... Args>
     static T *CreateComponent(Args... args)
     {
-      PROFILE_SCOPED
       T component(args...); // create a component on the stack?
       MYR_CORE_TRACE("Creating Commponent type {0}", static_cast<uint32_t>(component.GetType()));
       MyrComponentType component_type = static_cast<MyrComponentType>(component.GetType());

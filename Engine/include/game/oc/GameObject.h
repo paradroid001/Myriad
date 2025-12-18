@@ -5,7 +5,6 @@
 
 #include "game/IMyrGameObject.h"
 #include "game/oc/ComponentManager.h"
-
 #include "gfx/Renderer.h"
 #include <cstdint>
 #include <vector>

@@ -2,6 +2,7 @@
 #include "game/oc/GameObjectManager.h"
 #include "game/oc/ComponentManager.h"
 #include "gfx/Renderer.h"
+#include "core/MyrProfiling.h"
 
 namespace Myriad::ObjectComponent
 {
@@ -20,6 +21,7 @@ namespace Myriad::ObjectComponent
 
   void GameObject::Update(float dt)
   {
+    MyrProfileScoped(GameObject__Update);
     for (auto p_component : v_updateable_)
     {
       if (p_component != nullptr && p_component->GetUpdateable())
@@ -30,6 +32,7 @@ namespace Myriad::ObjectComponent
   }
   void GameObject::Render(Renderer &renderer)
   {
+    MyrProfileScoped(GameObject__Render);
     for (auto p_component : v_renderable_)
     {
       if (p_component != nullptr && p_component->GetRenderable())
