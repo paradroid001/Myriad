@@ -22,7 +22,7 @@ RUN apt-get update -yqq && \
 RUN apt install -yq zip unzip
 
 # Mingw
-RUN apt install mingw-w64
+RUN apt install -yq mingw-w64
 
 #libx11-dev .................   for X11/Xlib.h
 #mesa-common-dev........        for GL/glx.h
@@ -68,5 +68,4 @@ RUN tar xf doxygen-1.9.8.linux.bin.tar.gz
 RUN ln -s doxygen-1.9.8 doxygen
 ENV PATH="/home/myriad/doxygen/bin:$PATH"
 
-WORKDIR /myriad
 CMD ["tail","-f","/dev/forever"]

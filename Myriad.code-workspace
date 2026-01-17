@@ -1,12 +1,14 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"files.associations": {
-			"Makefile.*": "makefile"
-		}
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.associations": {
+      "Makefile.*": "makefile"
+    },
+    "workbench.colorTheme": "Catppuccin Mocha",
+    "cmake.options.statusBarVisibility": "visible"
+  }
 }

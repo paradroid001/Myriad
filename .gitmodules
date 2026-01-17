@@ -31,3 +31,6 @@
 [submodule "Editor/vendor/rlImGui"]
 	path = Editor/vendor/rlImGui
 	url = https://github.com/raylib-extras/rlImGui
+[submodule "Engine/vendor/nbnet"]
+	path = Engine/vendor/nbnet
+	url = https://github.com/nathhB/nbnet.git

@@ -119,5 +119,6 @@
     "${workspaceFolder}/Engine/src",
     "${workspaceFolder}/Test"
   ],
-  "C_Cpp.default.intelliSenseMode": "linux-gcc-x64"
+  "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+  "workbench.colorTheme": "Catppuccin Mocha"
 }

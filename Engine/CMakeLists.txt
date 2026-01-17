@@ -14,8 +14,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MYR_BUILD_DLL)
 # since we're compiling the myriad library, it needs to know it's 'internal'
 target_compile_definitions(${PROJECT_NAME} PRIVATE MYRIAD_INTERNAL)
 set(CMAKE_CXX_STANDARD 17)
-#target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall)
+#target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
 
 #set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
@@ -58,6 +58,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/io/MyrLogging.cpp
     src/io/LoggingProviderSpdLog.cpp
     src/io/KeyboardInput.cpp
+    src/io/net/MyrNet.cpp
 
     # ASSETS
     src/asset/AssetManager.cpp
@@ -118,8 +119,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/v
 #
 #compile tests
 add_executable(EngineTests tests/basic_tests.cpp) # src/io/Log.cpp)
+target_compile_options(EngineTests PRIVATE -std=c++17 -Wall)
 target_include_directories(EngineTests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/catch2/src")
-target_include_directories(EngineTests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 target_include_directories(EngineTests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 #compile catch2 code
 add_subdirectory(vendor/catch2)

@@ -1,6 +1,8 @@
 #ifndef __MYRIAD_H_
 #define __MYRIAD_H_
 
+This file shouldnt exist...
+
 // For client applications only, not for engine to include
 #include "Events/Event.h"
 #include "core/Camera.h"

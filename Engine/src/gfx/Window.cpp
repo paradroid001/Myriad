@@ -15,7 +15,8 @@ namespace Myriad
 
   Window::~Window()
   {
-    delete p_window_provider_;
+    if (p_window_provider_ != nullptr)
+      delete p_window_provider_;
     MYR_CORE_TRACE("Window destructor!");
   }
   bool Window::Init(int w, int h, const char *title)
@@ -25,8 +26,11 @@ namespace Myriad
 #else
     MYR_CORE_ERROR("Cannot initialise window: unknown renderer");
 #endif
-    p_window_provider_->Init(w, h, title);
-    return true;
+    if (p_window_provider_)
+    {
+      return p_window_provider_->Init(w, h, title);
+    }
+    return false;
   }
   bool Window::Close()
   {

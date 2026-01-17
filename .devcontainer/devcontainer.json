@@ -1,9 +1,9 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "myriad_build",
+	"name": "myriad_engine_dev",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "myriad_build",
+	"image": "myriad_dev",
 	"customizations": {
 		"vscode": {
 			"extensions": [

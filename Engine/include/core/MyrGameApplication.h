@@ -33,7 +33,7 @@ namespace Myriad
     virtual inline uint32_t GetFrameElapsedMS() { return frame_timer_.Elapsed(); }
 
     /* INIT */
-    virtual void Init(EngineConfig_t config); //<-- We init the engine here
+    virtual bool Init(EngineConfig_t config); //<-- We init the engine here
 
     /*START*/
     virtual void Start(); //<-- Start getting your entities created here.
