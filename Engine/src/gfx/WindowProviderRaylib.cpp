@@ -5,7 +5,18 @@
 
 namespace Myriad
 {
-    bool WindowProviderRaylib::Shutdown() { return true; }
+
+    WindowProviderRaylib::~WindowProviderRaylib()
+    {
+        MYR_CORE_TRACE("WindowProviderRaylib: destructor");
+    }
+    bool WindowProviderRaylib::Shutdown()
+    {
+        MYR_CORE_TRACE("Window Provider Raylib - shutdown");
+        Close();
+        return true;
+    }
+
     bool WindowProviderRaylib::Init()
     {
         window_state_ = WindowState_t::CLOSED;

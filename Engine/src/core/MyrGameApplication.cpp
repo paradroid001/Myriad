@@ -77,7 +77,8 @@ namespace Myriad
     // Shuts down the engine, releases all engine data structures
     void MyrGameApplication::Shutdown()
     {
-        MYR_CORE_INFO("GameApplication Shutdown should de-init the engine?");
+        MYR_CORE_INFO("GameApplication Shutdown: shutting down engine.");
+        engine_.Shutdown();
     }
     // Run after shutdown
     void MyrGameApplication::PostShutdown() {}

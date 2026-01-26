@@ -68,11 +68,6 @@ namespace Myriad
     {
         keyboard_.Shutdown();
 
-        if (window_.GetWindowState() != WindowState_t::CLOSED)
-        {
-            window_.Close();
-        }
-
         delete p_component_manager_;
         delete p_game_object_manager_;
 
