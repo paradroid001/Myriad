@@ -11,12 +11,15 @@
 #include "game/oc/GameObjectManager.h"
 */
 
+#include "io/MyrLogging.h"
 #include "myriad.h"
+
 // Deprecated?
 #include "core/MyrEntity.h"
 #include "core/MyrEntityManager.h"
+#include "util/MyrContainers.h"
 // Needed so that there is at least some static logging pointers.
-MyrLogging logging_;
+Myriad::MyrLogging logging_;
 
 unsigned int Factorial(unsigned int number)
 {
@@ -133,4 +136,40 @@ TEST_CASE("Can use id container (map)")
 
     id = map.GetIDFor(*t5);
     REQUIRE(id == MYRIAD_INVALID_ID);
+}
+
+// Test components - I don't think they generate unique types.
+TEST_CASE("Can add and find components")
+{
+    MYR_CORE_TRACE("Transform component type == {0}", Transform::Type());
+    MYR_CORE_TRACE("Physics2D component type == {0}", Physics2D::Type());
+
+    Transform *t = new Transform();
+    Physics2D *p2d = new Physics2D();
+    MYR_CORE_TRACE("transform component type == {0}", t->GetType());
+    MYR_CORE_TRACE("physics2d component type == {0}", p2d->GetType());
+
+    // A component manager with 1000 slots
+    ComponentManager cm(1024); // slots
+    GameObjectManager gm(64);  // slots
+    GameObject::SetComponentManager(&cm);
+    GameObject::SetObjectManager(&gm);
+
+    MYR_ID_t go1 = gm.CreateObject<GameObject>();
+    GameObject *pgo1 = gm.GetObject(go1);
+    pgo1->AddComponent<Transform>(Vector3({100.0f, 200.0f, 300.0f}));
+    pgo1->AddComponent<Physics2D>(
+        Rect2D(Vector2(0.0f, 0.0f), Vector2(0.0f, 0.0f)));
+
+    MYR_CORE_TRACE("Transform type: {0}", Transform::Type());
+    MYR_CORE_TRACE("transform component type {0}", t->GetType());
+    t = pgo1->GetComponent<Transform>();
+    REQUIRE(t != nullptr);
+    REQUIRE(t->GetType() == Transform::Type());
+
+    p2d = pgo1->GetComponent<Physics2D>();
+    REQUIRE(p2d != nullptr);
+    MYR_CORE_TRACE("Physics2D type: {0}", Physics2D::Type());
+    MYR_CORE_TRACE("physic2D component type {0}", p2d->GetType());
+    REQUIRE(p2d->GetType() == Physics2D::Type());
 }

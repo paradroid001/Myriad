@@ -29,14 +29,14 @@ namespace Myriad
     template <typename T> class MyrIDMap : public MyrIDSource
     {
       private:
-        std::unordered_map<id_t, T> map;
+        std::unordered_map<MYR_ID_t, T> map;
 
       public:
-        typename std::unordered_map<id_t, T>::iterator begin()
+        typename std::unordered_map<MYR_ID_t, T>::iterator begin()
         {
             return map.begin();
         }
-        typename std::unordered_map<id_t, T>::iterator end()
+        typename std::unordered_map<MYR_ID_t, T>::iterator end()
         {
             return map.end();
         }

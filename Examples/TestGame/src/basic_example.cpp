@@ -61,6 +61,8 @@ private:
   GameObjectManager *p_gameobject_manager_;
   ComponentManager *p_component_manager_;
 
+  GameObject *p_player;
+
 public:
   virtual ~MyriadExample()
   {
@@ -88,9 +90,25 @@ public:
     // Sign up for events.
     MyEvent::Register<MyriadExample>(1, 1, this, &MyriadExample::TestProcessMyEvent);
 
+    // Configure the physics layers.
+    // Layer 1 and 2 should be marked collidable.
+
+    PhysicsSystem &physics = Myriad::MyrGameEngine::Engine()->GetPhysicsSystem();
+    physics.SetLayerMask(PHYSICS_LAYER_CUSTOM_1, physics.GetLayerMaskValue(PHYSICS_LAYER_CUSTOM_2));
+    physics.SetLayerMask(PHYSICS_LAYER_CUSTOM_2, physics.GetLayerMaskValue(PHYSICS_LAYER_CUSTOM_1));
+
+    for (int i = 0; i < PHYSICS_LAYERS_MAX; i++)
+    {
+      MYR_INFO("Layer mask at layer {0} is {1}", i, physics.GetLayerMask(i));
+    }
+
     p_component_manager_ = &(engine_.GetComponentManager());
     p_gameobject_manager_ = &(engine_.GetGameObjectManager());
     font1_id = engine_.GetAssetManager().GetFont("res/dejavu.fnt");
+
+    MYR_TRACE("Transform type == {0}", Transform::Type());
+    MYR_TRACE("SpriteRenderer type == {0}", SpriteRenderer::Type());
+    MYR_TRACE("Physics2D type == {0}", Physics2D::Type());
 
     // I think either go manager has limit 1000
     // or
@@ -115,8 +133,23 @@ public:
       p_go = GetObject(go_id);
       Vector3 pos = {MyrRandom::Float(0, Screen.width), MyrRandom::Float(0, Screen.height), 0.0f};
       p_go->AddComponent<Transform>(pos);
+
+      Transform *t1 = p_go->GetComponent<Transform>();
+      MYR_INFO("After add transform, transform: [{4}] - {0},{1}:{2},{3}", t1->GetPosition().x, t1->GetPosition().y, t1->GetScale().x, t1->GetScale().y, (void *)t1);
+
       p_go->AddComponent<SpriteRenderer>(&(engine_.GetAssetManager()), path);
       p_go->AddComponent<BounceBehaviour>(100.0f, Vector2(Screen.width, Screen.height));
+
+      /*
+      Rect2D r;
+      r.pos = {0, 0};
+      r.size = {32.0f, 32.0f};
+      p_go->AddComponent<Physics2D>(r);
+      Physics2D *p2d = p_go->GetComponent<Physics2D>();
+      Rect2D r1 = *(p2d->GetRect2D());
+      MYR_TRACE("After add physics, physics = [{4}] - rect: {0},{1},{2},{3}", r1.pos.x,
+                r1.pos.y, r1.size.x, r1.size.y, (void *)p2d);
+      */
     }
 
     // Now make a 'player'
@@ -124,11 +157,17 @@ public:
     // MYR_ID_t player_id = p_gameobject_manager_->CreateObject<GameObject>();
     MYR_ID_t player_id = CreateObject();
     // GameObject *p_player = p_gameobject_manager_->GetObject(player_id);
-    GameObject *p_player = GetObject(player_id);
+    p_player = GetObject(player_id);
     Vector3 pos = {200, 200, 0};
     p_player->AddComponent<Transform>(pos);
     p_player->AddComponent<SpriteRenderer>(&(engine_.GetAssetManager()), player_sprite_path);
     p_player->AddComponent<TestMovementBehaviour>(200.0f, Vector2(Screen.width, Screen.height));
+
+    /*
+    Rect2D r;
+    r.size = {32.0f, 32.0f};
+    p_player->AddComponent<Physics2D>(r);
+    */
 
     MyEvent *e = new MyEvent(1, 1); // type and subtype
     strncpy(e->char_data, "Creation\0", 10);
@@ -147,6 +186,10 @@ public:
 
   void Update() override
   {
+
+    // Collide Layer 1 with Layer 2
+    // Myriad::MyrGameEngine::Engine()->GetPhysicsSystem().CollideLayers2D(PHYSICS_LAYER_CUSTOM_1, PHYSICS_LAYER_CUSTOM_2, p_gameobject_manager_);
+
     for (auto go : *p_gameobject_manager_)
     {
       go->Update(1.0f / 60.0f);

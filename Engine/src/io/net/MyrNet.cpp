@@ -113,6 +113,10 @@ namespace Myriad::Net
     void Network::Tick(double dt)
     {
         time += dt;
+        for (auto transport : transports)
+        {
+            transport->Tick(dt);
+        }
         event_service->ProcessEvents();
         event_service->ClearEvents(); // todo - memleak.?
     }

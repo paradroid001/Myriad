@@ -51,6 +51,7 @@ ENV PATH="/home/myriad/zig:$PATH"
 #TC-windows.cmake
 COPY zig_c_windows.sh /home/myriad
 COPY zig_cpp_windows.sh /home/myriad
+#TODO - set executable perms for these scripts
 
 ### Emscripten
 #RUN git clone https://github.com/emscripten-core/emsdk.git

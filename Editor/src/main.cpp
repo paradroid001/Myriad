@@ -38,7 +38,7 @@ public:
   void Render() override
   {
     Myriad::Renderer &r = engine_.GetRenderer();
-    Myriad::TexHandle_T thandle = Assets().GetTexture("res/parrots.png");
+    Myriad::TexHandle_T thandle = Assets().GetTexture("res/Druid.png");
     r.BeginDrawing();
     r.ClearBackground({0, 0, 0, 255});
 

@@ -1,23 +1,26 @@
 #ifndef MYRIAD_CORE_GAMEENGINE_H
 #define MYRIAD_CORE_GAMEENGINE_H
-
-#include "core/core.h"
 #include <cstdint>
 
-#include "asset/AssetManager.h"
 #include "core/MyrEvent.h"
-#include "game/oc/GameObjectManager.h"
+#include "core/core.h"
+
+#include "asset/AssetManager.h"
 #include "gfx/Renderer.h"
 #include "gfx/Window.h"
 #include "io/KeyboardInput.h"
-#include "util/MyrRandom.h"
 // #include "game/oc/GameObject.h"
 #include "game/oc/ComponentManager.h"
+#include "game/oc/GameObjectManager.h"
+#include "game/physics/Physics.h"
+#include "util/MyrRandom.h"
 
 namespace Myriad
 {
     // This namespace brings in GameObjectManager, GameObject, ComponentManager
     using namespace Myriad::ObjectComponent;
+    // This brings in the default Physics model we created
+    using namespace Myriad::Physics;
 
     typedef struct EngineConfig_t
     {
@@ -44,6 +47,7 @@ namespace Myriad
         MyrEventService *p_event_service;
         KeyboardInput p_keyboard_input_;
         MyrRandom p_random;
+        PhysicsSystem *p_physics;
     } EngineResources_t;
 
     class MYR_API MyrGameEngine
@@ -58,6 +62,7 @@ namespace Myriad
         MyrRandom random_;
         GameObjectManager *p_game_object_manager_;
         ComponentManager *p_component_manager_;
+        PhysicsSystem *p_physics;
 
         static MyrGameEngine *s_Engine;
 
@@ -82,6 +87,7 @@ namespace Myriad
         {
             return *p_component_manager_;
         }
+        inline PhysicsSystem &GetPhysicsSystem() { return *p_physics; }
 
         // inline MyrEntityManager &GetEntityManager() { return entity_manager_;
         // }
@@ -99,25 +105,28 @@ namespace Myriad
 
     // This is used as a convenience:
     // Doing stuff using 'Myriad::Screen.width/2' or whatever
-    // TODO this is causing problems as it's an 'unused var' in the engine.
-    struct
+    // The actual instance of this is created
+    // in MyrGameEngine.cpp
+    struct MYR_API ScreenType
     {
         float width;
         float height;
-    } Screen;
+    };
+    extern MYR_API ScreenType Screen;
 
     // This is used as a convenience:
     //  Myriad::Input::IsKeyDown(xxxx);
-    // Can we define it static or something
-    // so the compiler doesn't complain
-    // about an unused var.
-    struct
+    // The actual instance of this is created
+    // in MyrGameEngine.cpp
+    struct MYR_API InputType
     {
-        static inline bool IsKeyDown(KeyCode_t k)
+        Myriad::KeyboardInput *input_device;
+        inline bool IsKeyDown(KeyCode_t k)
         {
-            return MyrGameEngine::Engine()->Input().IsKeyDown(k);
+            return input_device->IsKeyDown(k);
         }
-    } Input;
+    };
+    extern MYR_API InputType Input;
 
     inline MYR_ID_t CreateObject()
     {
@@ -131,5 +140,4 @@ namespace Myriad
     }
 
 } // namespace Myriad
-
 #endif

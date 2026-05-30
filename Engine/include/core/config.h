@@ -15,6 +15,7 @@
 #define MYRIAD_MAX_COMPONENTS 100
 #define MYRIAD_MAX_COMPONENTS_PER_ENTITY 16
 typedef uint32_t MYR_ID_t;
+
 #define MYRIAD_INVALID_ID 0xFFFFFFFF - 1
 #define MYRIAD_ENTITY_INVALID_ID 0xFFFFFFFF - 1
 #define MYRIAD_COMPONENT_INVALID_ID 0xFFFFFFFF - 1
@@ -28,6 +29,14 @@ typedef uint8_t MYREVENT_SUBTYPE_t;
 
 namespace Myriad
 {
+    // A uint32 error type
+    typedef enum MyrErrorTypes : uint32_t
+    {
+        MYR_ERROR_SUCCESS = 0,
+        MYR_ERROR_UNKNOWN = 65534,
+        MYR_ERROR_NONE = 65535
+    } MyrError_t;
+
     // 8 bits, max = 255
     typedef enum MyrEventTypes
     {

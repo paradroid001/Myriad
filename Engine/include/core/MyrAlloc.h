@@ -161,6 +161,7 @@ namespace Myriad
         }
         virtual ~TypeAllocatorDynamic()
         {
+            MYR_CORE_TRACE("Allocator Destructor freeing all slots");
             for (MYR_ID_t i = 0; i < vector_.size(); i++)
             {
                 if (vector_[i] != nullptr)

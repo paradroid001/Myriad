@@ -30,17 +30,13 @@
 
 - I think all singletons should be removed. Except perhaps a gameengine or application one. Maybe. You still can't control the deletion of the static pointer. std::shared may fix this? Probably still not a good enough reason.
 - The event system needs to support more usecases and possibly needs a major refactor.
-
   - It shouldnt't be a singleton (It's not, but it has some static vars...), It should expect multiple event systems are established.
   - Use cases:
-
     1. I don't really want to have to care about which event system I am emitting to when I create/emit an event. But at register time, it's probably fine to specify the event system. then you could have an event registered to multiple event systems (just call it multiple times?)
     1. A relatively small number of observers subscribe to an event.
     1. Events that get passed through every component instance (so all instances of a class?) which has subscribed to it. This is more like a broadcast. The specifics are to deliver it to every component on all gameobjects - the gameobjects could be grouped, perhaps.
-
     - Broadcast an event to everybody 'end of turn'
     - Broadcast an event to all enemies, and let their components deal with it one by one, altering the event until it drops out the bottom.
-
     1. Events that are sent to just the objects involved in an interaction - say, a collision.
     1. A mix - perhaps I want to target to 2 gameobjects (a collision) and any other subscribed function (say, a stats function or something)
 
@@ -61,15 +57,17 @@
     BroadcastEventSystem es2 = new BroadcastEventSystem();
 
     ```
+
 ### 20260126 Happy Aus Day!
+
 Pre GGJ Checklist
 
-1. No warnings in Myriad code, full warnings on in gcc. May require building some dependencies (spdlog?) with flags to supress.
-2. Build working for Linux, Windows, Web. I don't care about Mac or Android right now.
+1. [DONE] No warnings in Myriad code, full warnings on in gcc. May require building some dependencies (spdlog?) with flags to supress.
+2. [DONE] Build working for Linux, Windows, Web. I don't care about Mac or Android right now.
 3. Ability to build myriad statically, link your target game against static myriad.
 4. Track allocations, stats, timings.
 5. Tests for what can be unit tested.
-6. Fix events, make eventsystem own and release them, consider multiple event systems (as long as events don't go between them?)
+6. [PARTIALLY DONE] Fix events, make eventsystem own and release them, consider multiple event systems (as long as events don't go between them?)
 7. Multithreading: put the core of this back in the engine, even if only a single thread is used now. The biggest issue was web builds, would need some way of making the system think it is not multithreaded for web builds only.
 8. Layers - both render order (back to front) as well as events (don't propagate down unless you have to). Physics layers would be different (more like groups).
 9. Collisions - We don't have collisions yet, or entities dying / being removed. Watch out for dangling observers.
@@ -79,3 +77,35 @@ Pre GGJ Checklist
 13. Editor - only makes sense after scenes serialisation
 14. Game Settings / Parameters as a file.
 15. Switch fullscreen to windowed, window resizing, project settings shows allowable configurations.
+
+Bugs/Issues:
+
+1. Asking to release a texture doesn't actually release it. It DOES get cleaned up when raylib exits, but still.
+2. I have commented out MyrNet
+3. I could easily write some tests for Rect2D and IRect2D.
+4. Components don't have proper id types.
+   - MyrEntity/MyrComponent/MyrObjectManager aren't used anymore
+     - Careful: oc::GameObjectManager inherits from MyrObjectManager...
+   - There's a core/Component.cpp floating around
+   - Also core/Camera.cpp
+
+### 20260514
+
+- With a couple of game projects I'm reasonably motivated for, I'm starting to need progress on this engine. Working backwards:
+- Ability to build/package/run a game from the editor
+  - This may actually mean the 'game' is a dll, perhaps the game and the engine are dlls, and there's a base exe stub?
+- Ability to serialise and deserialise editor setup - i.e. engine config, game config, levels, object placement, object configuration etc. So, project loading and saving.
+- An editor which allows you to place objects, edit their properties, and sequence action
+- Behaviour attachment to objects.
+- 3d Model renderer attachment to objects
+- Sprite renderer attachment to objects
+- Audio emitters
+- Particle system
+- Lights (directional, point)
+- UI
+  - mouse events
+  - components such as text input, text display, icons
+- Collision / Physics
+- Something that can sequence/automate: an 'animator'
+- Possibly a state machine behaviour? Or something that allows an object to consume events, like an event router.
+- Some kind of input module/system which maps physical actions (press space) to game actions (jump).

@@ -35,41 +35,46 @@
 #include "io/net/MyrNet.h"
 
 // Util
-#include "util/MyrContainers.h" //id style containers
+// #include "util/MyrContainers.h" //id style containers
 #include "util/MyrTimer.h"
 
 // Game
+#include "game/physics/IPhysics.h"
+#include "game/physics/IPhysicsProvider.h"
+#include "game/physics/Physics.h"
+
 #include "game/IMyrGameObject.h"
 #include "game/oc/Component.h"
 #include "game/oc/ComponentManager.h"
 #include "game/oc/GameObject.h"
 #include "game/oc/GameObjectManager.h"
+#include "game/oc/Physics2D.h"
 #include "game/oc/SpriteRenderer.h"
 #include "game/oc/Transform.h"
 
 namespace Myriad
 {
-    inline static MyrGameEngine &Engine() { return *MyrGameEngine::Engine(); }
+  inline static MyrGameEngine &Engine() { return *MyrGameEngine::Engine(); }
 
-    inline static Myriad::AssetManager &Assets()
-    {
-        return MyrGameEngine::Engine()->GetAssetManager();
-    }
+  inline static Myriad::AssetManager &Assets()
+  {
+    return MyrGameEngine::Engine()->GetAssetManager();
+  }
 
-    inline static Myriad::ComponentManager &Components()
-    {
-        return MyrGameEngine::Engine()->GetComponentManager();
-    }
+  inline static Myriad::ComponentManager &Components()
+  {
+    return MyrGameEngine::Engine()->GetComponentManager();
+  }
 
-    inline static Myriad::GameObjectManager &GameObjects()
-    {
-        return MyrGameEngine::Engine()->GetGameObjectManager();
-    }
+  inline static Myriad::GameObjectManager &GameObjects()
+  {
+    return MyrGameEngine::Engine()->GetGameObjectManager();
+  }
 
-    inline static Myriad::MyrEventService &Events()
-    {
-        return MyrGameEngine::Engine()->GetEventService();
-    }
+  inline static Myriad::MyrEventService &Events()
+  {
+    return MyrGameEngine::Engine()->GetEventService();
+  }
 } // namespace Myriad
 
 #endif

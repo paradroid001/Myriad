@@ -18,6 +18,8 @@
 
 namespace Myriad
 {
+    // Abstract virtual destructors should be defined outside the class
+    // This is a convenient place to do it, rather than creating more cpp files.
     IRendererProvider::~IRendererProvider() {} // define ~IRendererProvider
     IRenderer::~IRenderer() {}                 // define ~IRenderer
 
