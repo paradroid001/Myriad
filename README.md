@@ -1,82 +1,79 @@
 # Myriad
-Myriad Engine
 
-If you want debug tasks etc, copy Projects/vscode/.vscode into your .vscode
+A game engine in C++
 
-## Quick Top Level Build
+# Getting started
 
-Easiest is to build and bring up the docker container with the build environment:  
-- Build: cd docker && docker build -t myriad_build .
-- Run (from root): source run_docker.sh
+Requires docker installed withthe docker-buildx extension
+`docker build -t myriad_dev docker/`
 
-Default compiler is Zig, but this seems to produce binaries that want the SO in a specific location. Using g++ fixes this on Linux:  
+## Building
 
-`make PROJECT=Engine TARGET_OS=linux CXX=g++ all`
-`make PROJECT=Sample TARGET_OS=linux CXX=g++ all`
+If on MINGW, you can alter whether libgcc is static or shared:
+-DMYRIAD_MINGW_LIBGCC_SHARED=OFF in your CMake configure args, or
+flip it in CMakeLists.txt:28.
 
-Building cross compile for Windows can use zig just fine:
+It's a lot more convenient to build statically and not have to copy the dlls/sos around.
 
-`make PROJECT=Engine TARGET_OS=windows all`
-`make PROJECT=Sample TARGET_OS=windows all`
+## External editor builds
 
+If you launch the editor outside the devcontainer, the preferred path is to run the build bridge inside the container and point the editor at it over TCP. This works from Windows, WSL, and native Linux editor builds.
 
-You can also pass:  
-TARGET_ARCH (default=x86_64)  
-TARGET_OS (default=linux, options=windows,linux)  
-RELEASE_PLATFORM (default=Desktop, options=Desktop,Web,Android)  
-BUILD_MODE (default=Release, options=Debug,Release)  
+Start the bridge inside the devcontainer or Docker container:
 
-zig is now used as the default compiler (`zig c++ -target $(TARGET_ARCH)-$(TARGET-OS)`)
-If you really want to use g++, you can pass CXX=g++
-This is useful for generating compile_commands.json via bear:
-cd Sample
-`bear -- make CXX=g++ all`
+`python3 docker/build_bridge_server.py --host 0.0.0.0 --port 55333`
 
+Then set the editor to socket mode with `MYRIAD_BUILD_MODE=socket`, or add a `.myriad-editor.json` file at the repo root like this:
 
-The below instructions are now out of date.  
-
-### Linux Build
-
-Build myriad first, then build the sample.  
-Run from the correct directory, with the LD_LIBRARY_PATH set.
-
-```
-cd Engine
-TARGET_PLATFORM=PLATFORM_DESKTOP make clean
-TARGET_PLATFORM=PLATFORM_DESKTOP make all
-cd ..
-cd Sample
-make all
-cd build
-LD_LIBRARY_PATH=. sample
+```json
+{
+  "buildMode": "socket",
+  "buildSocketHosts": "192.168.1.50,127.0.0.1",
+  "buildSocketHost": "127.0.0.1",
+  "buildSocketPort": 55333,
+  "buildBridgeProbeIntervalSeconds": 30
+}
 ```
 
-### Windows Build
+If `buildSocketHosts` is provided, the editor will try those hosts first, in order. Otherwise, if `buildSocketHost` is omitted or does not answer, the editor will try a small set of local bridge hosts automatically, including `127.0.0.1`, `localhost`, the WSL resolver nameserver IP, and common Docker host aliases, then cache the first one that responds.
 
-This works best with w64devkit, from https://github.com/skeeto/w64devkit  
-Just clone the repo, build the docker image, and then unzip the devkit somewhere convenient:
-```
-docker build -t w64devkit .
-docker run --rm w64devkit >w64devkit.zip
-mv w64devkit.zip c:\compilers
-cd c:\compilers
-unzip w64devkit.zip
-```
-In the shell you will run `make` from, set your path:
-`set PATH=c:\compilers\w64devkit\bin;%PATH%`
+The editor expands these placeholders when socket mode is not enabled and it falls back to a local build command:
 
-now you can make Myriad:
-```
-cd Engine
-TARGET_PLATFORM=PLATFORM_DESKTOP make clean
-TARGET_PLATFORM=PLATFORM_DESKTOP make all
-cd ..
-```
-And now the sample, note we must rename to dll:
-```
-cd Sample
-make all
-cd build
-mv libmyriad.so libmyriad.dll
-sample.exe
-```
+- `{projectRoot}`: repository root path
+- `{buildDir}`: selected build directory
+- `{target}`: build target, currently `TestECS`
+- `{toolchainArg}`: preset-specific `-DCMAKE_TOOLCHAIN_FILE=...` argument when available
+
+The editor now supports a TCP build bridge instead of relying on local cmake when you enable socket mode. The client path lives in Editor/src/main.cpp, and the container-side listener is docker/build_bridge_server.py. The bridge also applies the preset environment variables from CMakeKits.json before it runs cmake, and I forwarded the bridge port in .devcontainer/devcontainer.json.
+
+To use it from an external editor, run the bridge inside the container with python3 build_bridge_server.py --host 0.0.0.0 --port 55333, then set MYRIAD_BUILD_MODE=socket or add the socket settings shown in README.md.
+
+For WSL or native Linux, keep the bridge host pointed at the local forwarded port unless your Docker setup exposes it differently.
+
+Example launch command from inside the container shell:
+
+`python3 /workspaces/Myriad/docker/build_bridge_server.py --host 0.0.0.0 --port 55333`
+
+## API documentation (Doxygen)
+
+The repository now includes a root Doxygen config at `Doxyfile` for the editor module (`Editor/src`).
+
+Install Doxygen (Ubuntu/Debian):
+
+`sudo apt-get update && sudo apt-get install -y doxygen`
+
+Generate docs from the repository root:
+
+`doxygen Doxyfile`
+
+Or use the helper script:
+
+`./scripts/generate-docs.sh`
+
+Generate and open the HTML docs in a browser:
+
+`./scripts/generate-docs.sh --open`
+
+Generated HTML entry point:
+
+`docs/doxygen/html/index.html`

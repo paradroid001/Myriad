@@ -120,5 +120,5 @@
     "${workspaceFolder}/Test"
   ],
   "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
-  "workbench.colorTheme": "Catppuccin Mocha"
+  "workbench.colorTheme": "Sapphire (Dim)"
 }

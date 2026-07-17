@@ -1,36 +1,24 @@
-[submodule "spdlog"]
-	path = Engine/vendor/spdlog
-	url = https://github.com/gabime/spdlog
-	branch = v2.x
 [submodule "raylib"]
-	path = Engine/vendor/raylib
+	path = shared/vendor/raylib
 	url = https://github.com/raysan5/raylib
-[submodule "flecs"]
-	path = Engine/vendor/flecs
-	url = https://github.com/SanderMertens/flecs
-	branch = master
+    branch = 5.5
 [submodule "json"]
-	path = Engine/vendor/json
+	path = shared/vendor/json
 	url = https://github.com/nlohmann/json
 	branch = master
-[submodule "Engine/vendor/catch2"]
-	path = Engine/vendor/catch2
+[submodule "catch2"]
+	path = shared/vendor/catch2
 	url = https://github.com/catchorg/Catch2.git
-[submodule "Engine/vendor/StaticTypeInfo"]
-	path = Engine/vendor/StaticTypeInfo
-	url = https://github.com/TheLartians/StaticTypeInfo.git
-[submodule "Engine/vendor/cereal"]
-	path = Engine/vendor/cereal
+[submodule "cereal"]
+	path = shared/vendor/cereal
 	url = https://github.com/USCiLab/cereal.git
-[submodule "Engine/vendor/Remotery"]
-	path = Engine/vendor/Remotery
-	url = https://github.com/Celtoys/Remotery.git
-[submodule "Editor/vendor/imgui"]
-	path = Editor/vendor/imgui
+[submodule "imgui"]
+	path = shared/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "Editor/vendor/rlImGui"]
-	path = Editor/vendor/rlImGui
+    branch = docking
+[submodule "rlImGui"]
+	path = shared/vendor/rlImGui
 	url = https://github.com/raylib-extras/rlImGui
-[submodule "Engine/vendor/nbnet"]
-	path = Engine/vendor/nbnet
+[submodule "nbnet"]
+	path = shared/vendor/nbnet
 	url = https://github.com/nathhB/nbnet.git
