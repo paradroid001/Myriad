@@ -1,0 +1,17 @@
+[submodule "raylib"]
+	path = shared/vendor/raylib
+	url = https://github.com/raysan5/raylib
+[submodule "catch2"]
+	path = shared/vendor/catch2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "cereal"]
+	path = shared/vendor/cereal
+	url = https://github.com/USCiLab/cereal.git
+[submodule "imgui"]
+	path = shared/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "rlImGui"]
+	path = shared/vendor/rlImGui
+	url = https://github.com/raylib-extras/rlImGui
+[submodule "shared/vendor/imgui"]
+	branch = docking
