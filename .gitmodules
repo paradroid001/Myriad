@@ -15,3 +15,6 @@
 	url = https://github.com/raylib-extras/rlImGui
 [submodule "shared/vendor/imgui"]
 	branch = docking
+[submodule "tracy"]
+	path = shared/vendor/tracy
+	url = https://github.com/wolfpld/tracy.git

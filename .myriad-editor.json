@@ -1,6 +1,6 @@
 {
   "buildMode": "socket",
-  "buildSocketHost": "",
+  "buildSocketHost": "127.0.0.1",
   "buildSocketHosts": "",
   "buildSocketPort": 55333,
   "buildBridgeProbeIntervalSeconds": 30,
@@ -10,7 +10,7 @@
   "uiRounding": 6,
   "uiSpacingPercent": 100,
   "uiAccentHex": "#4D8ACF",
-  "lastCompilerPreset": "x86_64-linux-gnu",
+  "lastCompilerPreset": "G++ 11.4.0 x86_64-linux-gnu",
   "lastBuildDir": "/home/brad/devel/gamedev/Myriad/build/G++ 11.4.0 x86_64-linux-gnu/Debug",
   "lastExecutablePath": "/home/brad/devel/gamedev/Myriad/build/G++ 11.4.0 x86_64-linux-gnu/Debug/Examples/TestECS/TestECS",
   "layoutPresetIndex": 0,
