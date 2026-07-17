@@ -1,100 +1,67 @@
-cmake_minimum_required(VERSION "3.18.4")
+cmake_minimum_required(VERSION "3.25")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
-project("MyriadEngine" LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "Myriad is a Game Engine")
-### MYRIAD
-#
-# Make a dynamic lib
-add_library(${PROJECT_NAME} SHARED)
-#add_library(${PROJECT_NAME} STATIC)
+project(MyriadEngine LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "Myriad is a Game Engine")
 
+# Make a dynamic lib (this will not be the case for EMSCRIPTEN)
+add_library(${PROJECT_NAME} SHARED)
+myriad_apply_mingw_libgcc(${PROJECT_NAME})
 #make sure dllimport/export is generated on windows
 target_compile_definitions(${PROJECT_NAME} PRIVATE MYR_BUILD_DLL)
-
 # since we're compiling the myriad library, it needs to know it's 'internal'
 target_compile_definitions(${PROJECT_NAME} PRIVATE MYRIAD_INTERNAL)
 set(CMAKE_CXX_STANDARD 17)
-# compile with all warnings, and warnings as errors.
-target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall -Werror)
-#target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
 
-#set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
+# compile with all warnings, and warnings as errors. No rtti or exceptions, as they are not needed and add overhead.
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17;-Wall;-Werror;-fno-rtti;-fno-exceptions)
+
+# set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
+
+# Public includes
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
-
-
-### Remotery (profiling)
-# So normally we would want to use a "Remotery" sub project
-# but cmake doesn't seem to be able to do this, and wants to
-# add "file level dependencies" instead.
-# So we add these to the root project instead.
-#add_dependencies(${PROJECT_NAME}, "Remotery")
-#project("Remotery")
-#target_include_directories("Remotery" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Remotery/lib/")
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Remotery/lib/")
-# The libws2_32 is needed for Remotery
-if(CMAKE_SYSTEM_NAME EQUAL Windows)
-#target_link_options("Remotery" -lwinmm -libws2_32)
-target_link_options(${PROJECT_NAME} -lwinmm -libws2_32)
-endif()
-
-
-#target_sources(${PROJECT_NAME} PRIVATE
-#    #   profiling - remotery
-#    vendor/Remotery/lib/Remotery.c
-#)
+# Private includes
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
 target_sources(${PROJECT_NAME} PRIVATE
     # CORE
     src/core/MyrApplication.cpp
+    src/core/GameEngine.cpp
     src/core/MyrGameApplication.cpp
-    src/core/MyrEntity.cpp
-    src/core/MyrComponent.cpp
-    src/core/MyrEntityManager.cpp
-    src/core/MyrProfiling.cpp
-    src/core/MyrGameObject.cpp #this just defines the IMyrGameObject destructor.
-    src/core/MyrGameEngine.cpp
-    src/core/MyrEvent.cpp
-    # IO
-    src/io/MyrLogging.cpp
-    src/io/LoggingProviderSpdLog.cpp
-    src/io/KeyboardInput.cpp
-    #src/io/net/MyrNet.cpp
-
-    # ASSETS
-    src/asset/AssetManager.cpp
-    src/asset/Font.cpp
-    src/asset/Texture2D.cpp
-    #if raylib..
-    #normally you'd only compile this if MYRIAD_RENDERER == 1
-    src/asset/FontProviderRaylib.cpp
-    src/asset/TextureProviderRaylib.cpp
-
+    src/core/MyrRandom.cpp
     # GFX
-    src/gfx/WindowProviderRaylib.cpp
-    src/gfx/Window.cpp
     src/gfx/Renderer.cpp
     src/gfx/RendererProviderRaylib.cpp
-
-    # UTIL
-    src/util/MyrRandom.cpp
-
-    # GAME
-    src/game/oc/GameObject.cpp
-    src/game/oc/GameObjectManager.cpp
-    src/game/oc/Component.cpp
-    src/game/oc/ComponentManager.cpp
-    #   physics
-    src/game/physics/Physics.cpp
-    src/game/physics/PhysicsProviderRaylib.cpp
-    #   components
-    src/game/oc/Transform.cpp
-    src/game/oc/SpriteRenderer.cpp
-    src/game/oc/Physics2D.cpp
+    src/gfx/Window.cpp
+    src/gfx/Window.h
+    src/gfx/WindowProviderRaylib.cpp
+    # IO
+    src/io/ILogger.cpp
+    src/io/BasicLogger.cpp
+    # ASSET
+    src/asset/MyrAssetManager.cpp
+    #src/asset/MyrTexture2D.cpp
+    src/asset/Texture2DProviderRaylib.cpp
+    #src/asset/MyrFont.cpp
+    src/asset/FontProviderRaylib.cpp
 
 )
+
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER include/myriad.h)
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER
+ include/myriad.h
+)
+enable_testing()
+
+# Catch2 unit tests for Engine
+if(NOT TARGET Catch2::Catch2WithMain)
+    add_subdirectory("${CMAKE_SOURCE_DIR}/shared/vendor/catch2" "${CMAKE_BINARY_DIR}/catch2" EXCLUDE_FROM_ALL)
+endif()
+
+# On windows, embed libstdc++ and libgcc into the dll, so that users don't need to worry about installing them. This is not needed for zig c++ builds, as zig statically links the c++ standard library by default.
+#if(MINGW)
+#    target_link_options(${PROJECT_NAME} PRIVATE "-static-libgcc" "-static-libstdc++" "-static")
+#endif()
 
 ### RAYLIB
 #
@@ -106,28 +73,20 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(WITH_PIC ON CACHE BOOL "" FORCE)
 
 add_subdirectory(vendor/raylib)
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
-### SPDLOG
+### TRACY PROFILER
 #
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include/")
+# Enable Tracy profiling library
+option(TRACY_ENABLE ON)
+option(TRACY_ON_DEMAND ON)
+# Build statically
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# Could potentially do this instead:
+# set_target_properties(TracyClient PROPERTIES POSITION_INDEPENDENT_CODE ON)
+add_subdirectory(vendor/tracy)
+target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)
 
-### JSON
-#
-add_subdirectory(vendor/json)
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/json/include/")
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/json/include/nlohmann/")
-
-
-### Tests
-#
-#compile tests
-add_executable(EngineTests tests/basic_tests.cpp tests/net_tests.cpp) # src/io/Log.cpp)
-target_compile_options(EngineTests PRIVATE -std=c++17 -Wall)
-target_include_directories(EngineTests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vendor/catch2/src")
-target_include_directories(EngineTests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
-#compile catch2 code
-add_subdirectory(vendor/catch2)
-#link against Catch2, and against the Engine
-target_link_libraries(EngineTests Catch2::Catch2WithMain ${PROJECT_NAME})
+add_subdirectory(tests)

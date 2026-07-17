@@ -4,20 +4,27 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 project("MyriadEditor" LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "Editor for Myriad Game Engine")
 set(CMAKE_CXX_STANDARD 17)
 add_executable(${PROJECT_NAME})
-#target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17 -Wall)
-#set_target_properties(${PROJECT_NAME} PROPERTIES ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
+myriad_apply_mingw_libgcc(${PROJECT_NAME})
+
+# compile with all warnings, and warnings as errors. No rtti or exceptions, as they are not needed and add overhead.
+# note: taking out -Werror as dependency rlImGui has an unused variable that generates a warning, and I don't want to have to patch their code.
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17;-Wall;-fno-rtti;-fno-exceptions)
+#target_compile_options(${PROJECT_NAME} PRIVATE -fexceptions)
 
 #link against myriad:
 target_link_libraries(${PROJECT_NAME} MyriadEngine)
-# had to add this line or it wouldn't link on windows
+#link against raylib - I would really like to not have to do this.
 target_link_libraries(${PROJECT_NAME} raylib)
 
+if(WIN32)
+  target_link_libraries(${PROJECT_NAME} ws2_32)
+endif()
 
 #Imgui Includes
 set(IMGUI_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui)
 set(RLIMGUI_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/rlImGui)
-target_include_directories(${PROJECT_NAME} PUBLIC ${IMGUI_SOURCE_DIR})
-target_include_directories(${PROJECT_NAME} PUBLIC ${RLIMGUI_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${RLIMGUI_SOURCE_DIR})
 #This proj includes
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 #Src
@@ -28,7 +35,13 @@ target_sources(${PROJECT_NAME} PRIVATE
   ${IMGUI_SOURCE_DIR}/imgui_demo.cpp
   ${IMGUI_SOURCE_DIR}/imgui_tables.cpp
   ${RLIMGUI_SOURCE_DIR}/rlImGui.cpp
+  src/build_bridge.cpp
+  src/editor_app.cpp
+  src/editor_settings.cpp
+  src/json_utils.cpp
   src/main.cpp
+  src/process_utils.cpp
+  src/project_paths.cpp
 )
 
 ##Dear IMGUI

@@ -1,86 +1,119 @@
-#include "core/MyrGameApplication.h"
-#include "core/MyrGameEngine.h"
-#include "io/MyrLogging.h"
+#include "string.h" //strncpy
+
+#include "myriad.h"
+
+#include "asset/MyrAssetManager.h"
+#include "gfx/Renderer.h"
+#include "gfx/Window.h"
+#include "io/Logging.h"
+
+#include "tracy/Tracy.hpp"
+
 namespace Myriad
 {
-    MyrGameApplication::MyrGameApplication() {
+    MyrGameApplication::MyrGameApplication() {}
 
-    };
     MyrGameApplication::~MyrGameApplication()
     {
-        MYR_CORE_INFO("Myr Game Application Destructor");
-    };
+        MYR_CORE_TRACE("MyrGameApplication destroyed");
+    }
 
     void MyrGameApplication::Run()
     {
-        // run setup, get the config, and init the engine.
-        if (Init(Setup()))
+        GameEngineConfig c;
+        c.window_config.resolution = {800, 600};
+        c.window_config.resizable = true;
+        c.window_config.borderless = false;
+        c.window_config.fullscreen = false;
+        c.window_config.vsync = false;
+        c.framerate = 100;
+        strncpy(c.resource_base_path, "shared/res", 100);
+        strncpy(c.window_title, "Default Window Title", 100);
+
+        if (engine_.Init(c)) // Sets an initial config, inits members.
         {
-            Start();
+            // opens the window, starts engine running.
+            // Calls Start on this object.
+            // Overridden MyrGameApplication.Start() has a
+            // chance to alter config_ before the engine acts on it.
+            engine_.Start(*this);
             while (engine_.IsRunning())
             {
-                frame_timer_.Start();
-                update_timer_.Start();
-
-                engine_.GetEventService().ProcessEvents();
-                // TODO: this is problematic: event handlers
-                //  may have created more events.
-                //  Might be better if events just pop themselves
-                //  out of the queue once they've been handled,
-                //  rather than needing a clear events step.
-                engine_.GetEventService().ClearEvents();
-                PreUpdate();
-                Update();
-                PostUpdate();
-                update_timer_.Stop();
-                render_timer_.Start();
-                PreRender();
-                Render();
-                PostRender();
-                render_timer_.Stop();
-                frame_timer_.Stop();
+                // Calls all update methods on this object
+                // Calls all render methods on this object.
+                engine_.Frame(*this);
             }
+            engine_.Shutdown(*this);
         }
-        else
-        {
-            MYR_CORE_ERROR("Critical error, unable to init.");
-        }
-        PreShutdown();
-        Shutdown();
-        PostShutdown();
     }
 
-    // Inits the game engine
-    bool MyrGameApplication::Init(EngineConfig_t config)
+    bool MyrGameApplication::StartHosted(GameEngineConfig &config,
+                                         bool open_window)
     {
-        return engine_.InitEngine(config);
+        Init(config);
+        if (!engine_.Init(config))
+        {
+            return false;
+        }
+
+        engine_.Start(*this, open_window);
+        return true;
     }
-    // After the engine is inited, override this to set up other game params
+
+    void MyrGameApplication::TickHostedFrame()
+    {
+        if (!IsEngineRunning())
+        {
+            return;
+        }
+
+        engine_.StartUpdateTimer();
+        PreUpdate();
+        Update();
+        PostUpdate();
+        engine_.StopUpdateTimer();
+    }
+
+    void MyrGameApplication::RenderHostedFrame()
+    {
+        if (!IsEngineRunning())
+        {
+            return;
+        }
+
+        engine_.StartRenderTimer();
+        PreRender();
+        Render();
+        PostRender();
+        engine_.StopRenderTimer();
+    }
+
+    void MyrGameApplication::StopHosted()
+    {
+        if (engine_.IsRunning())
+        {
+            engine_.Shutdown(*this);
+        }
+    }
+
+    // Override these methods in your own applications
+    void MyrGameApplication::Init(GameEngineConfig &config) {}
     void MyrGameApplication::Start() {}
 
-    // Runs before any update
     void MyrGameApplication::PreUpdate() {}
-    // Run the update
     void MyrGameApplication::Update() {}
-    // Run after every update
     void MyrGameApplication::PostUpdate() {}
 
-    // Runs before any render
     void MyrGameApplication::PreRender() {}
-    // Run the render
+
     void MyrGameApplication::Render() {}
-    // Run after every render
     void MyrGameApplication::PostRender() {}
 
-    // Runs before shutdown
     void MyrGameApplication::PreShutdown() {}
-    // Shuts down the engine, releases all engine data structures
     void MyrGameApplication::Shutdown()
     {
-        MYR_CORE_INFO("GameApplication Shutdown: shutting down engine.");
-        engine_.Shutdown();
+        MYR_CORE_TRACE("MyrGameApplication shutting down");
     }
-    // Run after shutdown
     void MyrGameApplication::PostShutdown() {}
 
 } // namespace Myriad

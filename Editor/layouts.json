@@ -1,0 +1,46 @@
+{
+  "layouts": [
+    {
+      "name": "Editor Default",
+      "mode": "balanced",
+      "leftPercent": 25,
+      "rightPercent": 28,
+      "bottomPercent": 30
+    },
+    {
+      "name": "Preview Focus",
+      "mode": "preview",
+      "leftPercent": 22,
+      "rightPercent": 28,
+      "bottomPercent": 25
+    },
+    {
+      "name": "Build Focus",
+      "mode": "build",
+      "leftPercent": 35,
+      "rightPercent": 25,
+      "bottomPercent": 34
+    },
+    {
+      "name": "Code Focus",
+      "mode": "balanced",
+      "leftPercent": 18,
+      "rightPercent": 22,
+      "bottomPercent": 24
+    },
+    {
+      "name": "Console Focus",
+      "mode": "build",
+      "leftPercent": 22,
+      "rightPercent": 22,
+      "bottomPercent": 42
+    },
+    {
+      "name": "Scene Focus",
+      "mode": "preview",
+      "leftPercent": 16,
+      "rightPercent": 20,
+      "bottomPercent": 20
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "themes": [
+    {
+      "name": "Dark",
+      "base": "dark",
+      "windowBg": "#1A1B1F",
+      "header": "#3E4A5C",
+      "headerHovered": "#4B5C74",
+      "button": "#415069",
+      "buttonHovered": "#53709A",
+      "frameBg": "#2A2F3B",
+      "titleBg": "#1B2230",
+      "titleBgActive": "#263248"
+    },
+    {
+      "name": "Light",
+      "base": "light",
+      "windowBg": "#F4F5F8",
+      "header": "#9CB2CE",
+      "headerHovered": "#AFC4DE",
+      "button": "#8FAED1",
+      "buttonHovered": "#7CA0CA",
+      "frameBg": "#E7EBF2",
+      "titleBg": "#D8DFEB",
+      "titleBgActive": "#B8C8DE"
+    },
+    {
+      "name": "Classic",
+      "base": "classic",
+      "windowBg": "#2C2C2C",
+      "header": "#5A6D7D",
+      "headerHovered": "#708697",
+      "button": "#556979",
+      "buttonHovered": "#6A8296",
+      "frameBg": "#3A3A3A",
+      "titleBg": "#353535",
+      "titleBgActive": "#454545"
+    },
+    {
+      "name": "Cherry",
+      "base": "dark",
+      "windowBg": "#21141A",
+      "header": "#8D3351",
+      "headerHovered": "#A44767",
+      "button": "#914061",
+      "buttonHovered": "#B05676",
+      "frameBg": "#341B28",
+      "titleBg": "#3A1A29",
+      "titleBgActive": "#5B243D"
+    },
+    {
+      "name": "Ocean",
+      "base": "dark",
+      "windowBg": "#0B1B24",
+      "header": "#1B5E73",
+      "headerHovered": "#297A93",
+      "button": "#1E6A82",
+      "buttonHovered": "#2E89A6",
+      "frameBg": "#123141",
+      "titleBg": "#11384A",
+      "titleBgActive": "#1A5871"
+    },
+    {
+      "name": "Solar Flare",
+      "base": "dark",
+      "windowBg": "#1D130C",
+      "header": "#B25B1E",
+      "headerHovered": "#CF7430",
+      "button": "#BA6124",
+      "buttonHovered": "#E7873B",
+      "frameBg": "#2B1B10",
+      "titleBg": "#3A2415",
+      "titleBgActive": "#5A371F"
+    },
+    {
+      "name": "Neon Synth",
+      "base": "dark",
+      "windowBg": "#120E1C",
+      "header": "#7A3CC9",
+      "headerHovered": "#9D57EA",
+      "button": "#8A49DA",
+      "buttonHovered": "#B768FF",
+      "frameBg": "#241935",
+      "titleBg": "#2D1E44",
+      "titleBgActive": "#4A2C70"
+    },
+    {
+      "name": "Emerald City",
+      "base": "dark",
+      "windowBg": "#0D1E17",
+      "header": "#2F8A63",
+      "headerHovered": "#46A97C",
+      "button": "#369A70",
+      "buttonHovered": "#58C18F",
+      "frameBg": "#173227",
+      "titleBg": "#1C3F30",
+      "titleBgActive": "#286047"
+    },
+    {
+      "name": "Cyber Sunset",
+      "base": "dark",
+      "windowBg": "#1A1020",
+      "header": "#D14A5E",
+      "headerHovered": "#E26A79",
+      "button": "#C34A80",
+      "buttonHovered": "#E06BA4",
+      "frameBg": "#2D1833",
+      "titleBg": "#3A1C34",
+      "titleBgActive": "#5B2A52"
+    },
+    {
+      "name": "Volt Matrix",
+      "base": "dark",
+      "windowBg": "#0E1310",
+      "header": "#6EAA2E",
+      "headerHovered": "#86C13E",
+      "button": "#5FA532",
+      "buttonHovered": "#78C546",
+      "frameBg": "#1B2A1D",
+      "titleBg": "#203420",
+      "titleBgActive": "#2E4D2D"
+    }
+  ]
+}
