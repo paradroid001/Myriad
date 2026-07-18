@@ -43,6 +43,10 @@ The editor expands these placeholders when socket mode is not enabled and it fal
 - `{buildDir}`: selected build directory
 - `{target}`: build target, currently `TestECS`
 - `{toolchainArg}`: preset-specific `-DCMAKE_TOOLCHAIN_FILE=...` argument when available
+- `{headerDirs}`: configured header directories, separated by semicolons or newlines
+- `{libraryDirs}`: configured library directories, separated by semicolons or newlines
+- `{includeArgs}`: configured header directories expanded as quoted `-I...` arguments
+- `{libraryArgs}`: configured library directories expanded as quoted `-L...` arguments
 
 The editor now supports a TCP build bridge instead of relying on local cmake when you enable socket mode. The client path lives in Editor/src/main.cpp, and the container-side listener is docker/build_bridge_server.py. The bridge also applies the preset environment variables from CMakeKits.json before it runs cmake, and I forwarded the bridge port in .devcontainer/devcontainer.json.
 
@@ -53,6 +57,56 @@ For WSL or native Linux, keep the bridge host pointed at the local forwarded por
 Example launch command from inside the container shell:
 
 `python3 /workspaces/Myriad/docker/build_bridge_server.py --host 0.0.0.0 --port 55333`
+
+## Installed editor resources and config
+
+When running an installed editor build, MyriadEditor looks for resource and config files in this order.
+
+Project directory selection:
+
+The project directory can be set in the editor under `Editor Preferences` -> `Project`. Header and library directories can be configured in the same panel. Those values are persisted in `.myriad-editor.json`.
+
+Startup project root detection:
+
+1. `MYRIAD_PROJECT_ROOT` (if set to a path inside a Myriad repo)
+2. Current working directory or one of its parents, only when that path contains a Myriad repo
+3. Persisted build/executable paths from editor settings
+
+`MYRIAD_PROJECT_ROOT` is optional. It is useful only as a launch-time override; the editor does not require it once the project directory is configured in preferences.
+
+Themes and layouts (`themes.json`, `layouts.json`):
+
+1. `MYRIAD_EDITOR_RESOURCE_DIR` (if set)
+2. Installed data directory resolved from the executable location (for example `<prefix>/share/myriad-editor`)
+3. Source-tree fallback paths when running from the repository
+
+Editor config (`.myriad-editor.json`) read order for source/build-tree runs:
+
+1. `MYRIAD_EDITOR_CONFIG_PATH` (if set and file exists)
+2. Project root `.myriad-editor.json` (source-tree runs)
+3. Editor resource directory `.myriad-editor.json`
+
+Editor config read order for installed editor runs:
+
+1. `MYRIAD_EDITOR_CONFIG_PATH` (if set and file exists)
+2. Editor resource directory `.myriad-editor.json`
+3. Project root `.myriad-editor.json` as a fallback
+
+Editor config write path:
+
+1. `MYRIAD_EDITOR_CONFIG_PATH` (if set)
+2. Project root `.myriad-editor.json` when running from source tree
+3. Editor resource directory `.myriad-editor.json` for installed runs
+
+Override examples:
+
+Linux/macOS (bash):
+
+`MYRIAD_PROJECT_ROOT=/workspaces/Myriad MYRIAD_EDITOR_RESOURCE_DIR=/opt/myriad/share/myriad-editor MYRIAD_EDITOR_CONFIG_PATH=/opt/myriad/share/myriad-editor/custom-editor.json /opt/myriad/bin/MyriadEditor`
+
+Windows (PowerShell):
+
+`$env:MYRIAD_PROJECT_ROOT='C:\src\Myriad'; $env:MYRIAD_EDITOR_RESOURCE_DIR='C:\Myriad\share\myriad-editor'; $env:MYRIAD_EDITOR_CONFIG_PATH='C:\Myriad\share\myriad-editor\custom-editor.json'; C:\Myriad\bin\MyriadEditor.exe`
 
 ## API documentation (Doxygen)
 

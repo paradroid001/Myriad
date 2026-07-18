@@ -4,6 +4,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CXX_STANDARD 17)
 
+# Use /workspaces/dist as the default install root unless the user overrides it.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "/workspaces/dist" CACHE PATH "Install path prefix" FORCE)
+endif()
+
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+endif()
+
 set(EMSCRIPTEN_PTHREADS_COMPILER_FLAGS "")
 #set(EMSCRIPTEN_PTHREADS_COMPILER_FLAGS "-pthread")
 set(EMSCRIPTEN_PTHREADS_LINKER_FLAGS "")
@@ -38,7 +47,7 @@ function(myriad_apply_mingw_libgcc target_name)
 endfunction()
 
 add_subdirectory("Engine")
-add_subdirectory("Examples/TestGame")
+#add_subdirectory("Examples/TestGame")
 add_subdirectory("Examples/TestECS")
 add_subdirectory("Editor")
 # Tracy Profiler Server

@@ -107,6 +107,55 @@ namespace
     };
   }
 
+  std::filesystem::path ResolveEditorResourcePath(const std::filesystem::path &project_root,
+                                                  const std::string &filename)
+  {
+    std::vector<std::filesystem::path> candidates = {
+        project_root / "Editor" / filename,
+        project_root / filename,
+        project_root.parent_path() / "share" / "myriad-editor" / filename,
+    };
+
+    const std::filesystem::path installed_data_dir = Editor::GetInstalledEditorDataDirectory();
+    if (!installed_data_dir.empty())
+    {
+      candidates.push_back(installed_data_dir / filename);
+    }
+
+    for (const auto &candidate : candidates)
+    {
+      if (!candidate.empty() && std::filesystem::exists(candidate))
+      {
+        return candidate;
+      }
+    }
+
+    return {};
+  }
+
+  std::filesystem::path ResolveConfiguredProjectDirectory(const std::string &project_root_text)
+  {
+    const std::string trimmed_path = Editor::Trim(project_root_text);
+    if (trimmed_path.empty())
+    {
+      return {};
+    }
+
+    const std::filesystem::path configured_path(trimmed_path);
+    const std::filesystem::path repo_root = Editor::FindProjectRootFromPath(configured_path);
+    if (!repo_root.empty())
+    {
+      return repo_root;
+    }
+
+    if (std::filesystem::exists(configured_path) && std::filesystem::is_directory(configured_path))
+    {
+      return std::filesystem::absolute(configured_path);
+    }
+
+    return {};
+  }
+
   std::vector<std::string> ExtractJsonObjectArray(const std::string &text, const std::string &key, int max_items)
   {
     std::vector<std::string> objects;
@@ -199,7 +248,7 @@ namespace
 
   std::vector<Editor::ThemePreset> LoadThemePresets(const std::filesystem::path &project_root)
   {
-    const std::filesystem::path themes_path = project_root / "Editor" / "themes.json";
+    const std::filesystem::path themes_path = ResolveEditorResourcePath(project_root, "themes.json");
     std::ifstream input(themes_path);
     if (!input.is_open())
     {
@@ -260,7 +309,7 @@ namespace
 
   std::vector<Editor::LayoutPreset> LoadLayoutPresets(const std::filesystem::path &project_root)
   {
-    const std::filesystem::path layouts_path = project_root / "Editor" / "layouts.json";
+    const std::filesystem::path layouts_path = ResolveEditorResourcePath(project_root, "layouts.json");
     std::ifstream input(layouts_path);
     if (!input.is_open())
     {
@@ -767,17 +816,16 @@ namespace
 #ifdef IMGUI_HAS_DOCK
 namespace
 {
-  void ApplyDockLayoutPreset(const ImGuiID dockspace_id, const Editor::LayoutPreset &preset)
+  bool ApplyDockLayoutPreset(const ImGuiID dockspace_id, const ImVec2 &dockspace_size, const Editor::LayoutPreset &preset)
   {
-    ImGuiViewport *viewport = ImGui::GetMainViewport();
-    if (viewport == nullptr)
+    if (dockspace_size.x < 100.0f || dockspace_size.y < 100.0f)
     {
-      return;
+      return false;
     }
 
     ImGui::DockBuilderRemoveNode(dockspace_id);
     ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
-    ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
+    ImGui::DockBuilderSetNodeSize(dockspace_id, dockspace_size);
 
     ImGuiID dock_main = dockspace_id;
     ImGuiID dock_left = 0;
@@ -819,6 +867,7 @@ namespace
     ImGui::DockBuilderDockWindow("Scene", dock_center);
     ImGui::DockBuilderDockWindow("Preview", dock_center);
     ImGui::DockBuilderFinish(dockspace_id);
+    return true;
   }
 } // namespace
 #endif
@@ -837,22 +886,85 @@ void MyriadEditor::Init(Myriad::GameEngineConfig &config)
 {
   std::strncpy(config.window_title, "Myriad Editor", sizeof(config.window_title) - 1);
   config.window_title[sizeof(config.window_title) - 1] = '\0';
+  config.framerate = 30;
+  config.window_config.vsync = true;
 }
 
 void MyriadEditor::Start()
 {
   MyrGameApplication::Start();
+  auto log_startup_line = [this](const std::string &line)
+  {
+    const std::string message = "[Editor] " + line;
+    std::fprintf(stderr, "%s\n", message.c_str());
+    std::fflush(stderr);
+    AppendConsoleLine(line);
+  };
+
+  project_root_ = Editor::FindProjectRoot();
+  const std::filesystem::path initial_project_root = project_root_;
+  log_startup_line("Startup working directory: " + std::filesystem::current_path().string());
+  log_startup_line("Startup detected project root: " + (project_root_.empty() ? std::string{"<none>"} : project_root_.string()));
+  for (const auto &line : Editor::GetEditorSettingsDiscoveryLog(project_root_))
+  {
+    log_startup_line(line);
+  }
+
+  editor_settings_ = Editor::LoadEditorSettings(project_root_);
+  const std::filesystem::path configured_project_root = ResolveConfiguredProjectDirectory(editor_settings_.project_root_path);
+  if (!configured_project_root.empty() && configured_project_root != project_root_)
+  {
+    project_root_ = configured_project_root;
+    log_startup_line("Using configured project directory: " + project_root_.string());
+  }
+
+  if (configured_project_root.empty())
+  {
+    const std::filesystem::path recovered_project_root = Editor::FindProjectRootFromPath(editor_settings_.last_build_dir.empty() ? std::filesystem::path(editor_settings_.last_executable_path) : std::filesystem::path(editor_settings_.last_build_dir));
+    if (!recovered_project_root.empty() && recovered_project_root != project_root_)
+    {
+      project_root_ = recovered_project_root;
+      editor_settings_.project_root_path = project_root_.string();
+      log_startup_line("Recovered project root from editor settings: " + project_root_.string());
+    }
+  }
+
+  if (project_root_ != initial_project_root)
+  {
+    for (const auto &line : Editor::GetEditorSettingsDiscoveryLog(project_root_))
+    {
+      log_startup_line(line);
+    }
+  }
+
+  const std::filesystem::path resolved_themes_path = ResolveEditorResourcePath(project_root_, "themes.json");
+  const std::filesystem::path resolved_layouts_path = ResolveEditorResourcePath(project_root_, "layouts.json");
+  const std::filesystem::path resolved_settings_read_path = Editor::GetEditorSettingsReadPath(project_root_);
+  const std::filesystem::path resolved_settings_write_path = Editor::GetEditorSettingsWritePath(project_root_);
+
+  log_startup_line(std::string("Resolved themes path: ") + (resolved_themes_path.empty() ? "<default presets>" : resolved_themes_path.string()));
+  log_startup_line(std::string("Resolved layouts path: ") + (resolved_layouts_path.empty() ? "<default presets>" : resolved_layouts_path.string()));
+  log_startup_line(std::string("Resolved settings read path: ") + (resolved_settings_read_path.empty() ? "<none>" : resolved_settings_read_path.string()));
+  log_startup_line(std::string("Resolved settings write path: ") + (resolved_settings_write_path.empty() ? "<none>" : resolved_settings_write_path.string()));
+
+  if (!IsWindowReady())
+  {
+    log_startup_line("Raylib window is not ready; editor UI initialization aborted.");
+    status_ = "Editor window failed to initialize.";
+    return;
+  }
+
   rlImGuiSetup(true);
   ImGuiIO &io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+  io.IniFilename = nullptr;
 #ifdef IMGUI_HAS_DOCK
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #endif
-  project_root_ = Editor::FindProjectRoot();
+
   compiler_presets_ = Editor::LoadCompilerPresets(project_root_);
   theme_presets_ = LoadThemePresets(project_root_);
   layout_presets_ = LoadLayoutPresets(project_root_);
-  editor_settings_ = Editor::LoadEditorSettings(project_root_);
   build_command_template_ = Editor::ResolveBuildCommandTemplate(editor_settings_);
   if (compiler_presets_.empty())
   {
@@ -901,7 +1013,15 @@ void MyriadEditor::Start()
   show_console_window_ = editor_settings_.panel_console_open;
   show_game_log_window_ = editor_settings_.panel_game_log_open;
   show_editor_preferences_window_ = editor_settings_.panel_preferences_open;
-  dock_layout_apply_requested_ = false;
+  if (!show_build_workflow_window_ && !show_scene_window_ && !show_preview_window_ && !show_console_window_ && !show_game_log_window_ && !show_editor_preferences_window_)
+  {
+    show_build_workflow_window_ = true;
+    show_scene_window_ = true;
+    show_preview_window_ = true;
+    show_console_window_ = true;
+  }
+  dock_layout_apply_requested_ = true;
+  build_bridge_last_probe_time_ = GetTime();
   RefreshPaths(false);
   last_selected_preset_index_ = selected_preset_index_;
 
@@ -981,6 +1101,8 @@ void MyriadEditor::Render()
 
     const ImGuiID dockspace_id = ImGui::GetID("MyriadDockSpace");
     const float status_bar_height = ImGui::GetFrameHeightWithSpacing() + 6.0f;
+    const ImVec2 dockspace_available_size = ImGui::GetContentRegionAvail();
+    const ImVec2 dockspace_layout_size = ImVec2(std::max(1.0f, dockspace_available_size.x), std::max(1.0f, dockspace_available_size.y - status_bar_height));
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, -status_bar_height), ImGuiDockNodeFlags_None);
 
     if (dock_layout_apply_requested_)
@@ -996,8 +1118,7 @@ void MyriadEditor::Render()
         layout_presets_ = DefaultLayoutPresets();
       }
       const int safe_layout_index = std::max(0, std::min(selected_layout_preset_index_, static_cast<int>(layout_presets_.size()) - 1));
-      ApplyDockLayoutPreset(dockspace_id, layout_presets_[safe_layout_index]);
-      dock_layout_apply_requested_ = false;
+      dock_layout_apply_requested_ = !ApplyDockLayoutPreset(dockspace_id, dockspace_layout_size, layout_presets_[safe_layout_index]);
     }
 
     ImGui::SetCursorPos(ImVec2(0.0f, ImGui::GetWindowHeight() - status_bar_height));
@@ -1497,6 +1618,62 @@ void MyriadEditor::Render()
     ImGui::SetNextWindowSize(ImVec2(static_cast<float>(editor_settings_.panel_preferences_width), static_cast<float>(editor_settings_.panel_preferences_height)), ImGuiCond_FirstUseEver);
     ImGui::Begin("Editor Preferences", &show_editor_preferences_window_);
 
+    ImGui::Text("Project");
+    char project_root_buffer[1024];
+    std::strncpy(project_root_buffer, editor_settings_.project_root_path.c_str(), sizeof(project_root_buffer) - 1);
+    project_root_buffer[sizeof(project_root_buffer) - 1] = '\0';
+    if (ImGui::InputText("Project directory", project_root_buffer, sizeof(project_root_buffer)))
+    {
+      editor_settings_.project_root_path = Editor::Trim(std::string(project_root_buffer));
+      mark_settings_dirty();
+    }
+
+    char header_dirs_buffer[2048];
+    std::strncpy(header_dirs_buffer, editor_settings_.header_search_dirs.c_str(), sizeof(header_dirs_buffer) - 1);
+    header_dirs_buffer[sizeof(header_dirs_buffer) - 1] = '\0';
+    if (ImGui::InputTextMultiline("Header directories", header_dirs_buffer, sizeof(header_dirs_buffer), ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 3.0f)))
+    {
+      editor_settings_.header_search_dirs = Editor::Trim(std::string(header_dirs_buffer));
+      mark_settings_dirty();
+    }
+
+    char library_dirs_buffer[2048];
+    std::strncpy(library_dirs_buffer, editor_settings_.library_search_dirs.c_str(), sizeof(library_dirs_buffer) - 1);
+    library_dirs_buffer[sizeof(library_dirs_buffer) - 1] = '\0';
+    if (ImGui::InputTextMultiline("Library directories", library_dirs_buffer, sizeof(library_dirs_buffer), ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 3.0f)))
+    {
+      editor_settings_.library_search_dirs = Editor::Trim(std::string(library_dirs_buffer));
+      mark_settings_dirty();
+    }
+
+    if (ImGui::Button("Apply project directory"))
+    {
+      const std::filesystem::path configured_project_root = ResolveConfiguredProjectDirectory(editor_settings_.project_root_path);
+      if (!configured_project_root.empty())
+      {
+        project_root_ = configured_project_root;
+        editor_settings_.project_root_path = project_root_.string();
+        compiler_presets_ = Editor::LoadCompilerPresets(project_root_);
+        if (compiler_presets_.empty())
+        {
+          compiler_presets_.push_back({"Default", {}});
+        }
+        selected_preset_index_ = 0;
+        last_selected_preset_index_ = -1;
+        theme_presets_ = LoadThemePresets(project_root_);
+        layout_presets_ = LoadLayoutPresets(project_root_);
+        RefreshPaths(true);
+        dock_layout_apply_requested_ = true;
+        AppendConsoleLine("Project directory set to: " + project_root_.string());
+        mark_settings_dirty();
+      }
+      else
+      {
+        AppendConsoleLine("Warning: Project directory does not exist: " + editor_settings_.project_root_path);
+      }
+    }
+
+    ImGui::Separator();
     ImGui::Text("Theme");
     const int safe_theme_index = std::max(0, std::min(selected_theme_preset_index_, static_cast<int>(theme_presets_.size()) - 1));
     const char *current_theme_label = theme_presets_.empty() ? "<none>" : theme_presets_[safe_theme_index].name.c_str();
@@ -1626,6 +1803,13 @@ void MyriadEditor::Render()
   }
 
   rlImGuiEnd();
+
+  ImDrawData *draw_data = ImGui::GetDrawData();
+  if (draw_data == nullptr || draw_data->CmdListsCount == 0)
+  {
+    DrawText("Myriad Editor UI produced no ImGui draw data", 24, 24, 20, RED);
+    DrawText("Check editor resource/config paths in the console output.", 24, 52, 20, RED);
+  }
 }
 
 void MyriadEditor::AppendConsoleLine(const std::string &line)
@@ -1646,10 +1830,12 @@ void MyriadEditor::PreShutdown()
 
 void MyriadEditor::JoinBridgeBuildThread()
 {
+#if MYRIAD_EDITOR_ENABLE_BRIDGE_THREADS
   if (bridge_build_thread_.joinable())
   {
     bridge_build_thread_.join();
   }
+#endif
 }
 
 void MyriadEditor::RestartPreviewForLatestBuild()
@@ -1808,6 +1994,15 @@ void MyriadEditor::UnloadHostedPreviewLibrary()
 
 void MyriadEditor::StartBridgeBuildOverSocket(const Editor::CompilerPreset &preset, const std::string &build_dir_relative)
 {
+#if !MYRIAD_EDITOR_ENABLE_BRIDGE_THREADS
+  (void)preset;
+  (void)build_dir_relative;
+  build_succeeded_ = false;
+  bridge_build_in_progress_ = false;
+  status_ = "Socket build bridge requires std::thread support in the editor toolchain.";
+  AppendConsoleLine(status_);
+  return;
+#else
   if (bridge_build_in_progress_)
   {
     status_ = "A build bridge request is already in progress.";
@@ -1885,6 +2080,7 @@ void MyriadEditor::StartBridgeBuildOverSocket(const Editor::CompilerPreset &pres
     }
 
     bridge_build_in_progress_ = false; });
+#endif
 }
 
 void MyriadEditor::UpdateBridgeBuildProgressFromLine(const std::string &line)
@@ -1903,6 +2099,9 @@ void MyriadEditor::UpdateBridgeBuildProgressFromLine(const std::string &line)
 
 void MyriadEditor::PumpBridgeBuildUpdates()
 {
+#if !MYRIAD_EDITOR_ENABLE_BRIDGE_THREADS
+  return;
+#else
   std::vector<std::string> pending_lines;
   bool has_result = false;
   bool request_success = false;
@@ -2009,6 +2208,7 @@ void MyriadEditor::PumpBridgeBuildUpdates()
     run_after_build_request_ = false;
     RunTestECS();
   }
+#endif
 }
 
 void MyriadEditor::ApplyThemePresetByIndex(int preset_index)
@@ -2478,7 +2678,21 @@ void MyriadEditor::RefreshBuildBridgeStatus(bool force)
 void MyriadEditor::BuildTestECS()
 {
   build_succeeded_ = false;
-  project_root_ = Editor::FindProjectRoot();
+  const std::filesystem::path configured_project_root = ResolveConfiguredProjectDirectory(editor_settings_.project_root_path);
+  if (!configured_project_root.empty())
+  {
+    project_root_ = configured_project_root;
+    editor_settings_.project_root_path = project_root_.string();
+  }
+
+  if (project_root_.empty())
+  {
+    build_succeeded_ = false;
+    status_ = "Set a project directory in Editor Preferences before building.";
+    AppendConsoleLine(status_);
+    return;
+  }
+
   const auto &preset = compiler_presets_[std::max(0, std::min(selected_preset_index_, static_cast<int>(compiler_presets_.size()) - 1))];
   const std::filesystem::path detected_build_dir = Editor::FindMatchingBuildDirectory(project_root_, preset.name);
   const std::filesystem::path default_build_dir = detected_build_dir.empty() ? (project_root_ / "build" / preset.name / "Debug") : detected_build_dir;
@@ -2510,7 +2724,13 @@ void MyriadEditor::BuildTestECS()
     }
   }
 
-  std::string command = Editor::ExpandBuildCommandTemplate(build_command_template_, project_root_, build_dir_, preset, toolchain_path);
+  std::string command = Editor::ExpandBuildCommandTemplate(build_command_template_,
+                                                           project_root_,
+                                                           build_dir_,
+                                                           preset,
+                                                           toolchain_path,
+                                                           editor_settings_.header_search_dirs,
+                                                           editor_settings_.library_search_dirs);
   std::cout << "Building TestECS with: " << command << std::endl;
   status_ = "Building TestECS...";
   AppendConsoleLine("Build request: " + preset.name + " -> " + build_dir_.string());

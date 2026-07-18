@@ -3,16 +3,117 @@
 #include "json_utils.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#else
+#include <limits.h>
+#include <unistd.h>
+#endif
+
 namespace Editor
 {
+  namespace
+  {
+    std::vector<std::filesystem::path> ParsePathList(const std::string &path_list)
+    {
+      std::vector<std::filesystem::path> paths;
+      std::string current;
+      for (const char ch : path_list)
+      {
+        if (ch == ';' || ch == '\n' || ch == '\r')
+        {
+          current = Trim(current);
+          if (!current.empty())
+          {
+            paths.emplace_back(current);
+          }
+          current.clear();
+          continue;
+        }
+
+        current.push_back(ch);
+      }
+
+      current = Trim(current);
+      if (!current.empty())
+      {
+        paths.emplace_back(current);
+      }
+
+      return paths;
+    }
+
+    std::string BuildPathFlags(const std::string &path_list, const std::string &flag_name)
+    {
+      std::ostringstream flags;
+      bool first = true;
+      for (const auto &path : ParsePathList(path_list))
+      {
+        if (!first)
+        {
+          flags << ' ';
+        }
+        flags << flag_name << "\"" << path.string() << "\"";
+        first = false;
+      }
+      return flags.str();
+    }
+
+    std::filesystem::path ResolveExecutablePathForProcess()
+    {
+#ifdef _WIN32
+      char module_path[MAX_PATH] = {};
+      const DWORD copied = GetModuleFileNameA(nullptr, module_path, MAX_PATH);
+      if (copied == 0 || copied >= MAX_PATH)
+      {
+        return {};
+      }
+      return std::filesystem::path(module_path);
+#elif defined(__APPLE__)
+      uint32_t size = 0;
+      _NSGetExecutablePath(nullptr, &size);
+      if (size == 0)
+      {
+        return {};
+      }
+
+      std::string buffer(size, '\0');
+      if (_NSGetExecutablePath(buffer.data(), &size) != 0)
+      {
+        return {};
+      }
+
+      return std::filesystem::weakly_canonical(std::filesystem::path(buffer.c_str()));
+#else
+      char buffer[PATH_MAX] = {};
+      const ssize_t copied = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+      if (copied <= 0)
+      {
+        return {};
+      }
+
+      buffer[copied] = '\0';
+      return std::filesystem::path(buffer);
+#endif
+    }
+  } // namespace
+
   std::string ExpandBuildCommandTemplate(std::string command,
                                          const std::filesystem::path &project_root,
                                          const std::filesystem::path &build_dir,
                                          const CompilerPreset &preset,
-                                         const std::filesystem::path &toolchain_path)
+                                         const std::filesystem::path &toolchain_path,
+                                         const std::string &header_search_dirs,
+                                         const std::string &library_search_dirs)
   {
     const std::string project_root_text = project_root.string();
     const std::string build_dir_text = build_dir.string();
@@ -25,13 +126,38 @@ namespace Editor
     ReplaceAll(command, "{target}", "TestECS");
     ReplaceAll(command, "{toolchainFile}", toolchain_text);
     ReplaceAll(command, "{toolchainArg}", toolchain_arg);
+    ReplaceAll(command, "{headerDirs}", header_search_dirs);
+    ReplaceAll(command, "{libraryDirs}", library_search_dirs);
+    ReplaceAll(command, "{includeArgs}", BuildPathFlags(header_search_dirs, "-I"));
+    ReplaceAll(command, "{libraryArgs}", BuildPathFlags(library_search_dirs, "-L"));
     return command;
   }
 
   std::filesystem::path FindProjectRoot()
   {
-    std::filesystem::path cwd = std::filesystem::current_path();
-    for (auto candidate = cwd; !candidate.empty(); candidate = candidate.parent_path())
+    const char *project_root_override = std::getenv("MYRIAD_PROJECT_ROOT");
+    if (project_root_override != nullptr && *project_root_override != '\0')
+    {
+      const std::filesystem::path override_root = FindProjectRootFromPath(project_root_override);
+      if (!override_root.empty())
+      {
+        return override_root;
+      }
+    }
+
+    const std::filesystem::path cwd = std::filesystem::current_path();
+    return FindProjectRootFromPath(cwd);
+  }
+
+  std::filesystem::path FindProjectRootFromPath(const std::filesystem::path &start)
+  {
+    if (start.empty())
+    {
+      return {};
+    }
+
+    std::filesystem::path candidate = std::filesystem::exists(start) && std::filesystem::is_regular_file(start) ? start.parent_path() : start;
+    while (!candidate.empty())
     {
       if (std::filesystem::exists(candidate / "CMakeLists.txt") &&
           std::filesystem::exists(candidate / "Editor") &&
@@ -39,13 +165,68 @@ namespace Editor
       {
         return candidate;
       }
+
+      const std::filesystem::path parent = candidate.parent_path();
+      if (parent == candidate)
+      {
+        break;
+      }
+      candidate = parent;
     }
-    return cwd;
+    return {};
+  }
+
+  std::filesystem::path GetExecutableDirectory()
+  {
+    const std::filesystem::path executable_path = ResolveExecutablePathForProcess();
+    if (executable_path.empty())
+    {
+      return {};
+    }
+
+    return executable_path.parent_path();
+  }
+
+  std::filesystem::path GetInstalledEditorDataDirectory()
+  {
+    const char *resource_dir_override = std::getenv("MYRIAD_EDITOR_RESOURCE_DIR");
+    if (resource_dir_override != nullptr && *resource_dir_override != '\0')
+    {
+      return std::filesystem::path(resource_dir_override);
+    }
+
+    const std::filesystem::path executable_dir = GetExecutableDirectory();
+    if (executable_dir.empty())
+    {
+      return {};
+    }
+
+    const std::vector<std::filesystem::path> candidates = {
+        executable_dir.parent_path() / "share" / "myriad-editor",
+        executable_dir / "share" / "myriad-editor",
+        executable_dir.parent_path() / "Resources" / "myriad-editor",
+        executable_dir / "myriad-editor",
+    };
+
+    for (const auto &candidate : candidates)
+    {
+      if (!candidate.empty() && std::filesystem::exists(candidate))
+      {
+        return candidate;
+      }
+    }
+
+    return {};
   }
 
   std::vector<CompilerPreset> LoadCompilerPresets(const std::filesystem::path &root)
   {
     std::vector<CompilerPreset> presets;
+    if (root.empty())
+    {
+      return presets;
+    }
+
     const std::filesystem::path kits_path = root / "CMakeKits.json";
     std::ifstream input(kits_path);
     if (!input.is_open())

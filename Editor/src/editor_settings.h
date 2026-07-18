@@ -35,15 +35,36 @@ namespace Editor
   bool ShouldUseSocketBuilds(const EditorSettings &settings);
 
   /**
-   * @brief Loads editor settings from environment variables and .myriad-editor.json.
-   * @param root Project root directory containing the settings file.
+   * @brief Loads editor settings from environment variables and persisted config files.
+   * @param root Project root directory used to resolve project-local or installed config paths.
    * @return Loaded settings with defaults applied.
    */
   EditorSettings LoadEditorSettings(const std::filesystem::path &root);
 
   /**
-   * @brief Saves editor settings to .myriad-editor.json in the project root.
-   * @param root Project root directory containing the settings file.
+   * @brief Resolves the effective settings file path used for reading.
+   * @param root Project root directory used during path resolution.
+   * @return Settings path candidate; may not exist.
+   */
+  std::filesystem::path GetEditorSettingsReadPath(const std::filesystem::path &root);
+
+  /**
+   * @brief Resolves the effective settings file path used for writing.
+   * @param root Project root directory used during path resolution.
+   * @return Settings write destination path.
+   */
+  std::filesystem::path GetEditorSettingsWritePath(const std::filesystem::path &root);
+
+  /**
+   * @brief Describes the settings/config paths considered during startup.
+   * @param root Project root directory used during path resolution.
+   * @return Human-readable lines suitable for shell startup logging.
+   */
+  std::vector<std::string> GetEditorSettingsDiscoveryLog(const std::filesystem::path &root);
+
+  /**
+   * @brief Saves editor settings to the project root (source tree) or user config directory (installed app).
+   * @param root Project root directory used to resolve the write destination.
    * @param settings Settings object to persist.
    * @return true when the file was written successfully.
    */

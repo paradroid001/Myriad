@@ -6,6 +6,20 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(${PROJECT_NAME})
 myriad_apply_mingw_libgcc(${PROJECT_NAME})
 
+if(APPLE)
+  set(MYRIAD_EDITOR_INSTALL_RPATH "@loader_path")
+elseif(UNIX)
+  set(MYRIAD_EDITOR_INSTALL_RPATH "$ORIGIN")
+else()
+  set(MYRIAD_EDITOR_INSTALL_RPATH "")
+endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  INSTALL_RPATH "${MYRIAD_EDITOR_INSTALL_RPATH}"
+)
+
+set(MYRIAD_EDITOR_INSTALL_COMPONENT "MyriadEditor")
+
 # compile with all warnings, and warnings as errors. No rtti or exceptions, as they are not needed and add overhead.
 # note: taking out -Werror as dependency rlImGui has an unused variable that generates a warning, and I don't want to have to patch their code.
 target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17;-Wall;-fno-rtti;-fno-exceptions)
@@ -47,3 +61,65 @@ target_sources(${PROJECT_NAME} PRIVATE
 ##Dear IMGUI
 #add_subdirectory(vendor/imgui)
 #target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
+
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" MYRIAD_INSTALL_PLATFORM)
+if(CMAKE_CONFIGURATION_TYPES)
+  set(MYRIAD_INSTALL_CONFIG "$<LOWER_CASE:$<CONFIG>>")
+else()
+  string(TOLOWER "${CMAKE_BUILD_TYPE}" MYRIAD_INSTALL_CONFIG)
+endif()
+set(MYRIAD_INSTALL_ROOT "${MYRIAD_INSTALL_PLATFORM}/${MYRIAD_INSTALL_CONFIG}")
+
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION "${MYRIAD_INSTALL_ROOT}/bin"
+  COMPONENT ${MYRIAD_EDITOR_INSTALL_COMPONENT}
+)
+
+install(FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/themes.json"
+  "${CMAKE_CURRENT_SOURCE_DIR}/layouts.json"
+  DESTINATION "${MYRIAD_INSTALL_ROOT}/share/myriad-editor"
+  COMPONENT ${MYRIAD_EDITOR_INSTALL_COMPONENT}
+)
+
+install(FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/default-config.json"
+  DESTINATION "${MYRIAD_INSTALL_ROOT}/share/myriad-editor"
+  RENAME ".myriad-editor.json"
+  COMPONENT ${MYRIAD_EDITOR_INSTALL_COMPONENT}
+)
+
+if(MINGW)
+  install(FILES "$<TARGET_FILE:MyriadEngine>"
+    DESTINATION "${MYRIAD_INSTALL_ROOT}/bin"
+    COMPONENT ${MYRIAD_EDITOR_INSTALL_COMPONENT}
+  )
+  install(FILES "$<TARGET_FILE:raylib>"
+    DESTINATION "${MYRIAD_INSTALL_ROOT}/bin"
+    COMPONENT ${MYRIAD_EDITOR_INSTALL_COMPONENT}
+  )
+endif()
+
+# Copy resolved runtime shared-library dependencies next to the installed editor executable.
+if(NOT MINGW)
+  install(CODE "
+    file(GET_RUNTIME_DEPENDENCIES
+      EXECUTABLES \"$<TARGET_FILE:MyriadEditor>\"
+      RESOLVED_DEPENDENCIES_VAR _myriad_editor_resolved_deps
+      UNRESOLVED_DEPENDENCIES_VAR _myriad_editor_unresolved_deps
+    )
+
+    if(_myriad_editor_unresolved_deps)
+      message(WARNING \"Unresolved runtime deps for MyriadEditor: \${_myriad_editor_unresolved_deps}\")
+    endif()
+
+    if(_myriad_editor_resolved_deps)
+      file(INSTALL
+        DESTINATION \"${CMAKE_INSTALL_PREFIX}/${MYRIAD_INSTALL_ROOT}/bin\"
+        TYPE SHARED_LIBRARY
+        FOLLOW_SYMLINK_CHAIN
+        FILES \${_myriad_editor_resolved_deps}
+      )
+    endif()
+  " COMPONENT ${MYRIAD_EDITOR_INSTALL_COMPONENT})
+endif()

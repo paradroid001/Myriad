@@ -8,11 +8,17 @@
 
 #include <filesystem>
 #include <atomic>
-#include <mutex>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
+
+#if defined(__MINGW32__)
+#define MYRIAD_EDITOR_ENABLE_BRIDGE_THREADS 0
+#else
+#define MYRIAD_EDITOR_ENABLE_BRIDGE_THREADS 1
+#include <mutex>
+#include <thread>
+#endif
 
 #include "imgui.h"
 
@@ -121,8 +127,10 @@ private:
   bool show_editor_preferences_window_ = true;
   bool console_scroll_to_bottom_ = false;
   bool game_log_scroll_to_bottom_ = false;
+#if MYRIAD_EDITOR_ENABLE_BRIDGE_THREADS
   std::thread bridge_build_thread_;
   std::mutex bridge_build_mutex_;
+#endif
   std::vector<std::string> bridge_build_pending_lines_;
   std::atomic<bool> bridge_build_in_progress_ = false;
   bool bridge_build_result_ready_ = false;

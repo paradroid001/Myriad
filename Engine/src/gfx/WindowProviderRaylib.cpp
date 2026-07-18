@@ -42,6 +42,12 @@ namespace Myriad
         // window_props_ = ???;
         ::SetConfigFlags(raylib_props);
 
+        MYR_CORE_TRACE("WindowProviderRaylib::Open() - Opening %dx%d "
+                       "resizable=%d vsync=%d fullscreen=%d borderless=%d",
+                       config.resolution.x, config.resolution.y,
+                       config.resizable, config.vsync, config.fullscreen,
+                       config.borderless);
+
         ::InitWindow(config.resolution.x, config.resolution.y, title);
         if (::IsWindowReady()) // This tells us if the window inited.
         {
@@ -72,11 +78,20 @@ namespace Myriad
         return true;
     }
 
-    bool WindowProviderRaylib::WasResized() { return ::IsWindowResized(); }
+    bool WindowProviderRaylib::WasResized()
+    {
+        return ::IsWindowReady() && ::IsWindowResized();
+    }
 
     Vector2 WindowProviderRaylib::GetDimensions()
     {
         Vector2 retval;
+        if (!::IsWindowReady())
+        {
+            retval.x = 0;
+            retval.y = 0;
+            return retval;
+        }
         retval.x = ::GetScreenWidth();
         retval.y = ::GetScreenHeight();
         return retval;
@@ -84,6 +99,11 @@ namespace Myriad
 
     WindowState_t WindowProviderRaylib::GetWindowState()
     {
+        if (!::IsWindowReady())
+        {
+            window_state_ = WindowState_t::CLOSED;
+            return window_state_;
+        }
         if (::WindowShouldClose())
         {
             window_state_ = WindowState_t::CLOSING;

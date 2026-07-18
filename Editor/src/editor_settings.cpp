@@ -1,6 +1,7 @@
 #include "editor_settings.h"
 
 #include "json_utils.h"
+#include "project_paths.h"
 
 #include <algorithm>
 #include <cctype>
@@ -12,6 +13,112 @@ namespace Editor
 {
   namespace
   {
+    std::filesystem::path ResolveEditorConfigOverridePath()
+    {
+      const char *config_path_override = std::getenv("MYRIAD_EDITOR_CONFIG_PATH");
+      if (config_path_override != nullptr && *config_path_override != '\0')
+      {
+        return std::filesystem::path(config_path_override);
+      }
+
+      return {};
+    }
+
+    std::filesystem::path ResolveEditorResourceConfigPath(const std::filesystem::path &root)
+    {
+      const std::filesystem::path installed_data_dir = GetInstalledEditorDataDirectory();
+      if (!installed_data_dir.empty())
+      {
+        return installed_data_dir / ".myriad-editor.json";
+      }
+
+      if (!root.empty())
+      {
+        const auto legacy_candidate = root.parent_path() / "share" / "myriad-editor" / ".myriad-editor.json";
+        if (std::filesystem::exists(legacy_candidate.parent_path()))
+        {
+          return legacy_candidate;
+        }
+      }
+      return {};
+    }
+
+    bool IsInstalledEditorRun(const std::filesystem::path &root)
+    {
+      if (root.empty())
+      {
+        return true;
+      }
+
+      const std::filesystem::path executable_dir = GetExecutableDirectory();
+      if (executable_dir.empty())
+      {
+        return false;
+      }
+
+      std::error_code error_code;
+      const std::filesystem::path relative_executable_dir = std::filesystem::relative(executable_dir, root, error_code);
+      if (error_code || relative_executable_dir.empty())
+      {
+        return true;
+      }
+
+      const std::string relative_text = relative_executable_dir.generic_string();
+      return relative_text.rfind("..", 0) == 0;
+    }
+
+    std::filesystem::path ResolveSettingsReadPath(const std::filesystem::path &root)
+    {
+      const std::filesystem::path override_settings = ResolveEditorConfigOverridePath();
+      if (!override_settings.empty() && std::filesystem::exists(override_settings))
+      {
+        return override_settings;
+      }
+
+      const bool installed_run = IsInstalledEditorRun(root);
+      if (installed_run)
+      {
+        const std::filesystem::path resource_settings = ResolveEditorResourceConfigPath(root);
+        if (!resource_settings.empty())
+        {
+          return resource_settings;
+        }
+      }
+
+      if (!root.empty() && std::filesystem::exists(root / "Editor") && std::filesystem::exists(root / "Engine"))
+      {
+        const std::filesystem::path project_settings = root / ".myriad-editor.json";
+        if (std::filesystem::exists(project_settings))
+        {
+          return project_settings;
+        }
+      }
+
+      const std::filesystem::path resource_settings = ResolveEditorResourceConfigPath(root);
+      if (!resource_settings.empty())
+      {
+        return resource_settings;
+      }
+
+      return {};
+    }
+
+    std::filesystem::path ResolveSettingsWritePath(const std::filesystem::path &root)
+    {
+      const std::filesystem::path override_settings = ResolveEditorConfigOverridePath();
+      if (!override_settings.empty())
+      {
+        return override_settings;
+      }
+
+      if (!IsInstalledEditorRun(root) && std::filesystem::exists(root / "Editor") && std::filesystem::exists(root / "Engine"))
+      {
+        return root / ".myriad-editor.json";
+      }
+
+      return ResolveEditorResourceConfigPath(root);
+    }
+
     std::string JoinHostList(const std::vector<std::string> &hosts)
     {
       std::ostringstream joined;
@@ -52,6 +159,33 @@ namespace Editor
       }
 
       return {};
+    }
+
+    std::string PathStatusLine(const std::string &label, const std::filesystem::path &path)
+    {
+      if (path.empty())
+      {
+        return label + ": <none>";
+      }
+
+      std::error_code error_code;
+      const bool exists = std::filesystem::exists(path, error_code);
+      std::string status = label + ": " + path.string() + " [";
+      if (error_code)
+      {
+        status += "error: " + error_code.message();
+      }
+      else
+      {
+        status += exists ? "found" : "missing";
+      }
+      status += "]";
+      return status;
+    }
+
+    std::string BoolStatusLine(const std::string &label, bool value)
+    {
+      return label + ": " + (value ? "true" : "false");
     }
   } // namespace
 
@@ -265,7 +399,12 @@ namespace Editor
       settings.build_command_template = build_command;
     }
 
-    const std::filesystem::path settings_path = root / ".myriad-editor.json";
+    const std::filesystem::path settings_path = ResolveSettingsReadPath(root);
+    if (settings_path.empty())
+    {
+      return settings;
+    }
+
     std::ifstream input(settings_path);
     if (!input.is_open())
     {
@@ -297,6 +436,9 @@ namespace Editor
     settings.build_bridge_probe_interval_seconds = ExtractJsonInt(contents, "buildBridgeProbeIntervalSeconds", settings.build_bridge_probe_interval_seconds);
     settings.build_bridge_probe_interval_seconds = std::max(5, std::min(3600, settings.build_bridge_probe_interval_seconds));
     settings.build_command_template = ExtractJsonString(contents, "buildCommand");
+    settings.project_root_path = ExtractJsonString(contents, "projectRoot");
+    settings.header_search_dirs = ExtractJsonString(contents, "headerSearchDirs");
+    settings.library_search_dirs = ExtractJsonString(contents, "librarySearchDirs");
     const std::string file_theme_preset = ExtractJsonString(contents, "themePreset");
     if (!file_theme_preset.empty())
     {
@@ -342,9 +484,51 @@ namespace Editor
     return settings;
   }
 
+  std::filesystem::path GetEditorSettingsReadPath(const std::filesystem::path &root)
+  {
+    return ResolveSettingsReadPath(root);
+  }
+
+  std::filesystem::path GetEditorSettingsWritePath(const std::filesystem::path &root)
+  {
+    return ResolveSettingsWritePath(root);
+  }
+
+  std::vector<std::string> GetEditorSettingsDiscoveryLog(const std::filesystem::path &root)
+  {
+    std::vector<std::string> lines;
+    const bool installed_run = IsInstalledEditorRun(root);
+    const bool root_is_repo = !root.empty() && std::filesystem::exists(root / "Editor") && std::filesystem::exists(root / "Engine");
+    const std::filesystem::path override_settings = ResolveEditorConfigOverridePath();
+    const std::filesystem::path resource_settings = ResolveEditorResourceConfigPath(root);
+    const std::filesystem::path project_settings = root_is_repo ? root / ".myriad-editor.json" : std::filesystem::path{};
+
+    lines.push_back("Settings discovery root: " + (root.empty() ? std::string{"<none>"} : root.string()));
+    lines.push_back(BoolStatusLine("Settings discovery installed run", installed_run));
+    lines.push_back(BoolStatusLine("Settings discovery root is Myriad repo", root_is_repo));
+    lines.push_back(PathStatusLine("Settings override path", override_settings));
+    lines.push_back(PathStatusLine("Settings project path", project_settings));
+    lines.push_back(PathStatusLine("Settings resource path", resource_settings));
+    lines.push_back(PathStatusLine("Settings effective read path", ResolveSettingsReadPath(root)));
+    lines.push_back(PathStatusLine("Settings effective write path", ResolveSettingsWritePath(root)));
+    return lines;
+  }
+
   bool SaveEditorSettings(const std::filesystem::path &root, const EditorSettings &settings)
   {
-    const std::filesystem::path settings_path = root / ".myriad-editor.json";
+    const std::filesystem::path settings_path = ResolveSettingsWritePath(root);
+    if (settings_path.empty())
+    {
+      return false;
+    }
+
+    const std::filesystem::path settings_parent = settings_path.parent_path();
+    if (!settings_parent.empty())
+    {
+      std::error_code error_code;
+      std::filesystem::create_directories(settings_parent, error_code);
+    }
+
     std::ofstream output(settings_path, std::ios::trunc);
     if (!output.is_open())
     {
@@ -358,6 +542,9 @@ namespace Editor
     output << "  \"buildSocketPort\": " << settings.build_socket_port << ",\n";
     output << "  \"buildBridgeProbeIntervalSeconds\": " << std::max(5, std::min(3600, settings.build_bridge_probe_interval_seconds)) << ",\n";
     output << "  \"buildCommand\": \"" << JsonEscape(settings.build_command_template) << "\",\n";
+    output << "  \"projectRoot\": \"" << JsonEscape(settings.project_root_path) << "\",\n";
+    output << "  \"headerSearchDirs\": \"" << JsonEscape(settings.header_search_dirs) << "\",\n";
+    output << "  \"librarySearchDirs\": \"" << JsonEscape(settings.library_search_dirs) << "\",\n";
     output << "  \"themePreset\": \"" << JsonEscape(settings.theme_preset) << "\",\n";
     output << "  \"uiFontScalePercent\": " << settings.ui_font_scale_percent << ",\n";
     output << "  \"uiRounding\": " << settings.ui_rounding << ",\n";

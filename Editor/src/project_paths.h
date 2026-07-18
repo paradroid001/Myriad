@@ -21,13 +21,34 @@ namespace Editor
                                          const std::filesystem::path &project_root,
                                          const std::filesystem::path &build_dir,
                                          const CompilerPreset &preset,
-                                         const std::filesystem::path &toolchain_path);
+                                         const std::filesystem::path &toolchain_path,
+                                         const std::string &header_search_dirs,
+                                         const std::string &library_search_dirs);
 
   /**
    * @brief Locates the repository root for the running editor process.
    * @return Absolute path to project root when found.
    */
   std::filesystem::path FindProjectRoot();
+
+  /**
+   * @brief Locates a repository root by walking upward from an arbitrary path.
+   * @param start Path inside or near the project tree.
+   * @return Project root when found, otherwise empty.
+   */
+  std::filesystem::path FindProjectRootFromPath(const std::filesystem::path &start);
+
+  /**
+   * @brief Returns the directory containing the running editor executable.
+   * @return Absolute executable directory path when available.
+   */
+  std::filesystem::path GetExecutableDirectory();
+
+  /**
+   * @brief Resolves the installed editor data directory across platforms.
+   * @return Path like <prefix>/share/myriad-editor or app-bundle resources when found.
+   */
+  std::filesystem::path GetInstalledEditorDataDirectory();
 
   /**
    * @brief Loads compiler presets from CMakeKits.json.

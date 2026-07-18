@@ -78,6 +78,12 @@ namespace Editor
     int build_bridge_probe_interval_seconds = 30;
     /** @brief Local build command template when bridge mode is disabled. */
     std::string build_command_template;
+    /** @brief Project root directory selected for editor workflows. */
+    std::string project_root_path;
+    /** @brief Header/include directories used by local build command placeholders. */
+    std::string header_search_dirs;
+    /** @brief Library directories used by local build command placeholders. */
+    std::string library_search_dirs;
     /** @brief Last selected theme preset name. */
     std::string theme_preset = "Dark";
     /** @brief UI font scale in percent. */

@@ -46,7 +46,13 @@ namespace Myriad
         window_opened_ = false;
         if (open_window)
         {
-            window_->Open(config_.window_config, config_.window_title);
+            if (!window_->Open(config_.window_config, config_.window_title))
+            {
+                MYR_CORE_ERROR("GameEngine::Start() - Window failed to open; "
+                               "aborting application start.");
+                is_running_ = false;
+                return;
+            }
             window_->SetFPS(config_.framerate);
             window_opened_ = true;
         }

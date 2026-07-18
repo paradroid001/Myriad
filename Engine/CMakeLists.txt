@@ -6,6 +6,18 @@ project(MyriadEngine LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "Myriad is a Game E
 # Make a dynamic lib (this will not be the case for EMSCRIPTEN)
 add_library(${PROJECT_NAME} SHARED)
 myriad_apply_mingw_libgcc(${PROJECT_NAME})
+
+if(APPLE)
+    set(MYRIAD_ENGINE_INSTALL_RPATH "@loader_path")
+elseif(UNIX)
+    set(MYRIAD_ENGINE_INSTALL_RPATH "$ORIGIN")
+else()
+    set(MYRIAD_ENGINE_INSTALL_RPATH "")
+endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    INSTALL_RPATH "${MYRIAD_ENGINE_INSTALL_RPATH}"
+)
 #make sure dllimport/export is generated on windows
 target_compile_definitions(${PROJECT_NAME} PRIVATE MYR_BUILD_DLL)
 # since we're compiling the myriad library, it needs to know it's 'internal'
@@ -17,6 +29,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE -std=c++17;-Wall;-Werror;-fno-rtt
 
 # set so version to major number of version, so myriad.so.1 -> myriad.so.1.0.0
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} CMAKE_CXX_STANDARD 17)
+
+set(MYRIAD_ENGINE_INSTALL_COMPONENT "MyriadEngine")
 
 # Public includes
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
@@ -51,6 +65,55 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER
  include/myriad.h
 )
+
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" MYRIAD_INSTALL_PLATFORM)
+if(CMAKE_CONFIGURATION_TYPES)
+    set(MYRIAD_INSTALL_CONFIG "$<LOWER_CASE:$<CONFIG>>")
+else()
+    string(TOLOWER "${CMAKE_BUILD_TYPE}" MYRIAD_INSTALL_CONFIG)
+endif()
+set(MYRIAD_INSTALL_ROOT "${MYRIAD_INSTALL_PLATFORM}/${MYRIAD_INSTALL_CONFIG}")
+
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION "${MYRIAD_INSTALL_ROOT}/bin"
+    LIBRARY DESTINATION "${MYRIAD_INSTALL_ROOT}/lib"
+    ARCHIVE DESTINATION "${MYRIAD_INSTALL_ROOT}/lib"
+    PUBLIC_HEADER DESTINATION "${MYRIAD_INSTALL_ROOT}/include"
+    COMPONENT ${MYRIAD_ENGINE_INSTALL_COMPONENT}
+)
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    DESTINATION "${MYRIAD_INSTALL_ROOT}/include"
+    COMPONENT ${MYRIAD_ENGINE_INSTALL_COMPONENT}
+    FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.hpp"
+)
+
+# Copy resolved runtime shared-library dependencies next to the installed shared object.
+if(NOT MINGW)
+    install(CODE "
+        file(GET_RUNTIME_DEPENDENCIES
+            LIBRARIES \"$<TARGET_FILE:MyriadEngine>\"
+            RESOLVED_DEPENDENCIES_VAR _myriad_resolved_deps
+            UNRESOLVED_DEPENDENCIES_VAR _myriad_unresolved_deps
+        )
+
+        if(_myriad_unresolved_deps)
+            message(WARNING \"Unresolved runtime deps for MyriadEngine: \${_myriad_unresolved_deps}\")
+        endif()
+
+        if(_myriad_resolved_deps)
+            file(INSTALL
+                DESTINATION \"${CMAKE_INSTALL_PREFIX}/${MYRIAD_INSTALL_ROOT}/lib\"
+                TYPE SHARED_LIBRARY
+                FOLLOW_SYMLINK_CHAIN
+                FILES \${_myriad_resolved_deps}
+            )
+        endif()
+    " COMPONENT ${MYRIAD_ENGINE_INSTALL_COMPONENT})
+endif()
+
 enable_testing()
 
 # Catch2 unit tests for Engine
@@ -68,13 +131,22 @@ endif()
 #We don't want raylib's examples built. This option is picked up by raylib's CMakeLists.txt
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 #Build raylib as a shared lib?: We can't do this with zig c++ due to unsupported rpath-link.
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+if(MINGW)
+    set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+    set(OPENGL_VERSION "OFF" CACHE STRING "raylib OpenGL context version" FORCE)
+else()
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+endif()
 # build raylib PIC: this should only be off if directly linking exe against static raylib (never)
 set(WITH_PIC ON CACHE BOOL "" FORCE)
 
 add_subdirectory(vendor/raylib)
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+
+if(MINGW)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+endif()
 
 ### TRACY PROFILER
 #
