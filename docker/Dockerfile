@@ -102,4 +102,5 @@ RUN tar xf doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz
 RUN ln -s doxygen-${DOXYGEN_VERSION} doxygen
 ENV PATH="/home/myriad/doxygen/bin:$PATH"
 
-CMD ["tail","-f","/dev/forever"]
+EXPOSE 8000
+CMD ["python3", "-m", "http.server", "8000", "--bind", "0.0.0.0", "--directory", "/workspaces/Myriad"]

@@ -30,10 +30,10 @@
   // "features": {},
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [55333],
+  "forwardPorts": [55333, 8000],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "python3 docker/build_bridge_server.py --host 0.0.0.0 --port 55333 &"
+  "postStartCommand": ".devcontainer/post-start.sh",
 
   // Configure tool-specific properties.
   // "customizations": {},

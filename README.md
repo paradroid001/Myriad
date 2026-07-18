@@ -110,7 +110,7 @@ Windows (PowerShell):
 
 ## API documentation (Doxygen)
 
-The repository now includes a root Doxygen config at `Doxyfile` for the editor module (`Editor/src`).
+The repository includes a root Doxygen config at `Doxyfile`. The helper script generates separate Engine and Editor documentation under each project's `docs` directory.
 
 Install Doxygen (Ubuntu/Debian):
 
@@ -118,11 +118,12 @@ Install Doxygen (Ubuntu/Debian):
 
 Generate docs from the repository root:
 
-`doxygen Doxyfile`
-
-Or use the helper script:
-
 `./scripts/generate-docs.sh`
+
+The dev container serves the repository root on port `8000`, so generated docs are available at:
+
+- `http://localhost:8000/Engine/docs/doxygen/html/index.html`
+- `http://localhost:8000/Editor/docs/doxygen/html/index.html`
 
 Generate and open the HTML docs in a browser:
 
@@ -130,4 +131,5 @@ Generate and open the HTML docs in a browser:
 
 Generated HTML entry point:
 
-`docs/doxygen/html/index.html`
+- `Engine/docs/doxygen/html/index.html`
+- `Editor/docs/doxygen/html/index.html`

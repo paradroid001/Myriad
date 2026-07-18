@@ -1,4 +1,5 @@
 build
+runtime_logs/
 
 #Cmake ignores
 **/CMakeLists.txt.user
@@ -17,6 +18,9 @@ build
 **/CMakeUserPresets.json
 
 **/.zig-cache
+
+Engine/docs/doxygen/
+Editor/docs/doxygen/
 
 # Prerequisites
 *.d

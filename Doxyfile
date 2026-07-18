@@ -1,8 +1,8 @@
-# Doxygen configuration for Myriad editor codebase documentation.
+# Doxygen configuration for Myriad project documentation.
 
-PROJECT_NAME = "Myriad Editor"
-PROJECT_BRIEF = "API documentation for the Myriad editor module"
-OUTPUT_DIRECTORY = docs/doxygen
+PROJECT_NAME = "$(MYRIAD_DOXYGEN_PROJECT_NAME)"
+PROJECT_BRIEF = "$(MYRIAD_DOXYGEN_PROJECT_BRIEF)"
+OUTPUT_DIRECTORY = $(MYRIAD_DOXYGEN_OUTPUT_DIRECTORY)
 CREATE_SUBDIRS = NO
 OUTPUT_LANGUAGE = English
 
@@ -10,10 +10,8 @@ GENERATE_HTML = YES
 GENERATE_LATEX = NO
 GENERATE_XML = NO
 
-INPUT = Editor/src
-FILE_PATTERNS = _.h _.hpp _.cpp
+INPUT = README.md $(MYRIAD_DOXYGEN_INPUT)
 RECURSIVE = YES
-EXCLUDE_PATTERNS = _/vendor/\*
 
 USE_MDFILE_AS_MAINPAGE = README.md
 
