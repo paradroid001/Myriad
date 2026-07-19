@@ -14,6 +14,7 @@ namespace Editor
    * @param project_root Project root directory.
    * @param build_dir Selected build directory.
    * @param preset Active compiler preset.
+   * @param build_type Selected CMake build type.
    * @param toolchain_path Optional resolved toolchain file path.
    * @return Expanded command string ready for execution.
    */
@@ -21,6 +22,7 @@ namespace Editor
                                          const std::filesystem::path &project_root,
                                          const std::filesystem::path &build_dir,
                                          const CompilerPreset &preset,
+                                         const std::string &build_type,
                                          const std::filesystem::path &toolchain_path,
                                          const std::string &header_search_dirs,
                                          const std::string &library_search_dirs);

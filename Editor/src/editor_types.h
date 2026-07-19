@@ -78,12 +78,24 @@ namespace Editor
     int build_bridge_probe_interval_seconds = 30;
     /** @brief Local build command template when bridge mode is disabled. */
     std::string build_command_template;
+    /** @brief Selected compiler toolkit name for the current project. */
+    std::string compiler_toolkit;
+    /** @brief Selected CMake build type for the current project. */
+    std::string build_type = "Debug";
+    /** @brief CMake target/game project name to build and export. */
+    std::string game_project_name = "TestECS";
+    /** @brief Source-side CMake source directory used for game builds. */
+    std::string source_directory;
     /** @brief Project root directory selected for editor workflows. */
     std::string project_root_path;
+    /** @brief Project directory relative to the build bridge projects mount. */
+    std::string project_mount_path;
     /** @brief Header/include directories used by local build command placeholders. */
     std::string header_search_dirs;
     /** @brief Library directories used by local build command placeholders. */
     std::string library_search_dirs;
+    /** @brief Source-side projects mount directory where successful bridge builds are exported. */
+    std::string export_directory;
     /** @brief Last selected theme preset name. */
     std::string theme_preset = "Dark";
     /** @brief UI font scale in percent. */

@@ -22,9 +22,13 @@
 
   "mounts": [
     "source=${localEnv:HOME}/devel/gamedev/myriad_dist,target=/workspaces/dist,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/devel/gamedev/myriad_projects,target=/workspaces/projects,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/devel/gamedev/myriad_projects,target=/workspaces/projects,type=bind,consistency=cached"
+  ],
 
-  ]
+  "containerEnv": {
+    "MYRIAD_DIST_SOURCE_ROOT": "${localEnv:HOME}/devel/gamedev/myriad_dist",
+    "MYRIAD_PROJECTS_SOURCE_ROOT": "${localEnv:HOME}/devel/gamedev/myriad_projects"
+  },
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
@@ -33,7 +37,7 @@
   "forwardPorts": [55333, 8000],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postStartCommand": ".devcontainer/post-start.sh",
+  "postStartCommand": ".devcontainer/post-start.sh"
 
   // Configure tool-specific properties.
   // "customizations": {},

@@ -61,6 +61,20 @@ private:
   void RefreshPaths(bool force_defaults = false);
   /** @brief Updates build bridge connectivity and rebuild-needed status. */
   void RefreshBuildBridgeStatus(bool force = false);
+  /** @brief Refreshes the bridge-backed projects directory browser. */
+  void RefreshProjectBrowser(const std::string &relative_path);
+  /** @brief Refreshes the bridge-backed export directory browser. */
+  void RefreshExportDirectoryBrowser(const std::string &relative_path);
+  /** @brief Refreshes bridge-backed compiler toolkit and build type options. */
+  void RefreshBuildOptions();
+  /** @brief Opens a project selected from the bridge projects mount. */
+  void OpenBridgeProject(const std::string &relative_path);
+  /** @brief Creates and opens a project through the bridge projects mount. */
+  void CreateBridgeProject(const std::string &parent_path, const std::string &project_name);
+  /** @brief Creates a directory through the bridge projects mount. */
+  bool CreateBridgeDirectory(const std::string &parent_path, const std::string &directory_name, std::string &created_relative_path);
+  /** @brief Applies a resolved project root and reloads project-scoped settings/resources. */
+  void ApplyProjectDirectory(const std::filesystem::path &project_root, const std::string &project_mount_path, bool reload_project_settings);
   /** @brief Starts an asynchronous build request through the socket bridge. */
   void StartBridgeBuildOverSocket(const Editor::CompilerPreset &preset, const std::string &build_dir_relative);
   /** @brief Drains pending bridge build output and applies final build results. */
@@ -102,6 +116,23 @@ private:
   int build_bridge_consecutive_failures_ = 0;
   bool build_bridge_warning_active_ = false;
   double build_bridge_last_probe_time_ = 0.0;
+  std::string project_browser_mount_path_;
+  std::string project_mount_source_path_;
+  std::string dist_mount_source_path_;
+  std::string default_header_search_dirs_;
+  std::string default_library_search_dirs_;
+  std::string project_browser_relative_path_;
+  std::string project_browser_status_;
+  std::string new_project_name_;
+  std::string export_browser_relative_path_;
+  std::string export_browser_status_;
+  std::string new_export_directory_name_;
+  std::vector<std::string> build_type_options_;
+  std::vector<std::string> project_browser_directories_;
+  std::vector<std::string> export_browser_directories_;
+  bool show_open_project_dialog_ = false;
+  bool show_new_project_dialog_ = false;
+  bool show_export_directory_dialog_ = false;
   Myriad::MyrGameApplication *preview_game_ = nullptr;
   using HostedDestroyFn = void (*)(Myriad::MyrGameApplication *);
   HostedDestroyFn hosted_destroy_fn_ = nullptr;
@@ -119,12 +150,14 @@ private:
   std::string status_;
   std::vector<std::string> console_lines_;
   bool build_succeeded_ = false;
+  bool show_project_window_ = true;
   bool show_build_workflow_window_ = true;
   bool show_scene_window_ = true;
   bool show_preview_window_ = true;
   bool show_console_window_ = true;
   bool show_game_log_window_ = true;
   bool show_editor_preferences_window_ = true;
+  bool project_settings_dirty_ = false;
   bool console_scroll_to_bottom_ = false;
   bool game_log_scroll_to_bottom_ = false;
 #if MYRIAD_EDITOR_ENABLE_BRIDGE_THREADS

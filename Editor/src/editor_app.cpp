@@ -156,6 +156,113 @@ namespace
     return {};
   }
 
+  std::string FallbackDistributionHeaderSearchDirs()
+  {
+    return (std::filesystem::path("dist") / "myriad" / "include").generic_string();
+  }
+
+  std::string FallbackDistributionLibrarySearchDirs(const std::string &compiler_toolkit, const std::string &build_type)
+  {
+    const std::string safe_toolkit = compiler_toolkit.empty() ? std::string{"Default"} : compiler_toolkit;
+    const std::string safe_build_type = build_type.empty() ? std::string{"Debug"} : build_type;
+    return (std::filesystem::path("dist") / "myriad" / safe_toolkit / safe_build_type / "lib").generic_string();
+  }
+
+  bool ApplySearchDirDefaults(Editor::EditorSettings &settings,
+                              const std::string &header_default,
+                              const std::string &library_default,
+                              const std::string &previous_library_default = {})
+  {
+    bool changed = false;
+    if (!header_default.empty() && Editor::Trim(settings.header_search_dirs).empty())
+    {
+      settings.header_search_dirs = header_default;
+      changed = true;
+    }
+
+    const std::string trimmed_library_dirs = Editor::Trim(settings.library_search_dirs);
+    const bool can_replace_library_default = trimmed_library_dirs.empty() || (!previous_library_default.empty() && trimmed_library_dirs == previous_library_default);
+    if (!library_default.empty() && can_replace_library_default && settings.library_search_dirs != library_default)
+    {
+      settings.library_search_dirs = library_default;
+      changed = true;
+    }
+
+    return changed;
+  }
+
+  std::filesystem::path SelectSourceProjectRoot(const std::string &target_root_text, const std::string &display_root_text)
+  {
+    if (!display_root_text.empty())
+    {
+      return std::filesystem::path(display_root_text);
+    }
+
+    return std::filesystem::path(target_root_text);
+  }
+
+  std::string JoinSourceMountPath(const std::string &mount_source_path, const std::string &relative_path)
+  {
+    std::string root = Editor::Trim(mount_source_path);
+    std::replace(root.begin(), root.end(), '\\', '/');
+    while (root.size() > 1 && root.back() == '/')
+    {
+      root.pop_back();
+    }
+
+    std::string relative = Editor::Trim(relative_path);
+    std::replace(relative.begin(), relative.end(), '\\', '/');
+    while (!relative.empty() && relative.front() == '/')
+    {
+      relative.erase(relative.begin());
+    }
+    while (!relative.empty() && relative.back() == '/')
+    {
+      relative.pop_back();
+    }
+
+    if (relative.empty())
+    {
+      return root;
+    }
+    if (root.empty() || root == "/")
+    {
+      return "/" + relative;
+    }
+    return root + "/" + relative;
+  }
+
+  std::string DisplayPathToMountRelative(const std::string &mount_source_path, const std::string &display_path, const std::string &fallback_relative_path)
+  {
+    std::string root = Editor::Trim(mount_source_path);
+    std::replace(root.begin(), root.end(), '\\', '/');
+    while (root.size() > 1 && root.back() == '/')
+    {
+      root.pop_back();
+    }
+
+    std::string path = Editor::Trim(display_path);
+    std::replace(path.begin(), path.end(), '\\', '/');
+    while (path.size() > 1 && path.back() == '/')
+    {
+      path.pop_back();
+    }
+
+    if (!root.empty() && path == root)
+    {
+      return {};
+    }
+    if (!root.empty() && path.rfind(root + "/", 0) == 0)
+    {
+      return path.substr(root.size() + 1);
+    }
+    if (!path.empty() && path.front() != '/')
+    {
+      return path;
+    }
+    return fallback_relative_path;
+  }
+
   std::vector<std::string> ExtractJsonObjectArray(const std::string &text, const std::string &key, int max_items)
   {
     std::vector<std::string> objects;
@@ -644,17 +751,27 @@ namespace
       ImVec4 bg;
     };
 
+    const std::string line_lower = Editor::Lowercase(line);
+    ImVec4 default_fg = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    if (line_lower.find("error") != std::string::npos || line_lower.find("failed") != std::string::npos || line_lower.find("missing") != std::string::npos)
+    {
+      default_fg = ImVec4(1.00f, 0.34f, 0.26f, 1.0f);
+    }
+    else if (line_lower.find("warning") != std::string::npos)
+    {
+      default_fg = ImVec4(1.00f, 0.74f, 0.24f, 1.0f);
+    }
+
     struct AnsiStyle
     {
-      ImVec4 fg = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+      ImVec4 fg;
       bool has_bg = false;
       ImVec4 bg = ImVec4(0.0f, 0.0f, 0.0f, 0.45f);
     };
 
     std::vector<Segment> segments;
     std::string buffer;
-    AnsiStyle style{};
-    const ImVec4 default_fg = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    AnsiStyle style{default_fg, false, ImVec4(0.0f, 0.0f, 0.0f, 0.45f)};
 
     auto flush_segment = [&]()
     {
@@ -829,7 +946,6 @@ namespace
 
     ImGuiID dock_main = dockspace_id;
     ImGuiID dock_left = 0;
-    ImGuiID dock_right = 0;
     ImGuiID dock_bottom = 0;
     ImGuiID dock_center = dock_main;
 
@@ -840,7 +956,7 @@ namespace
 
     if (mode == "preview")
     {
-      dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, right_ratio, nullptr, &dock_main);
+      ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, right_ratio, nullptr, &dock_main);
       dock_left = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Left, left_ratio, nullptr, &dock_main);
       dock_bottom = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Down, bottom_ratio, nullptr, &dock_main);
       dock_center = dock_main;
@@ -849,19 +965,18 @@ namespace
     {
       dock_left = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Left, left_ratio, nullptr, &dock_main);
       dock_bottom = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Down, bottom_ratio, nullptr, &dock_main);
-      dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, right_ratio, nullptr, &dock_main);
+      ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, right_ratio, nullptr, &dock_main);
       dock_center = dock_main;
     }
     else
     {
       dock_left = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Left, left_ratio, nullptr, &dock_main);
-      dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, right_ratio, nullptr, &dock_main);
+      ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, right_ratio, nullptr, &dock_main);
       dock_bottom = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Down, bottom_ratio, nullptr, &dock_main);
       dock_center = dock_main;
     }
 
-    ImGui::DockBuilderDockWindow("Build Workflow", dock_left != 0 ? dock_left : dock_center);
-    ImGui::DockBuilderDockWindow("Editor Preferences", dock_right != 0 ? dock_right : dock_center);
+    ImGui::DockBuilderDockWindow("Project", dock_left != 0 ? dock_left : dock_center);
     ImGui::DockBuilderDockWindow("Console", dock_bottom != 0 ? dock_bottom : dock_center);
     ImGui::DockBuilderDockWindow("Game Log", dock_bottom != 0 ? dock_bottom : dock_center);
     ImGui::DockBuilderDockWindow("Scene", dock_center);
@@ -971,12 +1086,25 @@ void MyriadEditor::Start()
     compiler_presets_.push_back({"Default", {}});
   }
 
+  if (editor_settings_.compiler_toolkit.empty())
+  {
+    editor_settings_.compiler_toolkit = editor_settings_.last_compiler_preset;
+  }
+  if (editor_settings_.build_type.empty())
+  {
+    editor_settings_.build_type = "Debug";
+  }
+  if (editor_settings_.game_project_name.empty())
+  {
+    editor_settings_.game_project_name = "TestECS";
+  }
+
   selected_preset_index_ = 0;
-  if (!editor_settings_.last_compiler_preset.empty())
+  if (!editor_settings_.compiler_toolkit.empty())
   {
     for (int i = 0; i < static_cast<int>(compiler_presets_.size()); ++i)
     {
-      if (compiler_presets_[i].name == editor_settings_.last_compiler_preset)
+      if (compiler_presets_[i].name == editor_settings_.compiler_toolkit)
       {
         selected_preset_index_ = i;
         break;
@@ -1007,22 +1135,31 @@ void MyriadEditor::Start()
 #else
   selected_layout_preset_index_ = 0;
 #endif
-  show_build_workflow_window_ = editor_settings_.panel_build_workflow_open;
+  show_project_window_ = editor_settings_.panel_build_workflow_open || editor_settings_.panel_preferences_open;
+  show_build_workflow_window_ = false;
   show_scene_window_ = editor_settings_.panel_scene_open;
   show_preview_window_ = editor_settings_.panel_preview_open;
   show_console_window_ = editor_settings_.panel_console_open;
   show_game_log_window_ = editor_settings_.panel_game_log_open;
-  show_editor_preferences_window_ = editor_settings_.panel_preferences_open;
-  if (!show_build_workflow_window_ && !show_scene_window_ && !show_preview_window_ && !show_console_window_ && !show_game_log_window_ && !show_editor_preferences_window_)
+  show_editor_preferences_window_ = false;
+  if (!show_project_window_ && !show_scene_window_ && !show_preview_window_ && !show_console_window_ && !show_game_log_window_)
   {
-    show_build_workflow_window_ = true;
+    show_project_window_ = true;
     show_scene_window_ = true;
     show_preview_window_ = true;
     show_console_window_ = true;
   }
   dock_layout_apply_requested_ = true;
   build_bridge_last_probe_time_ = GetTime();
+  RefreshBuildOptions();
   RefreshPaths(false);
+  if (!editor_settings_.project_mount_path.empty())
+  {
+    const std::filesystem::path mounted_project_path(editor_settings_.project_mount_path);
+    const std::filesystem::path browser_start_path = mounted_project_path.parent_path();
+    project_browser_relative_path_ = browser_start_path == "." ? std::string{} : browser_start_path.generic_string();
+  }
+  RefreshProjectBrowser(project_browser_relative_path_);
   last_selected_preset_index_ = selected_preset_index_;
 
   if (editor_settings_.editor_window_width > 0 && editor_settings_.editor_window_height > 0)
@@ -1030,21 +1167,33 @@ void MyriadEditor::Start()
     SetWindowSize(editor_settings_.editor_window_width, editor_settings_.editor_window_height);
   }
 
-  editor_settings_.last_compiler_preset = compiler_presets_[selected_preset_index_].name;
+  editor_settings_.compiler_toolkit = compiler_presets_[selected_preset_index_].name;
+  editor_settings_.last_compiler_preset = editor_settings_.compiler_toolkit;
   editor_settings_.last_build_dir = build_dir_input_;
   editor_settings_.last_executable_path = executable_input_;
   editor_settings_.layout_preset_index = selected_layout_preset_index_;
-  status_ = "Ready. Choose a compiler preset, then build and run the TestECS example.";
+  if (default_header_search_dirs_.empty())
+  {
+    default_header_search_dirs_ = FallbackDistributionHeaderSearchDirs();
+  }
+  if (default_library_search_dirs_.empty())
+  {
+    default_library_search_dirs_ = FallbackDistributionLibrarySearchDirs(editor_settings_.compiler_toolkit, editor_settings_.build_type);
+  }
+  if (ApplySearchDirDefaults(editor_settings_, default_header_search_dirs_, default_library_search_dirs_))
+  {
+    project_settings_dirty_ = true;
+  }
+  status_ = "Ready. Choose a compiler toolkit and build type, then build and run the selected game project.";
 }
 
 void MyriadEditor::Render()
 {
   ClearBackground({0, 0, 0, 255});
 
-  bool settings_dirty = false;
-  auto mark_settings_dirty = [&settings_dirty]()
+  auto mark_settings_dirty = [this]()
   {
-    settings_dirty = true;
+    project_settings_dirty_ = true;
   };
 
   const int current_window_width = GetScreenWidth();
@@ -1107,12 +1256,12 @@ void MyriadEditor::Render()
 
     if (dock_layout_apply_requested_)
     {
-      show_build_workflow_window_ = true;
+      show_project_window_ = true;
       show_scene_window_ = true;
       show_preview_window_ = true;
       show_console_window_ = true;
       show_game_log_window_ = true;
-      show_editor_preferences_window_ = true;
+      show_project_window_ = true;
       if (layout_presets_.empty())
       {
         layout_presets_ = DefaultLayoutPresets();
@@ -1127,6 +1276,8 @@ void MyriadEditor::Render()
     ImGui::BeginChild("BottomStatusBar", ImVec2(0.0f, status_bar_height - 2.0f), false, ImGuiWindowFlags_NoScrollbar);
     const int safe_preset_index = std::max(0, std::min(selected_preset_index_, static_cast<int>(compiler_presets_.size()) - 1));
     const std::string selected_toolchain_label = compiler_presets_.empty() ? std::string{"Default"} : compiler_presets_[safe_preset_index].name;
+    const std::string selected_build_type_label = editor_settings_.build_type.empty() ? std::string{"Debug"} : editor_settings_.build_type;
+    const std::string build_selector_label = "Toolchain: " + selected_toolchain_label + " / " + selected_build_type_label;
     if (Editor::ShouldUseSocketBuilds(editor_settings_))
     {
       ImGui::TextUnformatted("Build Bridge:");
@@ -1232,9 +1383,9 @@ void MyriadEditor::Render()
       ImGui::SameLine();
       ImGui::TextDisabled("|");
       ImGui::SameLine();
-      if (ImGui::SmallButton(("Toolchain: " + selected_toolchain_label).c_str()))
+      if (ImGui::SmallButton(build_selector_label.c_str()))
       {
-        show_build_workflow_window_ = true;
+        show_project_window_ = true;
       }
     }
     else
@@ -1243,9 +1394,9 @@ void MyriadEditor::Render()
       ImGui::SameLine();
       ImGui::TextDisabled("|");
       ImGui::SameLine();
-      if (ImGui::SmallButton(("Toolchain: " + selected_toolchain_label).c_str()))
+      if (ImGui::SmallButton(build_selector_label.c_str()))
       {
-        show_build_workflow_window_ = true;
+        show_project_window_ = true;
       }
       if (!status_.empty())
       {
@@ -1262,10 +1413,28 @@ void MyriadEditor::Render()
 
   if (ImGui::BeginMainMenuBar())
   {
+    if (ImGui::BeginMenu("Project"))
+    {
+      if (ImGui::MenuItem("New Project"))
+      {
+        show_new_project_dialog_ = true;
+        show_open_project_dialog_ = false;
+        show_export_directory_dialog_ = false;
+        RefreshProjectBrowser(project_browser_relative_path_);
+      }
+      if (ImGui::MenuItem("Open Project"))
+      {
+        show_open_project_dialog_ = true;
+        show_new_project_dialog_ = false;
+        show_export_directory_dialog_ = false;
+        RefreshProjectBrowser(project_browser_relative_path_);
+      }
+      ImGui::EndMenu();
+    }
+
     if (ImGui::BeginMenu("Window"))
     {
-      ImGui::MenuItem("Build Workflow", nullptr, &show_build_workflow_window_);
-      ImGui::MenuItem("Editor Preferences", nullptr, &show_editor_preferences_window_);
+      ImGui::MenuItem("Project", nullptr, &show_project_window_);
       ImGui::MenuItem("Scene", nullptr, &show_scene_window_);
       ImGui::MenuItem("Preview", nullptr, &show_preview_window_);
       ImGui::MenuItem("Console", nullptr, &show_console_window_);
@@ -1302,20 +1471,24 @@ void MyriadEditor::Render()
 
   if (selected_preset_index_ != last_selected_preset_index_)
   {
+    const std::string previous_library_default = default_library_search_dirs_;
     last_selected_preset_index_ = selected_preset_index_;
+    editor_settings_.compiler_toolkit = compiler_presets_[selected_preset_index_].name;
+    editor_settings_.last_compiler_preset = editor_settings_.compiler_toolkit;
+    RefreshBuildOptions();
+    ApplySearchDirDefaults(editor_settings_, default_header_search_dirs_, default_library_search_dirs_, previous_library_default);
     RefreshPaths(true);
-    editor_settings_.last_compiler_preset = compiler_presets_[selected_preset_index_].name;
     editor_settings_.last_build_dir = build_dir_input_;
     editor_settings_.last_executable_path = executable_input_;
     mark_settings_dirty();
   }
 
-  if (editor_settings_.panel_build_workflow_open != show_build_workflow_window_ ||
+  if (editor_settings_.panel_build_workflow_open != show_project_window_ ||
       editor_settings_.panel_scene_open != show_scene_window_ ||
       editor_settings_.panel_preview_open != show_preview_window_ ||
       editor_settings_.panel_console_open != show_console_window_ ||
       editor_settings_.panel_game_log_open != show_game_log_window_ ||
-      editor_settings_.panel_preferences_open != show_editor_preferences_window_)
+      editor_settings_.panel_preferences_open != show_project_window_)
   {
     mark_settings_dirty();
   }
@@ -1326,106 +1499,414 @@ void MyriadEditor::Render()
     RefreshBuildBridgeStatus(false);
   }
 
-  if (show_build_workflow_window_)
+  if (show_project_window_)
   {
     ImGui::SetNextWindowSize(ImVec2(static_cast<float>(editor_settings_.panel_build_workflow_width), static_cast<float>(editor_settings_.panel_build_workflow_height)), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Build Workflow", &show_build_workflow_window_);
-    ImGui::Text("Build and run TestECS");
-    ImGui::Separator();
+    ImGui::Begin("Project", &show_project_window_);
 
-    std::vector<const char *> preset_labels;
-    preset_labels.reserve(compiler_presets_.size());
-    for (const auto &preset : compiler_presets_)
-    {
-      preset_labels.push_back(preset.name.c_str());
-    }
-
-    if (ImGui::Combo("Compiler preset", &selected_preset_index_, preset_labels.data(), static_cast<int>(preset_labels.size())))
-    {
-      editor_settings_.last_compiler_preset = compiler_presets_[selected_preset_index_].name;
-      mark_settings_dirty();
-    }
-
-    char build_dir_buffer[1024];
-    std::strncpy(build_dir_buffer, build_dir_input_.c_str(), sizeof(build_dir_buffer) - 1);
-    build_dir_buffer[sizeof(build_dir_buffer) - 1] = '\0';
-    if (ImGui::InputText("Build directory", build_dir_buffer, sizeof(build_dir_buffer)))
-    {
-      build_dir_input_ = build_dir_buffer;
-      editor_settings_.last_build_dir = build_dir_input_;
-      mark_settings_dirty();
-    }
-
-    char executable_buffer[1024];
-    std::strncpy(executable_buffer, executable_input_.c_str(), sizeof(executable_buffer) - 1);
-    executable_buffer[sizeof(executable_buffer) - 1] = '\0';
-    if (ImGui::InputText("Executable path", executable_buffer, sizeof(executable_buffer)))
-    {
-      executable_input_ = executable_buffer;
-      editor_settings_.last_executable_path = executable_input_;
-      mark_settings_dirty();
-    }
-    if (ImGui::Button("Refresh paths"))
-    {
-      RefreshPaths(true);
-      editor_settings_.last_build_dir = build_dir_input_;
-      editor_settings_.last_executable_path = executable_input_;
-      mark_settings_dirty();
-    }
-
-    ImGui::Separator();
-    ImGui::BeginDisabled(bridge_build_in_progress_);
-    if (ImGui::Button("Build TestECS"))
-    {
-      run_after_build_request_ = false;
-      BuildTestECS();
-    }
+    ImGui::Text("Project root: %s", project_root_.string().c_str());
     ImGui::SameLine();
-    if (ImGui::Button("Build && Run"))
+    ImGui::TextDisabled("%s", project_settings_dirty_ ? "Unsaved changes" : "Saved");
+    ImGui::Separator();
+
+    if (ImGui::BeginTabBar("ProjectTabs"))
     {
-      run_after_build_request_ = true;
-      BuildTestECS();
-      if (!Editor::ShouldUseSocketBuilds(editor_settings_) && build_succeeded_)
+      if (ImGui::BeginTabItem("Build"))
       {
-        run_after_build_request_ = false;
-        RunTestECS();
+        ImGui::Text("Build and run TestECS");
+        ImGui::Separator();
+
+        std::vector<const char *> preset_labels;
+        preset_labels.reserve(compiler_presets_.size());
+        for (const auto &preset : compiler_presets_)
+        {
+          preset_labels.push_back(preset.name.c_str());
+        }
+
+        if (ImGui::Combo("Compiler toolkit", &selected_preset_index_, preset_labels.data(), static_cast<int>(preset_labels.size())))
+        {
+          const std::string previous_library_default = default_library_search_dirs_;
+          last_selected_preset_index_ = selected_preset_index_;
+          editor_settings_.compiler_toolkit = compiler_presets_[selected_preset_index_].name;
+          editor_settings_.last_compiler_preset = editor_settings_.compiler_toolkit;
+          RefreshBuildOptions();
+          ApplySearchDirDefaults(editor_settings_, default_header_search_dirs_, default_library_search_dirs_, previous_library_default);
+          RefreshPaths(true);
+          editor_settings_.last_build_dir = build_dir_input_;
+          editor_settings_.last_executable_path = executable_input_;
+          mark_settings_dirty();
+        }
+
+        std::vector<const char *> build_type_labels;
+        build_type_labels.reserve(build_type_options_.size());
+        int selected_build_type_index = 0;
+        for (int i = 0; i < static_cast<int>(build_type_options_.size()); ++i)
+        {
+          build_type_labels.push_back(build_type_options_[i].c_str());
+          if (build_type_options_[i] == editor_settings_.build_type)
+          {
+            selected_build_type_index = i;
+          }
+        }
+        if (build_type_labels.empty())
+        {
+          build_type_options_ = {"Debug"};
+          build_type_labels.push_back(build_type_options_.front().c_str());
+          selected_build_type_index = 0;
+        }
+
+        if (ImGui::Combo("Build type", &selected_build_type_index, build_type_labels.data(), static_cast<int>(build_type_labels.size())))
+        {
+          const std::string previous_library_default = default_library_search_dirs_;
+          editor_settings_.build_type = build_type_options_[selected_build_type_index];
+          RefreshBuildOptions();
+          ApplySearchDirDefaults(editor_settings_, default_header_search_dirs_, default_library_search_dirs_, previous_library_default);
+          RefreshPaths(true);
+          editor_settings_.last_build_dir = build_dir_input_;
+          editor_settings_.last_executable_path = executable_input_;
+          mark_settings_dirty();
+        }
+
+        char game_project_name_buffer[256];
+        std::strncpy(game_project_name_buffer, editor_settings_.game_project_name.c_str(), sizeof(game_project_name_buffer) - 1);
+        game_project_name_buffer[sizeof(game_project_name_buffer) - 1] = '\0';
+        if (ImGui::InputText("Game project", game_project_name_buffer, sizeof(game_project_name_buffer)))
+        {
+          editor_settings_.game_project_name = Editor::Trim(std::string(game_project_name_buffer));
+          mark_settings_dirty();
+        }
+
+        char source_directory_buffer[1024];
+        std::strncpy(source_directory_buffer, editor_settings_.source_directory.c_str(), sizeof(source_directory_buffer) - 1);
+        source_directory_buffer[sizeof(source_directory_buffer) - 1] = '\0';
+        if (ImGui::InputText("Source directory", source_directory_buffer, sizeof(source_directory_buffer)))
+        {
+          editor_settings_.source_directory = Editor::Trim(std::string(source_directory_buffer));
+          mark_settings_dirty();
+        }
+
+        char project_root_buffer[1024];
+        std::strncpy(project_root_buffer, editor_settings_.project_root_path.c_str(), sizeof(project_root_buffer) - 1);
+        project_root_buffer[sizeof(project_root_buffer) - 1] = '\0';
+        if (ImGui::InputText("Project directory", project_root_buffer, sizeof(project_root_buffer)))
+        {
+          editor_settings_.project_root_path = Editor::Trim(std::string(project_root_buffer));
+          mark_settings_dirty();
+        }
+
+        if (ImGui::Button("Apply project directory"))
+        {
+          const std::filesystem::path configured_project_root = ResolveConfiguredProjectDirectory(editor_settings_.project_root_path);
+          if (!configured_project_root.empty())
+          {
+            ApplyProjectDirectory(configured_project_root, editor_settings_.project_mount_path, true);
+            AppendConsoleLine("Project directory set to: " + project_root_.string());
+            mark_settings_dirty();
+          }
+          else
+          {
+            AppendConsoleLine("Warning: Project directory does not exist: " + editor_settings_.project_root_path);
+          }
+        }
+
+        char build_dir_buffer[1024];
+        std::strncpy(build_dir_buffer, build_dir_input_.c_str(), sizeof(build_dir_buffer) - 1);
+        build_dir_buffer[sizeof(build_dir_buffer) - 1] = '\0';
+        if (ImGui::InputText("Build directory", build_dir_buffer, sizeof(build_dir_buffer)))
+        {
+          build_dir_input_ = build_dir_buffer;
+          editor_settings_.last_build_dir = build_dir_input_;
+          mark_settings_dirty();
+        }
+
+        char executable_buffer[1024];
+        std::strncpy(executable_buffer, executable_input_.c_str(), sizeof(executable_buffer) - 1);
+        executable_buffer[sizeof(executable_buffer) - 1] = '\0';
+        if (ImGui::InputText("Executable path", executable_buffer, sizeof(executable_buffer)))
+        {
+          executable_input_ = executable_buffer;
+          editor_settings_.last_executable_path = executable_input_;
+          mark_settings_dirty();
+        }
+
+        char export_directory_buffer[1024];
+        std::strncpy(export_directory_buffer, editor_settings_.export_directory.c_str(), sizeof(export_directory_buffer) - 1);
+        export_directory_buffer[sizeof(export_directory_buffer) - 1] = '\0';
+        if (ImGui::InputText("Export directory", export_directory_buffer, sizeof(export_directory_buffer)))
+        {
+          editor_settings_.export_directory = Editor::Trim(std::string(export_directory_buffer));
+          mark_settings_dirty();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Browse export"))
+        {
+          export_browser_relative_path_ = DisplayPathToMountRelative(project_mount_source_path_, editor_settings_.export_directory, editor_settings_.project_mount_path);
+          show_export_directory_dialog_ = true;
+          show_open_project_dialog_ = false;
+          show_new_project_dialog_ = false;
+          RefreshExportDirectoryBrowser(export_browser_relative_path_);
+        }
+
+        char header_dirs_buffer[2048];
+        std::strncpy(header_dirs_buffer, editor_settings_.header_search_dirs.c_str(), sizeof(header_dirs_buffer) - 1);
+        header_dirs_buffer[sizeof(header_dirs_buffer) - 1] = '\0';
+        if (ImGui::InputTextMultiline("Header directories", header_dirs_buffer, sizeof(header_dirs_buffer), ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 3.0f)))
+        {
+          editor_settings_.header_search_dirs = Editor::Trim(std::string(header_dirs_buffer));
+          mark_settings_dirty();
+        }
+
+        char library_dirs_buffer[2048];
+        std::strncpy(library_dirs_buffer, editor_settings_.library_search_dirs.c_str(), sizeof(library_dirs_buffer) - 1);
+        library_dirs_buffer[sizeof(library_dirs_buffer) - 1] = '\0';
+        if (ImGui::InputTextMultiline("Library directories", library_dirs_buffer, sizeof(library_dirs_buffer), ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 3.0f)))
+        {
+          editor_settings_.library_search_dirs = Editor::Trim(std::string(library_dirs_buffer));
+          mark_settings_dirty();
+        }
+        if (ImGui::Button("Refresh paths"))
+        {
+          const std::string previous_library_default = default_library_search_dirs_;
+          RefreshBuildOptions();
+          RefreshPaths(true);
+          ApplySearchDirDefaults(editor_settings_, default_header_search_dirs_, default_library_search_dirs_, previous_library_default);
+          editor_settings_.last_build_dir = build_dir_input_;
+          editor_settings_.last_executable_path = executable_input_;
+          mark_settings_dirty();
+        }
+
+        ImGui::Separator();
+        ImGui::BeginDisabled(bridge_build_in_progress_);
+        if (ImGui::Button("Build TestECS"))
+        {
+          run_after_build_request_ = false;
+          BuildTestECS();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Build && Run"))
+        {
+          run_after_build_request_ = true;
+          BuildTestECS();
+          if (!Editor::ShouldUseSocketBuilds(editor_settings_) && build_succeeded_)
+          {
+            run_after_build_request_ = false;
+            RunTestECS();
+          }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Stop"))
+        {
+          StopGame();
+        }
+        ImGui::EndDisabled();
+        if (bridge_build_in_progress_)
+        {
+          ImGui::TextDisabled("A bridge build is already running.");
+        }
+        if (bridge_rebuild_needed_)
+        {
+          ImGui::TextColored(ImVec4(0.95f, 0.75f, 0.25f, 1.0f), "Rebuild needed: %d changed file(s) detected.", bridge_changed_file_count_);
+        }
+
+        ImGui::Separator();
+        ImGui::TextWrapped("Status: %s", status_.c_str());
+        ImGui::Text("Project root: %s", project_root_.string().c_str());
+        ImGui::Text("Build dir: %s", build_dir_.empty() ? "<unset>" : build_dir_.string().c_str());
+        ImGui::Text("Executable: %s", game_executable_.empty() ? "not found" : game_executable_.string().c_str());
+        ImGui::Text("Game process ID: %lld", static_cast<long long>(game_pid_));
+        if (build_bridge_warning_active_)
+        {
+          ImGui::TextColored(ImVec4(0.95f, 0.45f, 0.30f, 1.0f), "Bridge warning: connection probes are failing.");
+        }
+
+        const ImVec2 build_workflow_size = ImGui::GetWindowSize();
+        const int build_workflow_width = std::max(1, static_cast<int>(build_workflow_size.x));
+        const int build_workflow_height = std::max(1, static_cast<int>(build_workflow_size.y));
+        if (editor_settings_.panel_build_workflow_width != build_workflow_width || editor_settings_.panel_build_workflow_height != build_workflow_height)
+        {
+          editor_settings_.panel_build_workflow_width = build_workflow_width;
+          editor_settings_.panel_build_workflow_height = build_workflow_height;
+          mark_settings_dirty();
+        }
+
+        ImGui::EndTabItem();
+      }
+
+      if (ImGui::BeginTabItem("Settings"))
+      {
+        ImGui::Text("Theme");
+        const int safe_theme_index = std::max(0, std::min(selected_theme_preset_index_, static_cast<int>(theme_presets_.size()) - 1));
+        const char *current_theme_label = theme_presets_.empty() ? "<none>" : theme_presets_[safe_theme_index].name.c_str();
+        if (ImGui::BeginCombo("##ProjectThemePreset", current_theme_label))
+        {
+          for (int i = 0; i < static_cast<int>(theme_presets_.size()); ++i)
+          {
+            const bool selected = i == selected_theme_preset_index_;
+            if (ImGui::Selectable(theme_presets_[i].name.c_str(), selected))
+            {
+              ApplyThemePresetByIndex(i);
+              ApplyThemeCustomizations();
+              PersistThemePreference();
+            }
+            if (selected)
+            {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+
+        int font_scale_percent = static_cast<int>(ui_font_scale_ * 100.0f + 0.5f);
+        if (ImGui::SliderInt("Font scale (%)", &font_scale_percent, 80, 180))
+        {
+          ui_font_scale_ = static_cast<float>(font_scale_percent) / 100.0f;
+          ApplyThemeCustomizations();
+          PersistThemePreference();
+        }
+
+        int spacing_percent = static_cast<int>(ui_spacing_density_ * 100.0f + 0.5f);
+        if (ImGui::SliderInt("Spacing density (%)", &spacing_percent, 70, 150))
+        {
+          ui_spacing_density_ = static_cast<float>(spacing_percent) / 100.0f;
+          ApplyThemeCustomizations();
+          PersistThemePreference();
+        }
+
+        int rounding_value = static_cast<int>(ui_rounding_ + 0.5f);
+        if (ImGui::SliderInt("Corner rounding", &rounding_value, 0, 16))
+        {
+          ui_rounding_ = static_cast<float>(rounding_value);
+          ApplyThemeCustomizations();
+          PersistThemePreference();
+        }
+
+        float accent_rgb[3] = {ui_accent_color_.x, ui_accent_color_.y, ui_accent_color_.z};
+        if (ImGui::ColorEdit3("Accent color", accent_rgb))
+        {
+          ui_accent_color_.x = accent_rgb[0];
+          ui_accent_color_.y = accent_rgb[1];
+          ui_accent_color_.z = accent_rgb[2];
+          ui_accent_color_.w = 1.0f;
+          ApplyThemeCustomizations();
+          PersistThemePreference();
+        }
+
+        ImGui::Separator();
+        ImGui::Text("Layout");
+#ifdef IMGUI_HAS_DOCK
+        if (layout_presets_.empty())
+        {
+          layout_presets_ = DefaultLayoutPresets();
+        }
+
+        const int safe_layout_index = std::max(0, std::min(selected_layout_preset_index_, static_cast<int>(layout_presets_.size()) - 1));
+        const char *current_layout_label = layout_presets_.empty() ? "<none>" : layout_presets_[safe_layout_index].name.c_str();
+        if (ImGui::BeginCombo("##ProjectDockLayoutPreset", current_layout_label))
+        {
+          for (int i = 0; i < static_cast<int>(layout_presets_.size()); ++i)
+          {
+            const bool selected = i == selected_layout_preset_index_;
+            if (ImGui::Selectable(layout_presets_[i].name.c_str(), selected))
+            {
+              selected_layout_preset_index_ = i;
+              dock_layout_apply_requested_ = true;
+              editor_settings_.layout_preset_index = selected_layout_preset_index_;
+              mark_settings_dirty();
+            }
+            if (selected)
+            {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Apply layout"))
+        {
+          dock_layout_apply_requested_ = true;
+          editor_settings_.layout_preset_index = selected_layout_preset_index_;
+          mark_settings_dirty();
+        }
+#else
+        ImGui::TextDisabled("Docking not enabled in this build.");
+#endif
+
+        ImGui::EndTabItem();
+      }
+
+      ImGui::EndTabBar();
+    }
+
+    ImGui::Separator();
+    ImGui::BeginDisabled(!project_settings_dirty_);
+    if (ImGui::Button("Save"))
+    {
+      editor_settings_.panel_build_workflow_open = show_project_window_;
+      editor_settings_.panel_preferences_open = show_project_window_;
+      editor_settings_.panel_scene_open = show_scene_window_;
+      editor_settings_.panel_preview_open = show_preview_window_;
+      editor_settings_.panel_console_open = show_console_window_;
+      editor_settings_.panel_game_log_open = show_game_log_window_;
+      editor_settings_.compiler_toolkit = compiler_presets_[std::max(0, std::min(selected_preset_index_, static_cast<int>(compiler_presets_.size()) - 1))].name;
+      editor_settings_.last_compiler_preset = editor_settings_.compiler_toolkit;
+      editor_settings_.last_build_dir = build_dir_input_;
+      editor_settings_.last_executable_path = executable_input_;
+      editor_settings_.layout_preset_index = selected_layout_preset_index_;
+      std::filesystem::path settings_project_root = project_root_;
+      const std::filesystem::path configured_settings_root(editor_settings_.project_root_path);
+      if (!configured_settings_root.empty())
+      {
+        std::error_code root_error;
+        if (std::filesystem::exists(configured_settings_root, root_error) && std::filesystem::is_directory(configured_settings_root, root_error))
+        {
+          settings_project_root = std::filesystem::absolute(configured_settings_root);
+        }
+      }
+
+      bool settings_saved = false;
+      std::string settings_save_path;
+      if (Editor::ShouldUseSocketBuilds(editor_settings_) && !editor_settings_.project_mount_path.empty())
+      {
+        std::string response;
+        std::string bridge_error;
+        const std::string request = Editor::CreateProjectSettingsSaveRequest(editor_settings_);
+        if (Editor::SendBuildBridgeRequestWithFallback(editor_settings_, request, response, bridge_error, nullptr, 1000, 3000))
+        {
+          settings_saved = Editor::ExtractJsonBool(response, "success", false);
+          settings_save_path = Editor::ExtractJsonString(response, "settingsPath");
+          if (!settings_saved)
+          {
+            const std::string bridge_status = Editor::ExtractJsonString(response, "status");
+            AppendConsoleLine(bridge_status.empty() ? "Warning: Build bridge failed to persist project settings." : bridge_status);
+          }
+        }
+        else
+        {
+          AppendConsoleLine("Warning: Project settings bridge save failed: " + bridge_error);
+        }
+      }
+      else
+      {
+        const std::filesystem::path settings_write_path = Editor::GetEditorSettingsWritePath(settings_project_root);
+        settings_save_path = settings_write_path.string();
+        settings_saved = Editor::SaveEditorSettings(settings_project_root, editor_settings_);
+      }
+
+      if (settings_saved)
+      {
+        project_root_ = settings_project_root;
+        project_settings_dirty_ = false;
+        status_ = "Project settings saved.";
+        AppendConsoleLine("Project settings saved: " + (settings_save_path.empty() ? std::string{"<bridge>"} : settings_save_path));
+      }
+      else
+      {
+        AppendConsoleLine("Warning: Failed to persist project settings" + (settings_save_path.empty() ? std::string{"."} : std::string{": "} + settings_save_path));
       }
     }
-    ImGui::SameLine();
-    if (ImGui::Button("Stop"))
-    {
-      StopGame();
-    }
     ImGui::EndDisabled();
-    if (bridge_build_in_progress_)
-    {
-      ImGui::TextDisabled("A bridge build is already running.");
-    }
-    if (bridge_rebuild_needed_)
-    {
-      ImGui::TextColored(ImVec4(0.95f, 0.75f, 0.25f, 1.0f), "Rebuild needed: %d changed file(s) detected.", bridge_changed_file_count_);
-    }
-
-    ImGui::Separator();
-    ImGui::TextWrapped("Status: %s", status_.c_str());
-    ImGui::Text("Project root: %s", project_root_.string().c_str());
-    ImGui::Text("Build dir: %s", build_dir_.empty() ? "<unset>" : build_dir_.string().c_str());
-    ImGui::Text("Executable: %s", game_executable_.empty() ? "not found" : game_executable_.string().c_str());
-    ImGui::Text("Game process ID: %lld", static_cast<long long>(game_pid_));
-    if (build_bridge_warning_active_)
-    {
-      ImGui::TextColored(ImVec4(0.95f, 0.45f, 0.30f, 1.0f), "Bridge warning: connection probes are failing.");
-    }
-
-    const ImVec2 build_workflow_size = ImGui::GetWindowSize();
-    const int build_workflow_width = std::max(1, static_cast<int>(build_workflow_size.x));
-    const int build_workflow_height = std::max(1, static_cast<int>(build_workflow_size.y));
-    if (editor_settings_.panel_build_workflow_width != build_workflow_width || editor_settings_.panel_build_workflow_height != build_workflow_height)
-    {
-      editor_settings_.panel_build_workflow_width = build_workflow_width;
-      editor_settings_.panel_build_workflow_height = build_workflow_height;
-      mark_settings_dirty();
-    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("%s", project_settings_dirty_ ? "Unsaved changes" : "Saved");
 
     ImGui::End();
   }
@@ -1613,193 +2094,165 @@ void MyriadEditor::Render()
     ImGui::End();
   }
 
-  if (show_editor_preferences_window_)
+  if (show_open_project_dialog_)
   {
-    ImGui::SetNextWindowSize(ImVec2(static_cast<float>(editor_settings_.panel_preferences_width), static_cast<float>(editor_settings_.panel_preferences_height)), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Editor Preferences", &show_editor_preferences_window_);
-
-    ImGui::Text("Project");
-    char project_root_buffer[1024];
-    std::strncpy(project_root_buffer, editor_settings_.project_root_path.c_str(), sizeof(project_root_buffer) - 1);
-    project_root_buffer[sizeof(project_root_buffer) - 1] = '\0';
-    if (ImGui::InputText("Project directory", project_root_buffer, sizeof(project_root_buffer)))
+    ImGui::SetNextWindowSize(ImVec2(560.0f, 420.0f), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Open Project", &show_open_project_dialog_);
+    ImGui::Text("Mount: %s", project_browser_mount_path_.empty() ? "<unknown>" : project_browser_mount_path_.c_str());
+    ImGui::Text("Path: /%s", project_browser_relative_path_.c_str());
+    if (ImGui::Button("Refresh"))
     {
-      editor_settings_.project_root_path = Editor::Trim(std::string(project_root_buffer));
-      mark_settings_dirty();
-    }
-
-    char header_dirs_buffer[2048];
-    std::strncpy(header_dirs_buffer, editor_settings_.header_search_dirs.c_str(), sizeof(header_dirs_buffer) - 1);
-    header_dirs_buffer[sizeof(header_dirs_buffer) - 1] = '\0';
-    if (ImGui::InputTextMultiline("Header directories", header_dirs_buffer, sizeof(header_dirs_buffer), ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 3.0f)))
-    {
-      editor_settings_.header_search_dirs = Editor::Trim(std::string(header_dirs_buffer));
-      mark_settings_dirty();
-    }
-
-    char library_dirs_buffer[2048];
-    std::strncpy(library_dirs_buffer, editor_settings_.library_search_dirs.c_str(), sizeof(library_dirs_buffer) - 1);
-    library_dirs_buffer[sizeof(library_dirs_buffer) - 1] = '\0';
-    if (ImGui::InputTextMultiline("Library directories", library_dirs_buffer, sizeof(library_dirs_buffer), ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 3.0f)))
-    {
-      editor_settings_.library_search_dirs = Editor::Trim(std::string(library_dirs_buffer));
-      mark_settings_dirty();
-    }
-
-    if (ImGui::Button("Apply project directory"))
-    {
-      const std::filesystem::path configured_project_root = ResolveConfiguredProjectDirectory(editor_settings_.project_root_path);
-      if (!configured_project_root.empty())
-      {
-        project_root_ = configured_project_root;
-        editor_settings_.project_root_path = project_root_.string();
-        compiler_presets_ = Editor::LoadCompilerPresets(project_root_);
-        if (compiler_presets_.empty())
-        {
-          compiler_presets_.push_back({"Default", {}});
-        }
-        selected_preset_index_ = 0;
-        last_selected_preset_index_ = -1;
-        theme_presets_ = LoadThemePresets(project_root_);
-        layout_presets_ = LoadLayoutPresets(project_root_);
-        RefreshPaths(true);
-        dock_layout_apply_requested_ = true;
-        AppendConsoleLine("Project directory set to: " + project_root_.string());
-        mark_settings_dirty();
-      }
-      else
-      {
-        AppendConsoleLine("Warning: Project directory does not exist: " + editor_settings_.project_root_path);
-      }
-    }
-
-    ImGui::Separator();
-    ImGui::Text("Theme");
-    const int safe_theme_index = std::max(0, std::min(selected_theme_preset_index_, static_cast<int>(theme_presets_.size()) - 1));
-    const char *current_theme_label = theme_presets_.empty() ? "<none>" : theme_presets_[safe_theme_index].name.c_str();
-    if (ImGui::BeginCombo("##ThemePreset", current_theme_label))
-    {
-      for (int i = 0; i < static_cast<int>(theme_presets_.size()); ++i)
-      {
-        const bool selected = i == selected_theme_preset_index_;
-        if (ImGui::Selectable(theme_presets_[i].name.c_str(), selected))
-        {
-          ApplyThemePresetByIndex(i);
-          ApplyThemeCustomizations();
-          PersistThemePreference();
-        }
-        if (selected)
-        {
-          ImGui::SetItemDefaultFocus();
-        }
-      }
-      ImGui::EndCombo();
-    }
-
-    int font_scale_percent = static_cast<int>(ui_font_scale_ * 100.0f + 0.5f);
-    if (ImGui::SliderInt("Font scale (%)", &font_scale_percent, 80, 180))
-    {
-      ui_font_scale_ = static_cast<float>(font_scale_percent) / 100.0f;
-      ApplyThemeCustomizations();
-      PersistThemePreference();
-    }
-
-    int spacing_percent = static_cast<int>(ui_spacing_density_ * 100.0f + 0.5f);
-    if (ImGui::SliderInt("Spacing density (%)", &spacing_percent, 70, 150))
-    {
-      ui_spacing_density_ = static_cast<float>(spacing_percent) / 100.0f;
-      ApplyThemeCustomizations();
-      PersistThemePreference();
-    }
-
-    int rounding_value = static_cast<int>(ui_rounding_ + 0.5f);
-    if (ImGui::SliderInt("Corner rounding", &rounding_value, 0, 16))
-    {
-      ui_rounding_ = static_cast<float>(rounding_value);
-      ApplyThemeCustomizations();
-      PersistThemePreference();
-    }
-
-    float accent_rgb[3] = {ui_accent_color_.x, ui_accent_color_.y, ui_accent_color_.z};
-    if (ImGui::ColorEdit3("Accent color", accent_rgb))
-    {
-      ui_accent_color_.x = accent_rgb[0];
-      ui_accent_color_.y = accent_rgb[1];
-      ui_accent_color_.z = accent_rgb[2];
-      ui_accent_color_.w = 1.0f;
-      ApplyThemeCustomizations();
-      PersistThemePreference();
-    }
-
-    ImGui::Separator();
-    ImGui::Text("Layout");
-#ifdef IMGUI_HAS_DOCK
-    if (layout_presets_.empty())
-    {
-      layout_presets_ = DefaultLayoutPresets();
-    }
-
-    const int safe_layout_index = std::max(0, std::min(selected_layout_preset_index_, static_cast<int>(layout_presets_.size()) - 1));
-    const char *current_layout_label = layout_presets_.empty() ? "<none>" : layout_presets_[safe_layout_index].name.c_str();
-    if (ImGui::BeginCombo("##DockLayoutPreset", current_layout_label))
-    {
-      for (int i = 0; i < static_cast<int>(layout_presets_.size()); ++i)
-      {
-        const bool selected = i == selected_layout_preset_index_;
-        if (ImGui::Selectable(layout_presets_[i].name.c_str(), selected))
-        {
-          selected_layout_preset_index_ = i;
-          dock_layout_apply_requested_ = true;
-          editor_settings_.layout_preset_index = selected_layout_preset_index_;
-          mark_settings_dirty();
-        }
-        if (selected)
-        {
-          ImGui::SetItemDefaultFocus();
-        }
-      }
-      ImGui::EndCombo();
+      RefreshProjectBrowser(project_browser_relative_path_);
     }
     ImGui::SameLine();
-    if (ImGui::Button("Apply layout"))
+    if (ImGui::Button("Up"))
     {
-      dock_layout_apply_requested_ = true;
-      editor_settings_.layout_preset_index = selected_layout_preset_index_;
-      mark_settings_dirty();
+      const std::filesystem::path current(project_browser_relative_path_);
+      const std::filesystem::path parent = current.parent_path();
+      RefreshProjectBrowser(parent == "." ? std::string{} : parent.generic_string());
     }
-#else
-    ImGui::TextDisabled("Docking not enabled in this build.");
-#endif
-
-    const ImVec2 preferences_size = ImGui::GetWindowSize();
-    const int preferences_width = std::max(1, static_cast<int>(preferences_size.x));
-    const int preferences_height = std::max(1, static_cast<int>(preferences_size.y));
-    if (editor_settings_.panel_preferences_width != preferences_width || editor_settings_.panel_preferences_height != preferences_height)
+    ImGui::SameLine();
+    if (ImGui::Button("Open Current"))
     {
-      editor_settings_.panel_preferences_width = preferences_width;
-      editor_settings_.panel_preferences_height = preferences_height;
-      mark_settings_dirty();
+      const std::filesystem::path previous_root = project_root_;
+      OpenBridgeProject(project_browser_relative_path_);
+      if (project_root_ != previous_root)
+      {
+        mark_settings_dirty();
+        show_open_project_dialog_ = false;
+      }
     }
-
+    if (!project_browser_status_.empty())
+    {
+      ImGui::TextWrapped("%s", project_browser_status_.c_str());
+    }
+    ImGui::Separator();
+    ImGui::BeginChild("OpenProjectBrowser", ImVec2(0.0f, 0.0f), true);
+    for (const auto &directory : project_browser_directories_)
+    {
+      if (ImGui::Selectable(directory.c_str()))
+      {
+        const std::filesystem::path child_path = std::filesystem::path(project_browser_relative_path_) / directory;
+        RefreshProjectBrowser(child_path.generic_string());
+      }
+    }
+    ImGui::EndChild();
     ImGui::End();
   }
 
-  if (settings_dirty)
+  if (show_new_project_dialog_)
   {
-    editor_settings_.panel_build_workflow_open = show_build_workflow_window_;
-    editor_settings_.panel_scene_open = show_scene_window_;
-    editor_settings_.panel_preview_open = show_preview_window_;
-    editor_settings_.panel_console_open = show_console_window_;
-    editor_settings_.panel_game_log_open = show_game_log_window_;
-    editor_settings_.panel_preferences_open = show_editor_preferences_window_;
-    editor_settings_.last_compiler_preset = compiler_presets_[std::max(0, std::min(selected_preset_index_, static_cast<int>(compiler_presets_.size()) - 1))].name;
-    editor_settings_.last_build_dir = build_dir_input_;
-    editor_settings_.last_executable_path = executable_input_;
-    editor_settings_.layout_preset_index = selected_layout_preset_index_;
-    if (!Editor::SaveEditorSettings(project_root_, editor_settings_))
+    ImGui::SetNextWindowSize(ImVec2(560.0f, 460.0f), ImGuiCond_FirstUseEver);
+    ImGui::Begin("New Project", &show_new_project_dialog_);
+    ImGui::Text("Mount: %s", project_browser_mount_path_.empty() ? "<unknown>" : project_browser_mount_path_.c_str());
+    ImGui::Text("Parent: /%s", project_browser_relative_path_.c_str());
+    char new_project_name_buffer[256];
+    std::strncpy(new_project_name_buffer, new_project_name_.c_str(), sizeof(new_project_name_buffer) - 1);
+    new_project_name_buffer[sizeof(new_project_name_buffer) - 1] = '\0';
+    if (ImGui::InputText("Project name", new_project_name_buffer, sizeof(new_project_name_buffer)))
     {
-      AppendConsoleLine("Warning: Failed to persist editor workspace settings.");
+      new_project_name_ = Editor::Trim(std::string(new_project_name_buffer));
     }
+    if (ImGui::Button("Refresh"))
+    {
+      RefreshProjectBrowser(project_browser_relative_path_);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Up"))
+    {
+      const std::filesystem::path current(project_browser_relative_path_);
+      const std::filesystem::path parent = current.parent_path();
+      RefreshProjectBrowser(parent == "." ? std::string{} : parent.generic_string());
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Create Here"))
+    {
+      const std::filesystem::path previous_root = project_root_;
+      CreateBridgeProject(project_browser_relative_path_, new_project_name_);
+      if (project_root_ != previous_root)
+      {
+        mark_settings_dirty();
+        show_new_project_dialog_ = false;
+      }
+    }
+    if (!project_browser_status_.empty())
+    {
+      ImGui::TextWrapped("%s", project_browser_status_.c_str());
+    }
+    ImGui::Separator();
+    ImGui::BeginChild("NewProjectBrowser", ImVec2(0.0f, 0.0f), true);
+    for (const auto &directory : project_browser_directories_)
+    {
+      if (ImGui::Selectable(directory.c_str()))
+      {
+        const std::filesystem::path child_path = std::filesystem::path(project_browser_relative_path_) / directory;
+        RefreshProjectBrowser(child_path.generic_string());
+      }
+    }
+    ImGui::EndChild();
+    ImGui::End();
+  }
+
+  if (show_export_directory_dialog_)
+  {
+    ImGui::SetNextWindowSize(ImVec2(560.0f, 460.0f), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Export Directory", &show_export_directory_dialog_);
+    ImGui::Text("Mount: %s", project_mount_source_path_.empty() ? "<unknown>" : project_mount_source_path_.c_str());
+    ImGui::Text("Path: /%s", export_browser_relative_path_.c_str());
+    char new_directory_name_buffer[256];
+    std::strncpy(new_directory_name_buffer, new_export_directory_name_.c_str(), sizeof(new_directory_name_buffer) - 1);
+    new_directory_name_buffer[sizeof(new_directory_name_buffer) - 1] = '\0';
+    if (ImGui::InputText("New directory", new_directory_name_buffer, sizeof(new_directory_name_buffer)))
+    {
+      new_export_directory_name_ = Editor::Trim(std::string(new_directory_name_buffer));
+    }
+    if (ImGui::Button("Refresh"))
+    {
+      RefreshExportDirectoryBrowser(export_browser_relative_path_);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Up"))
+    {
+      const std::filesystem::path current(export_browser_relative_path_);
+      const std::filesystem::path parent = current.parent_path();
+      RefreshExportDirectoryBrowser(parent == "." ? std::string{} : parent.generic_string());
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Use Current"))
+    {
+      editor_settings_.export_directory = JoinSourceMountPath(project_mount_source_path_, export_browser_relative_path_);
+      mark_settings_dirty();
+      show_export_directory_dialog_ = false;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Create Here"))
+    {
+      std::string created_relative_path;
+      if (CreateBridgeDirectory(export_browser_relative_path_, new_export_directory_name_, created_relative_path))
+      {
+        editor_settings_.export_directory = JoinSourceMountPath(project_mount_source_path_, created_relative_path);
+        export_browser_relative_path_ = created_relative_path;
+        new_export_directory_name_.clear();
+        mark_settings_dirty();
+        RefreshExportDirectoryBrowser(export_browser_relative_path_);
+      }
+    }
+    if (!export_browser_status_.empty())
+    {
+      ImGui::TextWrapped("%s", export_browser_status_.c_str());
+    }
+    ImGui::Separator();
+    ImGui::BeginChild("ExportDirectoryBrowser", ImVec2(0.0f, 0.0f), true);
+    for (const auto &directory : export_browser_directories_)
+    {
+      if (ImGui::Selectable(directory.c_str()))
+      {
+        const std::filesystem::path child_path = std::filesystem::path(export_browser_relative_path_) / directory;
+        RefreshExportDirectoryBrowser(child_path.generic_string());
+      }
+    }
+    ImGui::EndChild();
+    ImGui::End();
   }
 
   rlImGuiEnd();
@@ -2031,7 +2484,15 @@ void MyriadEditor::StartBridgeBuildOverSocket(const Editor::CompilerPreset &pres
   build_succeeded_ = false;
   bridge_build_progress_percent_ = -1;
 
-  const std::string request = Editor::CreateBuildBridgeRequest(preset, build_dir_relative);
+  const std::string request = Editor::CreateBuildBridgeRequest(preset,
+                                                               build_dir_relative,
+                                                               editor_settings_.project_mount_path,
+                                                               editor_settings_.build_type,
+                                                               editor_settings_.game_project_name,
+                                                               editor_settings_.source_directory,
+                                                               editor_settings_.header_search_dirs,
+                                                               editor_settings_.library_search_dirs,
+                                                               editor_settings_.export_directory);
   const std::string requested_host = editor_settings_.build_socket_host.empty() ? std::string{"auto"} : editor_settings_.build_socket_host;
   AppendConsoleLine("Sending bridge request to " + requested_host + ":" + std::to_string(editor_settings_.build_socket_port));
 
@@ -2170,7 +2631,9 @@ void MyriadEditor::PumpBridgeBuildUpdates()
   bridge_changed_file_count_ = std::max(0, Editor::ExtractJsonInt(response, "changedFileCount", bridge_changed_file_count_));
   bridge_changed_files_preview_ = ExtractJsonStringArray(response, "changedFilesPreview", 12);
 
-  build_bridge_connected_ = bridge_success;
+  build_bridge_connected_ = true;
+  build_bridge_consecutive_failures_ = 0;
+  build_bridge_warning_active_ = false;
   build_bridge_status_text_ = bridge_status.empty() ? "Bridge reachable." : bridge_status;
 
   if (!bridge_success)
@@ -2199,6 +2662,11 @@ void MyriadEditor::PumpBridgeBuildUpdates()
   executable_input_ = game_executable_.empty() ? executable_input_ : game_executable_.string();
   status_ = bridge_status.empty() ? "Build succeeded through the socket bridge." : bridge_status;
   AppendConsoleLine(status_);
+  const std::string exported_executable = Editor::ExtractJsonString(response, "exportedExecutable");
+  if (!exported_executable.empty())
+  {
+    AppendConsoleLine("Exported executable: " + exported_executable);
+  }
 
   (void)rebuild_triggered;
   RestartPreviewForLatestBuild();
@@ -2336,11 +2804,7 @@ void MyriadEditor::PersistThemePreference()
   editor_settings_.ui_rounding = static_cast<int>(ui_rounding_ + 0.5f);
   editor_settings_.ui_spacing_percent = static_cast<int>(ui_spacing_density_ * 100.0f + 0.5f);
   editor_settings_.ui_accent_hex = ToHexColor(ui_accent_color_);
-
-  if (!Editor::SaveEditorSettings(project_root_, editor_settings_))
-  {
-    AppendConsoleLine("Warning: Failed to save theme preference to .myriad-editor.json");
-  }
+  project_settings_dirty_ = true;
 }
 
 void MyriadEditor::StartPreviewGame()
@@ -2556,7 +3020,8 @@ void MyriadEditor::RefreshPaths(bool force_defaults)
 
   const auto &preset = compiler_presets_[std::max(0, std::min(selected_preset_index_, static_cast<int>(compiler_presets_.size()) - 1))];
   const std::filesystem::path detected_build_dir = Editor::FindMatchingBuildDirectory(project_root_, preset.name);
-  const std::filesystem::path default_build_dir = detected_build_dir.empty() ? Editor::ResolvePath(project_root_, std::filesystem::path("build") / preset.name / "Debug") : detected_build_dir;
+  const std::string build_type = editor_settings_.build_type.empty() ? std::string{"Debug"} : editor_settings_.build_type;
+  const std::filesystem::path default_build_dir = detected_build_dir.empty() ? Editor::ResolvePath(project_root_, std::filesystem::path("build") / preset.name / build_type) : detected_build_dir;
 
   std::filesystem::path selected_build_dir = force_defaults || build_dir_input_.empty() ? default_build_dir : std::filesystem::path(build_dir_input_);
   if (!selected_build_dir.is_absolute())
@@ -2578,7 +3043,7 @@ void MyriadEditor::RefreshPaths(bool force_defaults)
   }
 
   executable_input_ = game_executable_.empty() ? "" : game_executable_.string();
-  status_ = "Paths refreshed for the selected compiler preset.";
+  status_ = "Paths refreshed for the selected compiler toolkit and build type.";
 }
 
 void MyriadEditor::RefreshBuildBridgeStatus(bool force)
@@ -2620,21 +3085,15 @@ void MyriadEditor::RefreshBuildBridgeStatus(bool force)
     bridge_changed_file_count_ = std::max(0, changed_file_count);
     bridge_changed_files_preview_ = changed_files_preview;
 
-    build_bridge_connected_ = bridge_success;
+    build_bridge_connected_ = true;
     build_bridge_status_text_ = bridge_status.empty() ? "Bridge reachable." : bridge_status;
-    if (bridge_success)
+    (void)bridge_success;
+    if (build_bridge_warning_active_)
     {
-      if (build_bridge_warning_active_)
-      {
-        AppendConsoleLine("Build bridge connectivity restored.");
-      }
-      build_bridge_consecutive_failures_ = 0;
-      build_bridge_warning_active_ = false;
+      AppendConsoleLine("Build bridge connectivity restored.");
     }
-    else
-    {
-      ++build_bridge_consecutive_failures_;
-    }
+    build_bridge_consecutive_failures_ = 0;
+    build_bridge_warning_active_ = false;
 
     if (!had_rebuild_needed && bridge_rebuild_needed_)
     {
@@ -2675,6 +3134,403 @@ void MyriadEditor::RefreshBuildBridgeStatus(bool force)
   }
 }
 
+void MyriadEditor::RefreshProjectBrowser(const std::string &relative_path)
+{
+  std::string response;
+  std::string bridge_error;
+  const std::string request = Editor::CreateProjectListRequest(relative_path);
+  if (!Editor::SendBuildBridgeRequestWithFallback(editor_settings_, request, response, bridge_error, nullptr, 1000, 2000))
+  {
+    project_browser_status_ = "Project browser error: " + bridge_error;
+    AppendConsoleLine(project_browser_status_);
+    return;
+  }
+
+  const bool success = Editor::ExtractJsonBool(response, "success", false);
+  project_browser_status_ = Editor::ExtractJsonString(response, "status");
+  if (!success)
+  {
+    if (project_browser_status_.empty())
+    {
+      project_browser_status_ = "Project browser request failed.";
+    }
+    AppendConsoleLine(project_browser_status_);
+    return;
+  }
+
+  project_browser_mount_path_ = Editor::ExtractJsonString(response, "projectMount");
+  const std::string bridge_project_mount_source = Editor::ExtractJsonString(response, "projectMountSource");
+  if (!bridge_project_mount_source.empty())
+  {
+    project_mount_source_path_ = bridge_project_mount_source;
+  }
+  project_browser_relative_path_ = Editor::ExtractJsonString(response, "path");
+  project_browser_directories_ = ExtractJsonStringArray(response, "directories", 256);
+  if (project_browser_status_.empty())
+  {
+    project_browser_status_ = "Projects listed.";
+  }
+}
+
+void MyriadEditor::RefreshExportDirectoryBrowser(const std::string &relative_path)
+{
+  std::string response;
+  std::string bridge_error;
+  const std::string request = Editor::CreateDirectoryListRequest(relative_path);
+  if (!Editor::SendBuildBridgeRequestWithFallback(editor_settings_, request, response, bridge_error, nullptr, 1000, 2000))
+  {
+    export_browser_status_ = "Export directory browser error: " + bridge_error;
+    AppendConsoleLine(export_browser_status_);
+    return;
+  }
+
+  const bool success = Editor::ExtractJsonBool(response, "success", false);
+  export_browser_status_ = Editor::ExtractJsonString(response, "status");
+  if (!success)
+  {
+    if (export_browser_status_.empty())
+    {
+      export_browser_status_ = "Export directory browser request failed.";
+    }
+    AppendConsoleLine(export_browser_status_);
+    return;
+  }
+
+  const std::string bridge_project_mount = Editor::ExtractJsonString(response, "projectMount");
+  const std::string bridge_project_mount_source = Editor::ExtractJsonString(response, "projectMountSource");
+  if (!bridge_project_mount.empty())
+  {
+    project_browser_mount_path_ = bridge_project_mount;
+  }
+  if (!bridge_project_mount_source.empty())
+  {
+    project_mount_source_path_ = bridge_project_mount_source;
+  }
+  export_browser_relative_path_ = Editor::ExtractJsonString(response, "path");
+  export_browser_directories_ = ExtractJsonStringArray(response, "directories", 256);
+  if (export_browser_status_.empty())
+  {
+    export_browser_status_ = "Directories listed.";
+  }
+}
+
+void MyriadEditor::RefreshBuildOptions()
+{
+  if (build_type_options_.empty())
+  {
+    build_type_options_ = {"Debug", "Release", "RelWithDebInfo", "MinSizeRel"};
+  }
+
+  if (!Editor::ShouldUseSocketBuilds(editor_settings_))
+  {
+    return;
+  }
+
+  std::string response;
+  std::string bridge_error;
+  const std::string request = Editor::CreateBuildOptionsRequest(editor_settings_.project_mount_path, editor_settings_.compiler_toolkit, editor_settings_.build_type);
+  if (!Editor::SendBuildBridgeRequestWithFallback(editor_settings_, request, response, bridge_error, nullptr, 1000, 2000))
+  {
+    AppendConsoleLine("Build options bridge error: " + bridge_error);
+    return;
+  }
+
+  if (!Editor::ExtractJsonBool(response, "success", false))
+  {
+    const std::string bridge_status = Editor::ExtractJsonString(response, "status");
+    AppendConsoleLine(bridge_status.empty() ? "Build options request failed." : bridge_status);
+    return;
+  }
+
+  const std::string bridge_project_mount = Editor::ExtractJsonString(response, "projectMount");
+  const std::string bridge_project_mount_source = Editor::ExtractJsonString(response, "projectMountSource");
+  const std::string bridge_dist_mount_source = Editor::ExtractJsonString(response, "distMountSource");
+  if (!bridge_project_mount.empty())
+  {
+    project_browser_mount_path_ = bridge_project_mount;
+  }
+  if (!bridge_project_mount_source.empty())
+  {
+    project_mount_source_path_ = bridge_project_mount_source;
+  }
+  if (!bridge_dist_mount_source.empty())
+  {
+    dist_mount_source_path_ = bridge_dist_mount_source;
+  }
+
+  const std::string bridge_header_default = Editor::ExtractJsonString(response, "defaultHeaderSearchDirs");
+  const std::string bridge_library_default = Editor::ExtractJsonString(response, "defaultLibrarySearchDirs");
+  if (!bridge_header_default.empty())
+  {
+    default_header_search_dirs_ = bridge_header_default;
+  }
+  if (!bridge_library_default.empty())
+  {
+    default_library_search_dirs_ = bridge_library_default;
+  }
+
+  const std::vector<std::string> bridge_toolkits = ExtractJsonStringArray(response, "compilerToolkits", 128);
+  if (!bridge_toolkits.empty())
+  {
+    compiler_presets_.clear();
+    for (const auto &toolkit : bridge_toolkits)
+    {
+      compiler_presets_.push_back({toolkit, {}});
+    }
+  }
+
+  const std::vector<std::string> bridge_build_types = ExtractJsonStringArray(response, "buildTypes", 16);
+  if (!bridge_build_types.empty())
+  {
+    build_type_options_ = bridge_build_types;
+  }
+
+  if (compiler_presets_.empty())
+  {
+    compiler_presets_.push_back({"Default", {}});
+  }
+
+  selected_preset_index_ = 0;
+  for (int i = 0; i < static_cast<int>(compiler_presets_.size()); ++i)
+  {
+    if (compiler_presets_[i].name == editor_settings_.compiler_toolkit)
+    {
+      selected_preset_index_ = i;
+      break;
+    }
+  }
+
+  const std::string selected_bridge_toolkit = Editor::ExtractJsonString(response, "compilerToolkit");
+  if (!selected_bridge_toolkit.empty() && editor_settings_.compiler_toolkit.empty())
+  {
+    editor_settings_.compiler_toolkit = selected_bridge_toolkit;
+  }
+
+  if (editor_settings_.build_type.empty() || std::find(build_type_options_.begin(), build_type_options_.end(), editor_settings_.build_type) == build_type_options_.end())
+  {
+    const std::string selected_bridge_build_type = Editor::ExtractJsonString(response, "buildType");
+    editor_settings_.build_type = !selected_bridge_build_type.empty() ? selected_bridge_build_type : (build_type_options_.empty() ? std::string{"Debug"} : build_type_options_.front());
+  }
+}
+
+void MyriadEditor::OpenBridgeProject(const std::string &relative_path)
+{
+  std::string response;
+  std::string bridge_error;
+  const std::string request = Editor::CreateProjectOpenRequest(relative_path);
+  if (!Editor::SendBuildBridgeRequestWithFallback(editor_settings_, request, response, bridge_error, nullptr, 1000, 3000))
+  {
+    status_ = "Open project bridge error: " + bridge_error;
+    AppendConsoleLine(status_);
+    return;
+  }
+
+  const bool success = Editor::ExtractJsonBool(response, "success", false);
+  const std::string bridge_status = Editor::ExtractJsonString(response, "status");
+  if (!success)
+  {
+    status_ = bridge_status.empty() ? "The build bridge could not open the selected project." : bridge_status;
+    AppendConsoleLine(status_);
+    return;
+  }
+
+  const std::string project_root_text = Editor::ExtractJsonString(response, "projectRoot");
+  const std::string project_display_root_text = Editor::ExtractJsonString(response, "projectDisplayRoot");
+  const std::string project_mount_path = Editor::ExtractJsonString(response, "projectPath");
+  const std::string bridge_project_mount = Editor::ExtractJsonString(response, "projectMount");
+  const std::string bridge_project_mount_source = Editor::ExtractJsonString(response, "projectMountSource");
+  if (!bridge_project_mount.empty())
+  {
+    project_browser_mount_path_ = bridge_project_mount;
+  }
+  if (!bridge_project_mount_source.empty())
+  {
+    project_mount_source_path_ = bridge_project_mount_source;
+  }
+  if (project_root_text.empty())
+  {
+    status_ = "The build bridge did not return a project root.";
+    AppendConsoleLine(status_);
+    return;
+  }
+
+  ApplyProjectDirectory(SelectSourceProjectRoot(project_root_text, project_display_root_text), project_mount_path, true);
+  status_ = bridge_status.empty() ? "Project opened." : bridge_status;
+  AppendConsoleLine("Opened project: " + project_root_.string());
+}
+
+void MyriadEditor::CreateBridgeProject(const std::string &parent_path, const std::string &project_name)
+{
+  const std::string trimmed_name = Editor::Trim(project_name);
+  if (trimmed_name.empty())
+  {
+    status_ = "New project name is required.";
+    AppendConsoleLine(status_);
+    return;
+  }
+
+  std::string response;
+  std::string bridge_error;
+  const std::string request = Editor::CreateProjectCreateRequest(parent_path, trimmed_name);
+  if (!Editor::SendBuildBridgeRequestWithFallback(editor_settings_, request, response, bridge_error, nullptr, 1000, 5000))
+  {
+    status_ = "Create project bridge error: " + bridge_error;
+    AppendConsoleLine(status_);
+    return;
+  }
+
+  const bool success = Editor::ExtractJsonBool(response, "success", false);
+  const std::string bridge_status = Editor::ExtractJsonString(response, "status");
+  if (!success)
+  {
+    status_ = bridge_status.empty() ? "The build bridge could not create the project." : bridge_status;
+    AppendConsoleLine(status_);
+    return;
+  }
+
+  const std::string project_root_text = Editor::ExtractJsonString(response, "projectRoot");
+  const std::string project_display_root_text = Editor::ExtractJsonString(response, "projectDisplayRoot");
+  const std::string project_mount_path = Editor::ExtractJsonString(response, "projectPath");
+  const std::string bridge_project_mount = Editor::ExtractJsonString(response, "projectMount");
+  const std::string bridge_project_mount_source = Editor::ExtractJsonString(response, "projectMountSource");
+  if (!bridge_project_mount.empty())
+  {
+    project_browser_mount_path_ = bridge_project_mount;
+  }
+  if (!bridge_project_mount_source.empty())
+  {
+    project_mount_source_path_ = bridge_project_mount_source;
+  }
+  if (project_root_text.empty())
+  {
+    status_ = "The build bridge did not return a project root for the new project.";
+    AppendConsoleLine(status_);
+    return;
+  }
+
+  ApplyProjectDirectory(SelectSourceProjectRoot(project_root_text, project_display_root_text), project_mount_path, true);
+  RefreshProjectBrowser(parent_path);
+  new_project_name_.clear();
+  status_ = bridge_status.empty() ? "Project created." : bridge_status;
+  AppendConsoleLine("Created project: " + project_root_.string());
+}
+
+bool MyriadEditor::CreateBridgeDirectory(const std::string &parent_path, const std::string &directory_name, std::string &created_relative_path)
+{
+  const std::string trimmed_name = Editor::Trim(directory_name);
+  if (trimmed_name.empty())
+  {
+    status_ = "New directory name is required.";
+    export_browser_status_ = status_;
+    AppendConsoleLine(status_);
+    return false;
+  }
+
+  std::string response;
+  std::string bridge_error;
+  const std::string request = Editor::CreateDirectoryCreateRequest(parent_path, trimmed_name);
+  if (!Editor::SendBuildBridgeRequestWithFallback(editor_settings_, request, response, bridge_error, nullptr, 1000, 5000))
+  {
+    status_ = "Create directory bridge error: " + bridge_error;
+    export_browser_status_ = status_;
+    AppendConsoleLine(status_);
+    return false;
+  }
+
+  const bool success = Editor::ExtractJsonBool(response, "success", false);
+  const std::string bridge_status = Editor::ExtractJsonString(response, "status");
+  if (!success)
+  {
+    status_ = bridge_status.empty() ? "The build bridge could not create the directory." : bridge_status;
+    export_browser_status_ = status_;
+    AppendConsoleLine(status_);
+    return false;
+  }
+
+  created_relative_path = Editor::ExtractJsonString(response, "path");
+  status_ = bridge_status.empty() ? "Directory created." : bridge_status;
+  export_browser_status_ = status_;
+  AppendConsoleLine("Created directory: " + JoinSourceMountPath(project_mount_source_path_, created_relative_path));
+  return true;
+}
+
+void MyriadEditor::ApplyProjectDirectory(const std::filesystem::path &project_root, const std::string &project_mount_path, bool reload_project_settings)
+{
+  Editor::EditorSettings previous_settings = editor_settings_;
+  project_root_ = std::filesystem::absolute(project_root);
+
+  if (reload_project_settings)
+  {
+    editor_settings_ = Editor::LoadEditorSettings(project_root_);
+    if (editor_settings_.build_mode.empty())
+    {
+      editor_settings_.build_mode = previous_settings.build_mode;
+    }
+    if (editor_settings_.build_socket_host.empty())
+    {
+      editor_settings_.build_socket_host = previous_settings.build_socket_host;
+    }
+    if (editor_settings_.build_socket_hosts.empty())
+    {
+      editor_settings_.build_socket_hosts = previous_settings.build_socket_hosts;
+    }
+    if (editor_settings_.build_socket_port == 55333 && previous_settings.build_socket_port != 55333)
+    {
+      editor_settings_.build_socket_port = previous_settings.build_socket_port;
+    }
+  }
+
+  editor_settings_.project_root_path = project_root_.string();
+  editor_settings_.project_mount_path = project_mount_path;
+  if (editor_settings_.compiler_toolkit.empty())
+  {
+    editor_settings_.compiler_toolkit = editor_settings_.last_compiler_preset;
+  }
+  if (editor_settings_.build_type.empty())
+  {
+    editor_settings_.build_type = "Debug";
+  }
+  build_command_template_ = Editor::ResolveBuildCommandTemplate(editor_settings_);
+  compiler_presets_ = Editor::LoadCompilerPresets(project_root_);
+  if (compiler_presets_.empty())
+  {
+    compiler_presets_.push_back({"Default", {}});
+  }
+  selected_preset_index_ = 0;
+  if (!editor_settings_.compiler_toolkit.empty())
+  {
+    for (int i = 0; i < static_cast<int>(compiler_presets_.size()); ++i)
+    {
+      if (compiler_presets_[i].name == editor_settings_.compiler_toolkit)
+      {
+        selected_preset_index_ = i;
+        break;
+      }
+    }
+  }
+  last_selected_preset_index_ = -1;
+  theme_presets_ = LoadThemePresets(project_root_);
+  layout_presets_ = LoadLayoutPresets(project_root_);
+  selected_theme_preset_index_ = ThemePresetIndexFromName(editor_settings_.theme_preset, theme_presets_);
+  selected_layout_preset_index_ = std::max(0, std::min(editor_settings_.layout_preset_index, static_cast<int>(layout_presets_.size()) - 1));
+  ui_font_scale_ = static_cast<float>(editor_settings_.ui_font_scale_percent) / 100.0f;
+  ui_rounding_ = static_cast<float>(editor_settings_.ui_rounding);
+  ui_spacing_density_ = static_cast<float>(editor_settings_.ui_spacing_percent) / 100.0f;
+  if (!ParseHexColor(editor_settings_.ui_accent_hex, ui_accent_color_))
+  {
+    ui_accent_color_ = ImVec4(0.30f, 0.54f, 0.81f, 1.0f);
+  }
+  ApplyThemePresetByIndex(selected_theme_preset_index_);
+  ApplyThemeCustomizations();
+  RefreshBuildOptions();
+  RefreshPaths(true);
+  const bool search_dir_defaults_applied = ApplySearchDirDefaults(editor_settings_, default_header_search_dirs_, default_library_search_dirs_);
+  dock_layout_apply_requested_ = true;
+  project_settings_dirty_ = search_dir_defaults_applied;
+  build_bridge_last_probe_time_ = 0.0;
+  RefreshBuildBridgeStatus(true);
+}
+
 void MyriadEditor::BuildTestECS()
 {
   build_succeeded_ = false;
@@ -2695,7 +3551,8 @@ void MyriadEditor::BuildTestECS()
 
   const auto &preset = compiler_presets_[std::max(0, std::min(selected_preset_index_, static_cast<int>(compiler_presets_.size()) - 1))];
   const std::filesystem::path detected_build_dir = Editor::FindMatchingBuildDirectory(project_root_, preset.name);
-  const std::filesystem::path default_build_dir = detected_build_dir.empty() ? (project_root_ / "build" / preset.name / "Debug") : detected_build_dir;
+  const std::string build_type = editor_settings_.build_type.empty() ? std::string{"Debug"} : editor_settings_.build_type;
+  const std::filesystem::path default_build_dir = detected_build_dir.empty() ? (project_root_ / "build" / preset.name / build_type) : detected_build_dir;
   build_dir_ = std::filesystem::absolute(build_dir_input_.empty() ? default_build_dir : std::filesystem::path(build_dir_input_));
   std::filesystem::create_directories(build_dir_);
 
@@ -2728,6 +3585,7 @@ void MyriadEditor::BuildTestECS()
                                                            project_root_,
                                                            build_dir_,
                                                            preset,
+                                                           editor_settings_.build_type,
                                                            toolchain_path,
                                                            editor_settings_.header_search_dirs,
                                                            editor_settings_.library_search_dirs);
@@ -2742,7 +3600,8 @@ void MyriadEditor::BuildTestECS()
     bridge_rebuild_needed_ = false;
     bridge_changed_file_count_ = 0;
     const std::filesystem::path detected_build_dir = Editor::FindMatchingBuildDirectory(project_root_, preset.name);
-    const std::filesystem::path default_build_dir = detected_build_dir.empty() ? (project_root_ / "build" / preset.name / "Debug") : detected_build_dir;
+    const std::string build_type = editor_settings_.build_type.empty() ? std::string{"Debug"} : editor_settings_.build_type;
+    const std::filesystem::path default_build_dir = detected_build_dir.empty() ? (project_root_ / "build" / preset.name / build_type) : detected_build_dir;
     build_dir_ = std::filesystem::absolute(build_dir_input_.empty() ? default_build_dir : std::filesystem::path(build_dir_input_));
     game_executable_ = Editor::FindGameExecutable(build_dir_, executable_input_, project_root_);
     executable_input_ = game_executable_.empty() ? executable_input_ : game_executable_.string();
@@ -2771,7 +3630,8 @@ void MyriadEditor::RunTestECS()
   {
     const auto &preset = compiler_presets_[std::max(0, std::min(selected_preset_index_, static_cast<int>(compiler_presets_.size()) - 1))];
     const std::filesystem::path detected_build_dir = Editor::FindMatchingBuildDirectory(project_root_, preset.name);
-    const std::filesystem::path default_build_dir = detected_build_dir.empty() ? (project_root_ / "build" / preset.name / "Debug") : detected_build_dir;
+    const std::string build_type = editor_settings_.build_type.empty() ? std::string{"Debug"} : editor_settings_.build_type;
+    const std::filesystem::path default_build_dir = detected_build_dir.empty() ? (project_root_ / "build" / preset.name / build_type) : detected_build_dir;
     build_dir_ = std::filesystem::absolute(build_dir_input_.empty() ? default_build_dir : std::filesystem::path(build_dir_input_));
     game_executable_ = Editor::FindGameExecutable(build_dir_, executable_input_, project_root_);
   }

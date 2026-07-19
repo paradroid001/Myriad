@@ -7,6 +7,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <fstream>
+#include <ostream>
 #include <sstream>
 
 namespace Editor
@@ -75,22 +76,18 @@ namespace Editor
         return override_settings;
       }
 
-      const bool installed_run = IsInstalledEditorRun(root);
-      if (installed_run)
+      if (!root.empty())
       {
-        const std::filesystem::path resource_settings = ResolveEditorResourceConfigPath(root);
-        if (!resource_settings.empty())
-        {
-          return resource_settings;
-        }
-      }
-
-      if (!root.empty() && std::filesystem::exists(root / "Editor") && std::filesystem::exists(root / "Engine"))
-      {
-        const std::filesystem::path project_settings = root / ".myriad-editor.json";
+        const std::filesystem::path project_settings = root / ".myriad_editor" / "editor.json";
         if (std::filesystem::exists(project_settings))
         {
           return project_settings;
+        }
+
+        const std::filesystem::path legacy_project_settings = root / ".myriad-editor.json";
+        if (std::filesystem::exists(legacy_project_settings))
+        {
+          return legacy_project_settings;
         }
       }
 
@@ -111,9 +108,9 @@ namespace Editor
         return override_settings;
       }
 
-      if (!IsInstalledEditorRun(root) && std::filesystem::exists(root / "Editor") && std::filesystem::exists(root / "Engine"))
+      if (!root.empty())
       {
-        return root / ".myriad-editor.json";
+        return root / ".myriad_editor" / "editor.json";
       }
 
       return ResolveEditorResourceConfigPath(root);
@@ -187,11 +184,61 @@ namespace Editor
     {
       return label + ": " + (value ? "true" : "false");
     }
+
+    void WriteEditorSettingsJson(std::ostream &output, const EditorSettings &settings)
+    {
+      output << "{\n";
+      output << "  \"buildMode\": \"" << JsonEscape(settings.build_mode) << "\",\n";
+      output << "  \"buildSocketHost\": \"" << JsonEscape(settings.build_socket_host) << "\",\n";
+      output << "  \"buildSocketHosts\": \"" << JsonEscape(JoinHostList(settings.build_socket_hosts)) << "\",\n";
+      output << "  \"buildSocketPort\": " << settings.build_socket_port << ",\n";
+      output << "  \"buildBridgeProbeIntervalSeconds\": " << std::max(5, std::min(3600, settings.build_bridge_probe_interval_seconds)) << ",\n";
+      output << "  \"buildCommand\": \"" << JsonEscape(settings.build_command_template) << "\",\n";
+      output << "  \"compilerToolkit\": \"" << JsonEscape(settings.compiler_toolkit) << "\",\n";
+      output << "  \"buildType\": \"" << JsonEscape(settings.build_type.empty() ? std::string{"Debug"} : settings.build_type) << "\",\n";
+      output << "  \"gameProjectName\": \"" << JsonEscape(settings.game_project_name.empty() ? std::string{"TestECS"} : settings.game_project_name) << "\",\n";
+      output << "  \"sourceDirectory\": \"" << JsonEscape(settings.source_directory) << "\",\n";
+      output << "  \"projectRoot\": \"" << JsonEscape(settings.project_root_path) << "\",\n";
+      output << "  \"projectMountPath\": \"" << JsonEscape(settings.project_mount_path) << "\",\n";
+      output << "  \"headerSearchDirs\": \"" << JsonEscape(settings.header_search_dirs) << "\",\n";
+      output << "  \"librarySearchDirs\": \"" << JsonEscape(settings.library_search_dirs) << "\",\n";
+      output << "  \"exportDirectory\": \"" << JsonEscape(settings.export_directory) << "\",\n";
+      output << "  \"themePreset\": \"" << JsonEscape(settings.theme_preset) << "\",\n";
+      output << "  \"uiFontScalePercent\": " << settings.ui_font_scale_percent << ",\n";
+      output << "  \"uiRounding\": " << settings.ui_rounding << ",\n";
+      output << "  \"uiSpacingPercent\": " << settings.ui_spacing_percent << ",\n";
+      output << "  \"uiAccentHex\": \"" << JsonEscape(settings.ui_accent_hex) << "\",\n";
+      output << "  \"lastCompilerPreset\": \"" << JsonEscape(settings.last_compiler_preset) << "\",\n";
+      output << "  \"lastBuildDir\": \"" << JsonEscape(settings.last_build_dir) << "\",\n";
+      output << "  \"lastExecutablePath\": \"" << JsonEscape(settings.last_executable_path) << "\",\n";
+      output << "  \"layoutPresetIndex\": " << settings.layout_preset_index << ",\n";
+      output << "  \"editorWindowWidth\": " << settings.editor_window_width << ",\n";
+      output << "  \"editorWindowHeight\": " << settings.editor_window_height << ",\n";
+      output << "  \"panelBuildWorkflowOpen\": " << (settings.panel_build_workflow_open ? "true" : "false") << ",\n";
+      output << "  \"panelSceneOpen\": " << (settings.panel_scene_open ? "true" : "false") << ",\n";
+      output << "  \"panelPreviewOpen\": " << (settings.panel_preview_open ? "true" : "false") << ",\n";
+      output << "  \"panelConsoleOpen\": " << (settings.panel_console_open ? "true" : "false") << ",\n";
+      output << "  \"panelGameLogOpen\": " << (settings.panel_game_log_open ? "true" : "false") << ",\n";
+      output << "  \"panelPreferencesOpen\": " << (settings.panel_preferences_open ? "true" : "false") << ",\n";
+      output << "  \"panelBuildWorkflowWidth\": " << settings.panel_build_workflow_width << ",\n";
+      output << "  \"panelBuildWorkflowHeight\": " << settings.panel_build_workflow_height << ",\n";
+      output << "  \"panelPreviewWidth\": " << settings.panel_preview_width << ",\n";
+      output << "  \"panelPreviewHeight\": " << settings.panel_preview_height << ",\n";
+      output << "  \"panelConsoleWidth\": " << settings.panel_console_width << ",\n";
+      output << "  \"panelConsoleHeight\": " << settings.panel_console_height << ",\n";
+      output << "  \"panelWorkspaceWidth\": " << settings.panel_workspace_width << ",\n";
+      output << "  \"panelWorkspaceHeight\": " << settings.panel_workspace_height << ",\n";
+      output << "  \"panelPreferencesWidth\": " << settings.panel_preferences_width << ",\n";
+      output << "  \"panelPreferencesHeight\": " << settings.panel_preferences_height << ",\n";
+      output << "  \"panelSceneWidth\": " << settings.panel_scene_width << ",\n";
+      output << "  \"panelSceneHeight\": " << settings.panel_scene_height << "\n";
+      output << "}";
+    }
   } // namespace
 
   std::string DefaultBuildCommandTemplate()
   {
-    return "cd \"{projectRoot}\" && cmake -S \"{projectRoot}\" -B \"{buildDir}\" -DCMAKE_BUILD_TYPE=Debug {toolchainArg} && cmake --build \"{buildDir}\" --target {target}";
+    return "cd \"{projectRoot}\" && cmake -S \"{projectRoot}\" -B \"{buildDir}\" -DCMAKE_BUILD_TYPE={buildType} {toolchainArg} && cmake --build \"{buildDir}\" --target {target}";
   }
 
   std::vector<std::string> ParseHostList(const std::string &host_list)
@@ -436,9 +483,23 @@ namespace Editor
     settings.build_bridge_probe_interval_seconds = ExtractJsonInt(contents, "buildBridgeProbeIntervalSeconds", settings.build_bridge_probe_interval_seconds);
     settings.build_bridge_probe_interval_seconds = std::max(5, std::min(3600, settings.build_bridge_probe_interval_seconds));
     settings.build_command_template = ExtractJsonString(contents, "buildCommand");
+    settings.compiler_toolkit = ExtractJsonString(contents, "compilerToolkit");
+    const std::string file_build_type = ExtractJsonString(contents, "buildType");
+    if (!file_build_type.empty())
+    {
+      settings.build_type = file_build_type;
+    }
+    const std::string file_game_project_name = ExtractJsonString(contents, "gameProjectName");
+    if (!file_game_project_name.empty())
+    {
+      settings.game_project_name = file_game_project_name;
+    }
+    settings.source_directory = ExtractJsonString(contents, "sourceDirectory");
     settings.project_root_path = ExtractJsonString(contents, "projectRoot");
+    settings.project_mount_path = ExtractJsonString(contents, "projectMountPath");
     settings.header_search_dirs = ExtractJsonString(contents, "headerSearchDirs");
     settings.library_search_dirs = ExtractJsonString(contents, "librarySearchDirs");
+    settings.export_directory = ExtractJsonString(contents, "exportDirectory");
     const std::string file_theme_preset = ExtractJsonString(contents, "themePreset");
     if (!file_theme_preset.empty())
     {
@@ -501,13 +562,15 @@ namespace Editor
     const bool root_is_repo = !root.empty() && std::filesystem::exists(root / "Editor") && std::filesystem::exists(root / "Engine");
     const std::filesystem::path override_settings = ResolveEditorConfigOverridePath();
     const std::filesystem::path resource_settings = ResolveEditorResourceConfigPath(root);
-    const std::filesystem::path project_settings = root_is_repo ? root / ".myriad-editor.json" : std::filesystem::path{};
+    const std::filesystem::path project_settings = root.empty() ? std::filesystem::path{} : root / ".myriad_editor" / "editor.json";
+    const std::filesystem::path legacy_project_settings = root.empty() ? std::filesystem::path{} : root / ".myriad-editor.json";
 
     lines.push_back("Settings discovery root: " + (root.empty() ? std::string{"<none>"} : root.string()));
     lines.push_back(BoolStatusLine("Settings discovery installed run", installed_run));
     lines.push_back(BoolStatusLine("Settings discovery root is Myriad repo", root_is_repo));
     lines.push_back(PathStatusLine("Settings override path", override_settings));
     lines.push_back(PathStatusLine("Settings project path", project_settings));
+    lines.push_back(PathStatusLine("Settings legacy project path", legacy_project_settings));
     lines.push_back(PathStatusLine("Settings resource path", resource_settings));
     lines.push_back(PathStatusLine("Settings effective read path", ResolveSettingsReadPath(root)));
     lines.push_back(PathStatusLine("Settings effective write path", ResolveSettingsWritePath(root)));
@@ -535,46 +598,8 @@ namespace Editor
       return false;
     }
 
-    output << "{\n";
-    output << "  \"buildMode\": \"" << JsonEscape(settings.build_mode) << "\",\n";
-    output << "  \"buildSocketHost\": \"" << JsonEscape(settings.build_socket_host) << "\",\n";
-    output << "  \"buildSocketHosts\": \"" << JsonEscape(JoinHostList(settings.build_socket_hosts)) << "\",\n";
-    output << "  \"buildSocketPort\": " << settings.build_socket_port << ",\n";
-    output << "  \"buildBridgeProbeIntervalSeconds\": " << std::max(5, std::min(3600, settings.build_bridge_probe_interval_seconds)) << ",\n";
-    output << "  \"buildCommand\": \"" << JsonEscape(settings.build_command_template) << "\",\n";
-    output << "  \"projectRoot\": \"" << JsonEscape(settings.project_root_path) << "\",\n";
-    output << "  \"headerSearchDirs\": \"" << JsonEscape(settings.header_search_dirs) << "\",\n";
-    output << "  \"librarySearchDirs\": \"" << JsonEscape(settings.library_search_dirs) << "\",\n";
-    output << "  \"themePreset\": \"" << JsonEscape(settings.theme_preset) << "\",\n";
-    output << "  \"uiFontScalePercent\": " << settings.ui_font_scale_percent << ",\n";
-    output << "  \"uiRounding\": " << settings.ui_rounding << ",\n";
-    output << "  \"uiSpacingPercent\": " << settings.ui_spacing_percent << ",\n";
-    output << "  \"uiAccentHex\": \"" << JsonEscape(settings.ui_accent_hex) << "\",\n";
-    output << "  \"lastCompilerPreset\": \"" << JsonEscape(settings.last_compiler_preset) << "\",\n";
-    output << "  \"lastBuildDir\": \"" << JsonEscape(settings.last_build_dir) << "\",\n";
-    output << "  \"lastExecutablePath\": \"" << JsonEscape(settings.last_executable_path) << "\",\n";
-    output << "  \"layoutPresetIndex\": " << settings.layout_preset_index << ",\n";
-    output << "  \"editorWindowWidth\": " << settings.editor_window_width << ",\n";
-    output << "  \"editorWindowHeight\": " << settings.editor_window_height << ",\n";
-    output << "  \"panelBuildWorkflowOpen\": " << (settings.panel_build_workflow_open ? "true" : "false") << ",\n";
-    output << "  \"panelSceneOpen\": " << (settings.panel_scene_open ? "true" : "false") << ",\n";
-    output << "  \"panelPreviewOpen\": " << (settings.panel_preview_open ? "true" : "false") << ",\n";
-    output << "  \"panelConsoleOpen\": " << (settings.panel_console_open ? "true" : "false") << ",\n";
-    output << "  \"panelGameLogOpen\": " << (settings.panel_game_log_open ? "true" : "false") << ",\n";
-    output << "  \"panelPreferencesOpen\": " << (settings.panel_preferences_open ? "true" : "false") << ",\n";
-    output << "  \"panelBuildWorkflowWidth\": " << settings.panel_build_workflow_width << ",\n";
-    output << "  \"panelBuildWorkflowHeight\": " << settings.panel_build_workflow_height << ",\n";
-    output << "  \"panelPreviewWidth\": " << settings.panel_preview_width << ",\n";
-    output << "  \"panelPreviewHeight\": " << settings.panel_preview_height << ",\n";
-    output << "  \"panelConsoleWidth\": " << settings.panel_console_width << ",\n";
-    output << "  \"panelConsoleHeight\": " << settings.panel_console_height << ",\n";
-    output << "  \"panelWorkspaceWidth\": " << settings.panel_workspace_width << ",\n";
-    output << "  \"panelWorkspaceHeight\": " << settings.panel_workspace_height << ",\n";
-    output << "  \"panelPreferencesWidth\": " << settings.panel_preferences_width << ",\n";
-    output << "  \"panelPreferencesHeight\": " << settings.panel_preferences_height << ",\n";
-    output << "  \"panelSceneWidth\": " << settings.panel_scene_width << ",\n";
-    output << "  \"panelSceneHeight\": " << settings.panel_scene_height << "\n";
-    output << "}\n";
+    WriteEditorSettingsJson(output, settings);
+    output << "\n";
     return output.good();
   }
 
@@ -606,15 +631,77 @@ namespace Editor
     return relative_text;
   }
 
-  std::string CreateBuildBridgeRequest(const CompilerPreset &preset, const std::string &build_dir_relative)
+  std::string CreateBuildBridgeRequest(const CompilerPreset &preset,
+                                       const std::string &build_dir_relative,
+                                       const std::string &project_mount_path,
+                                       const std::string &build_type,
+                                       const std::string &game_project_name,
+                                       const std::string &source_directory,
+                                       const std::string &header_search_dirs,
+                                       const std::string &library_search_dirs,
+                                       const std::string &export_directory)
   {
-    return std::string{"{\"preset\":\""} + JsonEscape(preset.name) +
+    return std::string{"{\"compilerToolkit\":\""} + JsonEscape(preset.name) +
            "\",\"buildDir\":\"" + JsonEscape(build_dir_relative) +
-           "\",\"target\":\"TestECS\"}\n";
+           "\",\"projectPath\":\"" + JsonEscape(project_mount_path) +
+           "\",\"buildType\":\"" + JsonEscape(build_type.empty() ? std::string{"Debug"} : build_type) +
+           "\",\"projectName\":\"" + JsonEscape(game_project_name.empty() ? std::string{"TestECS"} : game_project_name) +
+           "\",\"sourceDirectory\":\"" + JsonEscape(source_directory) +
+           "\",\"headerSearchDirs\":\"" + JsonEscape(header_search_dirs) +
+           "\",\"librarySearchDirs\":\"" + JsonEscape(library_search_dirs) +
+           "\",\"exportDirectory\":\"" + JsonEscape(export_directory) +
+           "\",\"target\":\"" + JsonEscape(game_project_name.empty() ? std::string{"TestECS"} : game_project_name) + "\"}\n";
   }
 
-  std::string CreateBuildBridgeStatusRequest()
+  std::string CreateBuildOptionsRequest(const std::string &project_mount_path, const std::string &compiler_toolkit, const std::string &build_type)
   {
-    return "{\"action\":\"status\"}\n";
+    return std::string{"{\"action\":\"listBuildOptions\",\"projectPath\":\""} + JsonEscape(project_mount_path) +
+           "\",\"compilerToolkit\":\"" + JsonEscape(compiler_toolkit) +
+           "\",\"buildType\":\"" + JsonEscape(build_type.empty() ? std::string{"Debug"} : build_type) + "\"}\n";
+  }
+
+  std::string CreateProjectListRequest(const std::string &relative_path)
+  {
+    return std::string{"{\"action\":\"listProjects\",\"path\":\""} + JsonEscape(relative_path) + "\"}\n";
+  }
+
+  std::string CreateProjectOpenRequest(const std::string &relative_path)
+  {
+    return std::string{"{\"action\":\"openProject\",\"projectPath\":\""} + JsonEscape(relative_path) + "\"}\n";
+  }
+
+  std::string CreateProjectCreateRequest(const std::string &parent_path, const std::string &project_name)
+  {
+    return std::string{"{\"action\":\"createProject\",\"parent\":\""} + JsonEscape(parent_path) +
+           "\",\"name\":\"" + JsonEscape(project_name) + "\"}\n";
+  }
+
+  std::string CreateDirectoryListRequest(const std::string &relative_path)
+  {
+    return std::string{"{\"action\":\"listDirectories\",\"path\":\""} + JsonEscape(relative_path) + "\"}\n";
+  }
+
+  std::string CreateDirectoryCreateRequest(const std::string &parent_path, const std::string &directory_name)
+  {
+    return std::string{"{\"action\":\"createDirectory\",\"parent\":\""} + JsonEscape(parent_path) +
+           "\",\"name\":\"" + JsonEscape(directory_name) + "\"}\n";
+  }
+
+  std::string CreateProjectSettingsSaveRequest(const EditorSettings &settings)
+  {
+    std::ostringstream settings_json;
+    WriteEditorSettingsJson(settings_json, settings);
+    std::string settings_text = settings_json.str();
+    ReplaceAll(settings_text, "\r", "");
+    ReplaceAll(settings_text, "\n", "");
+    return std::string{"{\"action\":\"saveProjectSettings\",\"projectPath\":\""} + JsonEscape(settings.project_mount_path) +
+           "\",\"settings\":" + settings_text + "}\n";
+  }
+
+  std::string CreateBuildBridgeStatusRequest(const std::string &project_mount_path, const std::string &game_project_name, const std::string &source_directory)
+  {
+    return std::string{"{\"action\":\"status\",\"projectPath\":\""} + JsonEscape(project_mount_path) +
+           "\",\"projectName\":\"" + JsonEscape(game_project_name.empty() ? std::string{"TestECS"} : game_project_name) +
+           "\",\"sourceDirectory\":\"" + JsonEscape(source_directory) + "\"}\n";
   }
 } // namespace Editor

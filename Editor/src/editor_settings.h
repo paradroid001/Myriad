@@ -89,13 +89,74 @@ namespace Editor
    * @brief Creates a JSON build request payload for the bridge.
    * @param preset Selected compiler preset.
    * @param build_dir_relative Build directory relative to project root.
+   * @param project_mount_path Project directory relative to the bridge projects mount.
    * @return Serialized JSON request line including trailing newline.
    */
-  std::string CreateBuildBridgeRequest(const CompilerPreset &preset, const std::string &build_dir_relative);
+  std::string CreateBuildBridgeRequest(const CompilerPreset &preset,
+                                       const std::string &build_dir_relative,
+                                       const std::string &project_mount_path,
+                                       const std::string &build_type,
+                                       const std::string &game_project_name,
+                                       const std::string &source_directory,
+                                       const std::string &header_search_dirs,
+                                       const std::string &library_search_dirs,
+                                       const std::string &export_directory);
+
+  /**
+   * @brief Creates a JSON request to list bridge-supported compiler toolkits and build types.
+   * @param project_mount_path Project directory relative to the bridge projects mount.
+   * @return Serialized JSON request line including trailing newline.
+   */
+  std::string CreateBuildOptionsRequest(const std::string &project_mount_path, const std::string &compiler_toolkit, const std::string &build_type);
+
+  /**
+   * @brief Creates a JSON request to list project directories under the bridge projects mount.
+   * @param relative_path Directory relative to the projects mount.
+   * @return Serialized JSON request line including trailing newline.
+   */
+  std::string CreateProjectListRequest(const std::string &relative_path);
+
+  /**
+   * @brief Creates a JSON request to resolve/open a project under the bridge projects mount.
+   * @param relative_path Directory relative to the projects mount.
+   * @return Serialized JSON request line including trailing newline.
+   */
+  std::string CreateProjectOpenRequest(const std::string &relative_path);
+
+  /**
+   * @brief Creates a JSON request to create a new project under the bridge projects mount.
+   * @param parent_path Parent directory relative to the projects mount.
+   * @param project_name New project directory name.
+   * @return Serialized JSON request line including trailing newline.
+   */
+  std::string CreateProjectCreateRequest(const std::string &parent_path, const std::string &project_name);
+
+  /**
+   * @brief Creates a JSON request to list directories under the bridge projects mount.
+   * @param relative_path Directory relative to the projects mount.
+   * @return Serialized JSON request line including trailing newline.
+   */
+  std::string CreateDirectoryListRequest(const std::string &relative_path);
+
+  /**
+   * @brief Creates a JSON request to create a directory under the bridge projects mount.
+   * @param parent_path Parent directory relative to the projects mount.
+   * @param directory_name New directory name.
+   * @return Serialized JSON request line including trailing newline.
+   */
+  std::string CreateDirectoryCreateRequest(const std::string &parent_path, const std::string &directory_name);
+
+  /**
+   * @brief Creates a JSON request to persist project settings through the build bridge.
+   * @param settings Current project settings to write.
+   * @return Serialized JSON request line including trailing newline.
+   */
+  std::string CreateProjectSettingsSaveRequest(const EditorSettings &settings);
 
   /**
    * @brief Creates a JSON status probe request for the bridge.
+   * @param project_mount_path Project directory relative to the bridge projects mount.
    * @return Serialized JSON request line including trailing newline.
    */
-  std::string CreateBuildBridgeStatusRequest();
+  std::string CreateBuildBridgeStatusRequest(const std::string &project_mount_path, const std::string &game_project_name, const std::string &source_directory);
 } // namespace Editor

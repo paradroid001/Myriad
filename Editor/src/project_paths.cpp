@@ -111,6 +111,7 @@ namespace Editor
                                          const std::filesystem::path &project_root,
                                          const std::filesystem::path &build_dir,
                                          const CompilerPreset &preset,
+                                         const std::string &build_type,
                                          const std::filesystem::path &toolchain_path,
                                          const std::string &header_search_dirs,
                                          const std::string &library_search_dirs)
@@ -123,6 +124,7 @@ namespace Editor
     ReplaceAll(command, "{projectRoot}", project_root_text);
     ReplaceAll(command, "{buildDir}", build_dir_text);
     ReplaceAll(command, "{preset}", preset.name);
+    ReplaceAll(command, "{buildType}", build_type.empty() ? std::string{"Debug"} : build_type);
     ReplaceAll(command, "{target}", "TestECS");
     ReplaceAll(command, "{toolchainFile}", toolchain_text);
     ReplaceAll(command, "{toolchainArg}", toolchain_arg);
@@ -202,6 +204,7 @@ namespace Editor
     }
 
     const std::vector<std::filesystem::path> candidates = {
+        executable_dir.parent_path().parent_path().parent_path() / "share" / "myriad-editor",
         executable_dir.parent_path() / "share" / "myriad-editor",
         executable_dir / "share" / "myriad-editor",
         executable_dir.parent_path() / "Resources" / "myriad-editor",
