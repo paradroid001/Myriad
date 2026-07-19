@@ -64,7 +64,7 @@ When running an installed editor build, MyriadEditor looks for resource and conf
 
 Project directory selection:
 
-The project directory can be set in the editor under `Editor Preferences` -> `Project`. Header and library directories can be configured in the same panel. Those values are persisted in `.myriad-editor.json`.
+The project directory can be set in the editor under `Project` -> `Settings`. Header and library directories can be configured in the same panel. Those values are persisted in `.myriad_editor/editor.json` under the current project.
 
 Startup project root detection:
 
@@ -77,36 +77,38 @@ Startup project root detection:
 Themes and layouts (`themes.json`, `layouts.json`):
 
 1. `MYRIAD_EDITOR_RESOURCE_DIR` (if set)
-2. Installed data directory resolved from the executable location (for example `<prefix>/share/myriad-editor`)
+2. Installed data directory resolved from the executable location (for example `<prefix>/myriad/share/myriad-editor`)
 3. Source-tree fallback paths when running from the repository
 
-Editor config (`.myriad-editor.json`) read order for source/build-tree runs:
+Editor config read order for source/build-tree runs:
 
 1. `MYRIAD_EDITOR_CONFIG_PATH` (if set and file exists)
-2. Project root `.myriad-editor.json` (source-tree runs)
-3. Editor resource directory `.myriad-editor.json`
+2. Project root `.myriad_editor/editor.json`
+3. Project root `.myriad-editor.json` legacy fallback
+4. Editor resource directory `.myriad-editor.json`
 
 Editor config read order for installed editor runs:
 
 1. `MYRIAD_EDITOR_CONFIG_PATH` (if set and file exists)
-2. Editor resource directory `.myriad-editor.json`
-3. Project root `.myriad-editor.json` as a fallback
+2. Project root `.myriad_editor/editor.json`
+3. Project root `.myriad-editor.json` legacy fallback
+4. Editor resource directory `.myriad-editor.json`
 
 Editor config write path:
 
 1. `MYRIAD_EDITOR_CONFIG_PATH` (if set)
-2. Project root `.myriad-editor.json` when running from source tree
-3. Editor resource directory `.myriad-editor.json` for installed runs
+2. Project root `.myriad_editor/editor.json` when a project root is active
+3. Editor resource directory `.myriad-editor.json`
 
 Override examples:
 
 Linux/macOS (bash):
 
-`MYRIAD_PROJECT_ROOT=/workspaces/Myriad MYRIAD_EDITOR_RESOURCE_DIR=/opt/myriad/share/myriad-editor MYRIAD_EDITOR_CONFIG_PATH=/opt/myriad/share/myriad-editor/custom-editor.json /opt/myriad/bin/MyriadEditor`
+`MYRIAD_PROJECT_ROOT=/workspaces/Myriad MYRIAD_EDITOR_RESOURCE_DIR=/opt/myriad/share/myriad-editor MYRIAD_EDITOR_CONFIG_PATH=/opt/myriad/share/myriad-editor/custom-editor.json "/opt/myriad/G++ 11.4.0 x86_64-linux-gnu/Debug/bin/MyriadEditor"`
 
 Windows (PowerShell):
 
-`$env:MYRIAD_PROJECT_ROOT='C:\src\Myriad'; $env:MYRIAD_EDITOR_RESOURCE_DIR='C:\Myriad\share\myriad-editor'; $env:MYRIAD_EDITOR_CONFIG_PATH='C:\Myriad\share\myriad-editor\custom-editor.json'; C:\Myriad\bin\MyriadEditor.exe`
+`$env:MYRIAD_PROJECT_ROOT='C:\src\Myriad'; $env:MYRIAD_EDITOR_RESOURCE_DIR='C:\Myriad\share\myriad-editor'; $env:MYRIAD_EDITOR_CONFIG_PATH='C:\Myriad\share\myriad-editor\custom-editor.json'; & 'C:\Myriad\MinGW 10 x86_64 windows\Debug\bin\MyriadEditor.exe'`
 
 ## API documentation (Doxygen)
 
