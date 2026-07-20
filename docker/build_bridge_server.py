@@ -266,6 +266,17 @@ def cmake_quote_path(path: Path) -> str:
     return path.as_posix().replace('"', '\\"')
 
 
+def source_exports_hosted_factory(source_directory: Path) -> bool:
+    for source_path in source_directory.rglob("*.cpp"):
+        try:
+            source_text = source_path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if "Myriad_CreateHostedGame" in source_text and "Myriad_DestroyHostedGame" in source_text:
+            return True
+    return False
+
+
 def write_generated_game_cmake_source(server: "BuildBridgeServer", source_directory: Path, build_dir: Path, project_name: str) -> Path:
     generated_source_dir = build_dir / ".myriad_bridge_cmake_source"
     generated_source_dir.mkdir(parents=True, exist_ok=True)
@@ -275,6 +286,11 @@ def write_generated_game_cmake_source(server: "BuildBridgeServer", source_direct
     source_path = cmake_quote_path(source_directory)
     engine_path = cmake_quote_path(server.project_root / "Engine")
     generated_engine_build_path = cmake_quote_path(build_dir / ".myriad_bridge_engine")
+    hosted_entrypoint_cmake = ""
+    hosted_entrypoint_compile_definition = ""
+    if not source_exports_hosted_factory(source_directory):
+        hosted_entrypoint_cmake = 'list(APPEND GAME_SOURCE_FILES "${GAME_MAIN_SOURCE}")\n'
+        hosted_entrypoint_compile_definition = 'target_compile_definitions(${LIBRARY_NAME} PRIVATE MYRIAD_HOSTED_ENTRYPOINT)\n'
     cmake_text = f'''cmake_minimum_required(VERSION 3.18.4)
 project("{project_name}" VERSION 0.0.1 DESCRIPTION "Myriad generated game build")
 
@@ -309,12 +325,13 @@ list(FILTER GAME_SOURCE_FILES EXCLUDE REGEX ".*/main\\.cpp$")
 if(NOT GAME_SOURCE_FILES)
     message(FATAL_ERROR "Game source directory has no library source files: ${{MYRIAD_GAME_SOURCE_DIR}}")
 endif()
+{hosted_entrypoint_cmake}
 
 set(LIBRARY_NAME lib${{PROJECT_NAME}})
 add_library(${{LIBRARY_NAME}} SHARED ${{GAME_SOURCE_FILES}})
 myriad_apply_mingw_libgcc(${{LIBRARY_NAME}})
 target_compile_options(${{LIBRARY_NAME}} PRIVATE ${{COMPILE_FLAGS}})
-set_target_properties(${{LIBRARY_NAME}} PROPERTIES OUTPUT_NAME ${{PROJECT_NAME}})
+{hosted_entrypoint_compile_definition}set_target_properties(${{LIBRARY_NAME}} PROPERTIES OUTPUT_NAME ${{PROJECT_NAME}})
 target_include_directories(${{LIBRARY_NAME}} PUBLIC "${{MYRIAD_GAME_SOURCE_DIR}}" "{cmake_quote_path(server.project_root / 'Engine' / 'include')}")
 target_link_libraries(${{LIBRARY_NAME}} MyriadEngine)
 
@@ -383,15 +400,36 @@ def copy_resource_directory(source: Path, destination: Path) -> list[Path]:
     return [destination]
 
 
-def copy_resources_to_export(project_root: Path, source_directory: Path, export_directory: Path) -> list[Path]:
+def resolve_configured_resources_directory(project_root: Path, path_text: str) -> tuple[Path, Path] | None:
+    trimmed_text = path_text.strip()
+    if not trimmed_text:
+        return None
+
+    requested_path = Path(trimmed_text)
+    resource_directory = requested_path if requested_path.is_absolute() else project_root / requested_path
+    resource_directory = resource_directory.resolve()
+    try:
+        relative_path = resource_directory.relative_to(project_root)
+    except ValueError as exc:
+        raise ValueError("resourcesDirectory must stay inside the project root") from exc
+
+    return resource_directory, relative_path
+
+
+def copy_resources_to_export(project_root: Path, source_directory: Path, export_directory: Path, resources_directory_text: str) -> list[Path]:
     copied: list[Path] = []
     copied.extend(copy_resource_directory(project_root / "shared" / "res", export_directory / "shared" / "res"))
     for directory_name in ("res", "resources", "assets"):
         copied.extend(copy_resource_directory(source_directory / directory_name, export_directory / directory_name))
+
+    configured_resources = resolve_configured_resources_directory(project_root, resources_directory_text)
+    if configured_resources is not None:
+        resource_directory, relative_path = configured_resources
+        copied.extend(copy_resource_directory(resource_directory, export_directory / relative_path))
     return copied
 
 
-def export_build_outputs(server: "BuildBridgeServer", project_root: Path, source_directory: Path, executable: Path, export_directory_text: str) -> dict | None:
+def export_build_outputs(server: "BuildBridgeServer", project_root: Path, source_directory: Path, executable: Path, export_directory_text: str, resources_directory_text: str) -> dict | None:
     if not export_directory_text.strip():
         return None
 
@@ -402,7 +440,7 @@ def export_build_outputs(server: "BuildBridgeServer", project_root: Path, source
         exported_executable = export_directory / executable.name
         shutil.copy2(executable, exported_executable)
         copied_runtime_files.append(exported_executable)
-    copied_resource_dirs = copy_resources_to_export(project_root, source_directory, export_directory)
+    copied_resource_dirs = copy_resources_to_export(project_root, source_directory, export_directory, resources_directory_text)
     return {
         "exportDirectory": export_directory,
         "exportedExecutable": export_directory / executable.name,
@@ -573,21 +611,10 @@ def normalize_target_name(target: str) -> str:
 
 
 def iter_watch_roots(project_root: Path, normalized_target: str, source_directory: Path | None = None) -> list[Path]:
-    roots = [
-        project_root / "Engine",
-        project_root / "shared",
-    ]
-
     if source_directory is not None:
-        roots.append(source_directory)
-        return roots
+        return [source_directory]
 
-    if normalized_target == "testecs":
-        roots.append(project_root / "Examples" / "TestECS")
-    else:
-        roots.append(project_root / "Examples" / normalized_target)
-
-    return roots
+    return [project_root]
 
 
 def should_watch_file(file_path: Path) -> bool:
@@ -612,6 +639,30 @@ def append_changed_file(changed_files_preview: list[str], project_root: Path, ca
 def scan_rebuild_state(project_root: Path, normalized_target: str, last_success_build_time: float, source_directory: Path | None = None) -> tuple[bool, int, list[str]]:
     changed_file_count = 0
     changed_files_preview: list[str] = []
+    seen_files: set[Path] = set()
+
+    def count_candidate(candidate: Path) -> None:
+        nonlocal changed_file_count
+
+        try:
+            resolved_candidate = candidate.resolve()
+        except OSError:
+            return
+        if resolved_candidate in seen_files:
+            return
+        seen_files.add(resolved_candidate)
+
+        if last_success_build_time <= 0.0:
+            changed_file_count += 1
+            append_changed_file(changed_files_preview, project_root, candidate)
+            return
+
+        try:
+            if candidate.stat().st_mtime > last_success_build_time:
+                changed_file_count += 1
+                append_changed_file(changed_files_preview, project_root, candidate)
+        except OSError:
+            return
 
     for root in iter_watch_roots(project_root, normalized_target, source_directory):
         if not root.exists():
@@ -620,18 +671,7 @@ def scan_rebuild_state(project_root: Path, normalized_target: str, last_success_
         for candidate in root.rglob("*"):
             if not candidate.is_file() or not should_watch_file(candidate):
                 continue
-
-            if last_success_build_time <= 0.0:
-                changed_file_count += 1
-                append_changed_file(changed_files_preview, project_root, candidate)
-                continue
-
-            try:
-                if candidate.stat().st_mtime > last_success_build_time:
-                    changed_file_count += 1
-                    append_changed_file(changed_files_preview, project_root, candidate)
-            except OSError:
-                continue
+            count_candidate(candidate)
 
     project_files = [
         project_root / "CMakeLists.txt",
@@ -640,18 +680,7 @@ def scan_rebuild_state(project_root: Path, normalized_target: str, last_success_
     for candidate in project_files:
         if not candidate.exists() or not should_watch_file(candidate):
             continue
-
-        if last_success_build_time <= 0.0:
-            changed_file_count += 1
-            append_changed_file(changed_files_preview, project_root, candidate)
-            continue
-
-        try:
-            if candidate.stat().st_mtime > last_success_build_time:
-                changed_file_count += 1
-                append_changed_file(changed_files_preview, project_root, candidate)
-        except OSError:
-            continue
+        count_candidate(candidate)
 
     rebuild_needed = changed_file_count > 0
     return rebuild_needed, changed_file_count, changed_files_preview
@@ -1019,7 +1048,7 @@ def run_build(server: "BuildBridgeServer", request: dict, emit_line) -> dict:
         except ValueError:
             response["executable"] = executable.as_posix()
 
-        exported = export_build_outputs(server, project_root, source_directory, executable, str(request.get("exportDirectory", "")))
+        exported = export_build_outputs(server, project_root, source_directory, executable, str(request.get("exportDirectory", "")), str(request.get("resourcesDirectory", "")))
         if exported is not None:
             response["exportDirectory"] = target_to_display(server.projects_root, server.projects_source_root, exported["exportDirectory"])
             response["exportedExecutable"] = target_to_display(server.projects_root, server.projects_source_root, exported["exportedExecutable"])

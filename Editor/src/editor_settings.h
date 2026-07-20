@@ -9,18 +9,6 @@
 namespace Editor
 {
   /**
-   * @brief Returns the default command template used for local CMake builds.
-   */
-  std::string DefaultBuildCommandTemplate();
-
-  /**
-   * @brief Parses a comma/space/semicolon-delimited bridge host list.
-   * @param host_list User-provided host list string.
-   * @return De-duplicated normalized host names.
-   */
-  std::vector<std::string> ParseHostList(const std::string &host_list);
-
-  /**
    * @brief Builds an ordered list of bridge hosts to attempt.
    * @param settings Editor settings with preferred hosts.
    * @return Candidate hosts in connection attempt order.
@@ -96,8 +84,9 @@ namespace Editor
                                        const std::string &build_dir_relative,
                                        const std::string &project_mount_path,
                                        const std::string &build_type,
-                                       const std::string &game_project_name,
+                                       const std::string &target_executable_name,
                                        const std::string &source_directory,
+                                       const std::string &resources_directory,
                                        const std::string &header_search_dirs,
                                        const std::string &library_search_dirs,
                                        const std::string &export_directory);
@@ -158,5 +147,5 @@ namespace Editor
    * @param project_mount_path Project directory relative to the bridge projects mount.
    * @return Serialized JSON request line including trailing newline.
    */
-  std::string CreateBuildBridgeStatusRequest(const std::string &project_mount_path, const std::string &game_project_name, const std::string &source_directory);
+  std::string CreateBuildBridgeStatusRequest(const std::string &project_mount_path, const std::string &target_executable_name, const std::string &source_directory);
 } // namespace Editor

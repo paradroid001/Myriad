@@ -524,7 +524,7 @@ namespace Editor
 
   bool ProbeBuildBridge(EditorSettings &settings, std::string &response_text, std::string &error_message)
   {
-    const std::string request = CreateBuildBridgeStatusRequest(settings.project_mount_path, settings.game_project_name, settings.source_directory);
+    const std::string request = CreateBuildBridgeStatusRequest(settings.project_mount_path, settings.target_executable_name, settings.source_directory);
     return SendBuildBridgeRequestWithFallback(settings, request, response_text, error_message, nullptr, 250, 800);
   }
 } // namespace Editor

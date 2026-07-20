@@ -23,15 +23,17 @@ Start the bridge inside the devcontainer or Docker container:
 
 `python3 docker/build_bridge_server.py --host 0.0.0.0 --port 55333`
 
-Then set the editor to socket mode with `MYRIAD_BUILD_MODE=socket`, or add a `.myriad-editor.json` file at the repo root like this:
+Then set the editor to socket mode with `MYRIAD_BUILD_MODE=socket`, or add `.myriad_editor/editor.json` under the project root like this:
 
 ```json
 {
-  "buildMode": "socket",
-  "buildSocketHosts": "192.168.1.50,127.0.0.1",
-  "buildSocketHost": "127.0.0.1",
-  "buildSocketPort": 55333,
-  "buildBridgeProbeIntervalSeconds": 30
+  "build": {
+    "buildMode": "socket",
+    "buildSocketHosts": "192.168.1.50,127.0.0.1",
+    "buildSocketHost": "127.0.0.1",
+    "buildSocketPort": 55333,
+    "buildBridgeProbeIntervalSeconds": 30
+  }
 }
 ```
 
@@ -41,12 +43,14 @@ The editor expands these placeholders when socket mode is not enabled and it fal
 
 - `{projectRoot}`: repository root path
 - `{buildDir}`: selected build directory
-- `{target}`: build target, currently `TestECS`
+- `{target}`: configured target executable name
 - `{toolchainArg}`: preset-specific `-DCMAKE_TOOLCHAIN_FILE=...` argument when available
 - `{headerDirs}`: configured header directories, separated by semicolons or newlines
 - `{libraryDirs}`: configured library directories, separated by semicolons or newlines
 - `{includeArgs}`: configured header directories expanded as quoted `-I...` arguments
 - `{libraryArgs}`: configured library directories expanded as quoted `-L...` arguments
+
+Project metadata is stored separately from build output names. `project.projectName` is the editor-facing project label, while `build.targetExecutableName` controls generated bridge targets, local `{target}` expansion, and executable discovery. `build.sourceDirectory` and `build.buildDirectory` are persisted relative to the configured project root when they point inside it; legacy absolute values remain readable.
 
 The editor now supports a TCP build bridge instead of relying on local cmake when you enable socket mode. The client path lives in Editor/src/main.cpp, and the container-side listener is docker/build_bridge_server.py. The bridge also applies the preset environment variables from CMakeKits.json before it runs cmake, and I forwarded the bridge port in .devcontainer/devcontainer.json.
 
@@ -64,7 +68,7 @@ When running an installed editor build, MyriadEditor looks for resource and conf
 
 Project directory selection:
 
-The project directory can be set in the editor under `Project` -> `Settings`. Header and library directories can be configured in the same panel. Those values are persisted in `.myriad_editor/editor.json` under the current project.
+The project directory can be set in the editor under `Project` -> `Settings`. Header and library directories can be configured in the same panel. Those values are persisted in grouped sections in `.myriad_editor/editor.json` under the current project.
 
 Startup project root detection:
 
@@ -99,6 +103,8 @@ Editor config write path:
 1. `MYRIAD_EDITOR_CONFIG_PATH` (if set)
 2. Project root `.myriad_editor/editor.json` when a project root is active
 3. Editor resource directory `.myriad-editor.json`
+
+Newly written config files use grouped `build`, `project`, `ui`, `last`, and `panels` sections. Existing flat files remain readable while projects migrate.
 
 Override examples:
 
@@ -135,3 +141,18 @@ Generated HTML entry point:
 
 - `Engine/docs/doxygen/html/index.html`
 - `Editor/docs/doxygen/html/index.html`
+
+# Issues
+
+As of 20260720 we have an Editor which has been largely coded by AI. It communicates with the workspace/devcontainer via a python 'build bridge' exposed on a socket, so that it can trigger builds. This largely works, and - on linux - a linux (G++) build can be done and run, as well as previewed.
+This does have a number of issues though.
+
+1. It doesn't work properly on windows - especially building: this mainly seems to be a pathing issue for projects located in the wsl system.
+2. It builds and runs on linux, and preview works, but I don't exactly understand how because the hosted preview code in NyrEntryPoint.cpp seems to be behind an ifdef.
+3. I have no idea how the build bridge is architected. I also asked for the Engine to use cereal for serialisation but I don't think it is, or it's still heavily reliant on the json utils it made.
+4. I don't know what the 'apply project directory' button does. Or 'refresh paths'
+5. I asked if the system could build whatever was in the project directory 'source' folder, so that no cmakelists.txt file was needed in the project, because I thought it would be a pain. It's probably not a pain, and would help VSCode know where the headers etc are for intellisense etc. I don't really know or understand what this cmake 'template' is that is used to compile game projects. In any case, windows builds on linux don't work, they complain about not being able to find X11, which makes me think either the 'template' is wrong, or it doesn't know to use the linux toolchain file.
+6. The editor startup should be to contact the backend, and also give you a select / create project panel to get started.
+7. The build & run path is different to the preview path: obviously because of the 'hosted preview', but also the hosted preview doesn't seem to know anything about elapsed time / per frame timers, so it has no concept of 'dt'.
+8. On linux, 'dist' builds almost work out of the box, but not quite. First, the binary doesn't know where to find dependencies and needs an LD_LIBRARY_PATH hint, and then there's a missing symlink. Feels like these c an both be solved.
+9. The engine doesn't realise when a game has been closed by quitting its window, so keeps the old process id and you have to click 'stop' to clear it even though the game is already stopped.

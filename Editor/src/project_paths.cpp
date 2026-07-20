@@ -113,6 +113,7 @@ namespace Editor
                                          const CompilerPreset &preset,
                                          const std::string &build_type,
                                          const std::filesystem::path &toolchain_path,
+                                         const std::string &target_executable_name,
                                          const std::string &header_search_dirs,
                                          const std::string &library_search_dirs)
   {
@@ -125,7 +126,7 @@ namespace Editor
     ReplaceAll(command, "{buildDir}", build_dir_text);
     ReplaceAll(command, "{preset}", preset.name);
     ReplaceAll(command, "{buildType}", build_type.empty() ? std::string{"Debug"} : build_type);
-    ReplaceAll(command, "{target}", "TestECS");
+    ReplaceAll(command, "{target}", target_executable_name.empty() ? std::string{"TestECS"} : target_executable_name);
     ReplaceAll(command, "{toolchainFile}", toolchain_text);
     ReplaceAll(command, "{toolchainArg}", toolchain_arg);
     ReplaceAll(command, "{headerDirs}", header_search_dirs);
@@ -404,7 +405,7 @@ namespace Editor
     return path;
   }
 
-  std::filesystem::path FindGameExecutable(const std::filesystem::path &build_dir, const std::filesystem::path &override, const std::filesystem::path &project_root)
+  std::filesystem::path FindGameExecutable(const std::filesystem::path &build_dir, const std::filesystem::path &override, const std::filesystem::path &project_root, const std::string &target_executable_name)
   {
     const std::filesystem::path resolved_override = ResolveExecutablePath(build_dir, project_root, override);
     if (!resolved_override.empty() && std::filesystem::exists(resolved_override))
@@ -417,9 +418,10 @@ namespace Editor
       return {};
     }
 
-    const std::vector<std::string> names = {"TestECS", "TestECS.exe", "testecs", "testecs.exe"};
+    const std::string target_name = target_executable_name.empty() ? std::string{"TestECS"} : target_executable_name;
+    const std::vector<std::string> names = {target_name, target_name + ".exe"};
     const std::vector<std::filesystem::path> common_locations = {
-        build_dir / "Examples" / "TestECS",
+        build_dir / "Examples" / target_name,
         build_dir / "Editor",
         build_dir / "bin",
         build_dir,

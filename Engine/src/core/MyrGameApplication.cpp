@@ -1,4 +1,5 @@
-#include "string.h" //strncpy
+#include <cstdlib>
+#include <cstring>
 
 #include "myriad.h"
 
@@ -20,15 +21,23 @@ namespace Myriad
 
     void MyrGameApplication::Run()
     {
-        GameEngineConfig c;
+        GameEngineConfig c{};
         c.window_config.resolution = {800, 600};
         c.window_config.resizable = true;
         c.window_config.borderless = false;
         c.window_config.fullscreen = false;
         c.window_config.vsync = false;
         c.framerate = 100;
-        strncpy(c.resource_base_path, "shared/res", 100);
-        strncpy(c.window_title, "Default Window Title", 100);
+        const char *resource_base_path =
+            std::getenv("MYRIAD_RESOURCE_BASE_PATH");
+        if (resource_base_path == nullptr || resource_base_path[0] == '\0')
+        {
+            resource_base_path = "shared/res";
+        }
+        std::strncpy(c.resource_base_path, resource_base_path,
+                     sizeof(c.resource_base_path) - 1);
+        std::strncpy(c.window_title, "Default Window Title",
+                     sizeof(c.window_title) - 1);
 
         if (engine_.Init(c)) // Sets an initial config, inits members.
         {

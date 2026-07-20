@@ -1,6 +1,8 @@
 #include "process_utils.h"
 
+#include <cstdlib>
 #include <iostream>
+#include <string>
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -25,7 +27,9 @@ namespace Editor
   bool LaunchProcess(const std::filesystem::path &executable,
                      const std::filesystem::path &working_dir,
                      std::intptr_t &process_id,
-                     const std::filesystem::path *stdout_stderr_log_file)
+                     const std::filesystem::path *stdout_stderr_log_file,
+                     const std::vector<std::filesystem::path> *runtime_library_dirs,
+                     const std::vector<std::pair<std::string, std::string>> *environment_overrides)
   {
     const std::filesystem::path absolute_executable = std::filesystem::absolute(executable);
     const std::wstring exe_path = absolute_executable.wstring();
@@ -68,8 +72,77 @@ namespace Editor
       }
     }
 
+    std::wstring original_path;
+    bool changed_path = false;
+    std::vector<std::pair<std::wstring, std::wstring>> original_environment_values;
+    std::vector<std::wstring> missing_environment_values;
+    if (runtime_library_dirs != nullptr && !runtime_library_dirs->empty())
+    {
+      DWORD path_size = GetEnvironmentVariableW(L"PATH", nullptr, 0);
+      if (path_size > 0)
+      {
+        original_path.resize(path_size - 1);
+        GetEnvironmentVariableW(L"PATH", original_path.data(), path_size);
+      }
+
+      std::wstring child_path;
+      for (const auto &directory : *runtime_library_dirs)
+      {
+        if (directory.empty())
+        {
+          continue;
+        }
+        if (!child_path.empty())
+        {
+          child_path += L";";
+        }
+        child_path += std::filesystem::absolute(directory).wstring();
+      }
+      if (!child_path.empty())
+      {
+        if (!original_path.empty())
+        {
+          child_path += L";" + original_path;
+        }
+        changed_path = SetEnvironmentVariableW(L"PATH", child_path.c_str()) != FALSE;
+      }
+    }
+
+    if (environment_overrides != nullptr)
+    {
+      for (const auto &override_value : *environment_overrides)
+      {
+        const std::wstring name = std::filesystem::path(override_value.first).wstring();
+        const std::wstring value = std::filesystem::path(override_value.second).wstring();
+        DWORD value_size = GetEnvironmentVariableW(name.c_str(), nullptr, 0);
+        if (value_size > 0)
+        {
+          std::wstring original_value(value_size - 1, L'\0');
+          GetEnvironmentVariableW(name.c_str(), original_value.data(), value_size);
+          original_environment_values.push_back({name, original_value});
+        }
+        else
+        {
+          missing_environment_values.push_back(name);
+        }
+        SetEnvironmentVariableW(name.c_str(), value.c_str());
+      }
+    }
+
     const BOOL created = CreateProcessW(exe_path.c_str(), command_line.data(), nullptr, nullptr, inherit_handles, 0, nullptr,
                                         working_dir_str.empty() ? nullptr : working_dir_str.c_str(), &startup_info, &process_info);
+    for (const auto &original_value : original_environment_values)
+    {
+      SetEnvironmentVariableW(original_value.first.c_str(), original_value.second.c_str());
+    }
+    for (const auto &name : missing_environment_values)
+    {
+      SetEnvironmentVariableW(name.c_str(), nullptr);
+    }
+    if (changed_path)
+    {
+      SetEnvironmentVariableW(L"PATH", original_path.empty() ? nullptr : original_path.c_str());
+    }
     if (log_handle != nullptr)
     {
       CloseHandle(log_handle);
@@ -107,7 +180,9 @@ namespace Editor
   bool LaunchProcess(const std::filesystem::path &executable,
                      const std::filesystem::path &working_dir,
                      std::intptr_t &process_id,
-                     const std::filesystem::path *stdout_stderr_log_file)
+                     const std::filesystem::path *stdout_stderr_log_file,
+                     const std::vector<std::filesystem::path> *runtime_library_dirs,
+                     const std::vector<std::pair<std::string, std::string>> *environment_overrides)
   {
     const pid_t pid = fork();
     if (pid == 0)
@@ -124,6 +199,47 @@ namespace Editor
           dup2(log_fd, STDOUT_FILENO);
           dup2(log_fd, STDERR_FILENO);
           close(log_fd);
+        }
+      }
+
+      if (runtime_library_dirs != nullptr && !runtime_library_dirs->empty())
+      {
+        std::string library_path;
+        for (const auto &directory : *runtime_library_dirs)
+        {
+          if (directory.empty())
+          {
+            continue;
+          }
+          if (!library_path.empty())
+          {
+            library_path += ":";
+          }
+          library_path += std::filesystem::absolute(directory).string();
+        }
+        const char *existing_library_path = std::getenv("LD_LIBRARY_PATH");
+        if (existing_library_path != nullptr && existing_library_path[0] != '\0')
+        {
+          if (!library_path.empty())
+          {
+            library_path += ":";
+          }
+          library_path += existing_library_path;
+        }
+        if (!library_path.empty())
+        {
+          setenv("LD_LIBRARY_PATH", library_path.c_str(), 1);
+        }
+      }
+
+      if (environment_overrides != nullptr)
+      {
+        for (const auto &override_value : *environment_overrides)
+        {
+          if (!override_value.first.empty())
+          {
+            setenv(override_value.first.c_str(), override_value.second.c_str(), 1);
+          }
         }
       }
 

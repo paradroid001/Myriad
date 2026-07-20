@@ -24,6 +24,7 @@ namespace Editor
                                          const CompilerPreset &preset,
                                          const std::string &build_type,
                                          const std::filesystem::path &toolchain_path,
+                                         const std::string &target_executable_name,
                                          const std::string &header_search_dirs,
                                          const std::string &library_search_dirs);
 
@@ -87,7 +88,7 @@ namespace Editor
                                               const std::filesystem::path &path);
 
   /**
-   * @brief Attempts to locate the TestECS runtime executable.
+   * @brief Attempts to locate the selected runtime executable.
    * @param build_dir Selected build directory.
    * @param override Explicit executable override path.
    * @param project_root Project root directory.
@@ -95,5 +96,6 @@ namespace Editor
    */
   std::filesystem::path FindGameExecutable(const std::filesystem::path &build_dir,
                                            const std::filesystem::path &override,
-                                           const std::filesystem::path &project_root);
+                                           const std::filesystem::path &project_root,
+                                           const std::string &target_executable_name);
 } // namespace Editor

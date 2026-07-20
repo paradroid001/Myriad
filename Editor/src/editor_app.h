@@ -1,5 +1,6 @@
 #pragma once
 
+#include "editor_model.h"
 #include "editor_settings.h"
 #include "editor_types.h"
 
@@ -65,6 +66,10 @@ private:
   void RefreshProjectBrowser(const std::string &relative_path);
   /** @brief Refreshes the bridge-backed export directory browser. */
   void RefreshExportDirectoryBrowser(const std::string &relative_path);
+  /** @brief Refreshes the project-local source directory browser. */
+  void RefreshSourceDirectoryBrowser(const std::string &relative_path);
+  /** @brief Refreshes the project-local resources directory browser. */
+  void RefreshResourcesDirectoryBrowser(const std::string &relative_path);
   /** @brief Refreshes bridge-backed compiler toolkit and build type options. */
   void RefreshBuildOptions();
   /** @brief Opens a project selected from the bridge projects mount. */
@@ -103,101 +108,9 @@ private:
   void EndPreviewLogCapture();
 
 private:
-  std::filesystem::path project_root_;
-  std::filesystem::path build_dir_;
-  std::filesystem::path game_executable_;
-  std::vector<Editor::CompilerPreset> compiler_presets_;
-  std::vector<Editor::ThemePreset> theme_presets_;
-  std::vector<Editor::LayoutPreset> layout_presets_;
-  Editor::EditorSettings editor_settings_;
-  std::string build_command_template_;
-  bool build_bridge_connected_ = false;
-  std::string build_bridge_status_text_;
-  int build_bridge_consecutive_failures_ = 0;
-  bool build_bridge_warning_active_ = false;
-  double build_bridge_last_probe_time_ = 0.0;
-  std::string project_browser_mount_path_;
-  std::string project_mount_source_path_;
-  std::string dist_mount_source_path_;
-  std::string default_header_search_dirs_;
-  std::string default_library_search_dirs_;
-  std::string project_browser_relative_path_;
-  std::string project_browser_status_;
-  std::string new_project_name_;
-  std::string export_browser_relative_path_;
-  std::string export_browser_status_;
-  std::string new_export_directory_name_;
-  std::vector<std::string> build_type_options_;
-  std::vector<std::string> project_browser_directories_;
-  std::vector<std::string> export_browser_directories_;
-  bool show_open_project_dialog_ = false;
-  bool show_new_project_dialog_ = false;
-  bool show_export_directory_dialog_ = false;
-  Myriad::MyrGameApplication *preview_game_ = nullptr;
-  using HostedDestroyFn = void (*)(Myriad::MyrGameApplication *);
-  HostedDestroyFn hosted_destroy_fn_ = nullptr;
-  void *hosted_library_handle_ = nullptr;
-  bool hosted_library_reload_required_ = true;
-  std::filesystem::path hosted_library_path_;
-  std::filesystem::path hosted_library_loaded_copy_path_;
-  RenderTexture2D preview_texture_ = {};
-  bool preview_texture_ready_ = false;
-  bool preview_texture_cleanup_requested_ = false;
-  bool preview_stop_requested_ = false;
-  double preview_last_tick_time_ = 0.0;
-  std::string build_dir_input_;
-  std::string executable_input_;
-  std::string status_;
-  std::vector<std::string> console_lines_;
-  bool build_succeeded_ = false;
-  bool show_project_window_ = true;
-  bool show_build_workflow_window_ = true;
-  bool show_scene_window_ = true;
-  bool show_preview_window_ = true;
-  bool show_console_window_ = true;
-  bool show_game_log_window_ = true;
-  bool show_editor_preferences_window_ = true;
-  bool project_settings_dirty_ = false;
-  bool console_scroll_to_bottom_ = false;
-  bool game_log_scroll_to_bottom_ = false;
+  Editor::EditorModel model_;
 #if MYRIAD_EDITOR_ENABLE_BRIDGE_THREADS
   std::thread bridge_build_thread_;
   std::mutex bridge_build_mutex_;
-#endif
-  std::vector<std::string> bridge_build_pending_lines_;
-  std::atomic<bool> bridge_build_in_progress_ = false;
-  bool bridge_build_result_ready_ = false;
-  bool run_after_build_request_ = false;
-  bool bridge_build_request_success_ = false;
-  bool bridge_build_success_ = false;
-  bool bridge_build_rebuild_triggered_ = false;
-  std::string bridge_build_response_;
-  std::string bridge_build_error_;
-  std::string bridge_build_status_;
-  std::string bridge_build_executable_;
-  std::string bridge_build_host_;
-  int bridge_build_progress_percent_ = -1;
-  bool bridge_rebuild_needed_ = false;
-  int bridge_changed_file_count_ = 0;
-  std::vector<std::string> bridge_changed_files_preview_;
-  std::vector<std::string> game_log_lines_;
-  int selected_theme_preset_index_ = 0;
-  float ui_font_scale_ = 1.0f;
-  float ui_rounding_ = 6.0f;
-  float ui_spacing_density_ = 1.0f;
-  ImVec4 ui_accent_color_ = ImVec4(0.30f, 0.54f, 0.81f, 1.0f);
-  ImGuiStyle base_theme_style_ = {};
-  bool has_base_theme_style_ = false;
-  int selected_layout_preset_index_ = 0;
-  bool dock_layout_apply_requested_ = true;
-  int selected_preset_index_ = 0;
-  int last_selected_preset_index_ = -1;
-  std::intptr_t game_pid_ = -1;
-#ifndef _WIN32
-  int preview_log_pipe_read_fd_ = -1;
-  int preview_log_pipe_write_fd_ = -1;
-  int preview_log_saved_stdout_fd_ = -1;
-  int preview_log_saved_stderr_fd_ = -1;
-  std::string preview_log_partial_line_;
 #endif
 };

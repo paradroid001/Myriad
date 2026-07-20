@@ -1,5 +1,8 @@
 build
 runtime_logs/
+Engine/docs/doxygen/
+Editor/docs/doxygen/
+**/__pycache__
 
 #Cmake ignores
 **/CMakeLists.txt.user
@@ -19,8 +22,6 @@ runtime_logs/
 
 **/.zig-cache
 
-Engine/docs/doxygen/
-Editor/docs/doxygen/
 
 # Prerequisites
 *.d

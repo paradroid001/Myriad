@@ -12,13 +12,14 @@ set(EXECUTABLE_NAME ${PROJECT_NAME})
 add_library(${LIBRARY_NAME} SHARED)
 myriad_apply_mingw_libgcc(${LIBRARY_NAME})
 target_compile_options(${LIBRARY_NAME} PRIVATE ${COMPILE_FLAGS})
+target_compile_definitions(${LIBRARY_NAME} PRIVATE MYRIAD_HOSTED_ENTRYPOINT)
 set_target_properties(${LIBRARY_NAME} PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME}
 )
 target_sources(${LIBRARY_NAME} PRIVATE
 src/ECS3.cpp
 src/TestECS.cpp
-src/HostedFactory.cpp
+src/main.cpp
 )
 target_include_directories(${LIBRARY_NAME} PUBLIC "../Engine/include/")
 #Link against the Myriad Engine

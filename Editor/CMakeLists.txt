@@ -39,6 +39,7 @@ set(IMGUI_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui)
 set(RLIMGUI_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/rlImGui)
 target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${RLIMGUI_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cereal/include)
 #This proj includes
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 #Src
