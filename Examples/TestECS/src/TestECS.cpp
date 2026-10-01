@@ -3,6 +3,8 @@
 #include "TestECS.h"
 
 #include <cstring> //event name change
+#include <fstream>
+#include <filesystem>
 
 #define MOVEAMOUNT 15.0f
 
@@ -20,22 +22,86 @@ void TestECS::MyCallback(Myriad::Event *e)
 
 void TestECS::Init(Myriad::GameEngineConfig &config)
 {
-  config.framerate = 60;
-  config.window_config.resizable = true;
-  config.window_config.resolution = {800, 600};
-  // fullscreen doesn't seem to matter on emscripten
-  config.window_config.fullscreen = false;
-  config.window_config.vsync = true;
+  std::string config_path = "shared/res/config.s8";
+  bool loaded = false;
+  if (std::filesystem::exists(config_path))
+  {
+    std::ifstream config_file(config_path);
+    std::stringstream config_stream;
+    config_stream << config_file.rdbuf();
+
+    s8::Serialiser s;
+    s8::PlaintextCodec codec;
+    // Create the serialiser state
+    s8::CodecResult res = s.Deserialise(config_stream.str(), codec);
+    if (!res.Ok())
+    {
+      MYR_ERROR("Failed to deserialise config from file using s8::Serialiser: (%d): %s", res.status, res.error_message.c_str());
+    }
+    else if (!s.ReadObject(s.GetRootID(), config))
+    {
+      const s8::SerialiserResult &result = s.GetLastResult();
+      MYR_ERROR("Failed to load config from file using s8::Serialiser: %s", result.error_message.c_str());
+    }
+    else
+    {
+      loaded = true;
+    }
+
+    /*
+    auto res = s8::DeserialiseText<Myriad::GameEngineConfig>(config_str, config);
+    if (res)
+    {
+      MYR_INFO("Loaded config from file.");
+      return;
+    }
+    else
+    {
+      MYR_ERROR("Failed to load config from file: %s", res.GetError().message.c_str());
+    }*/
+  }
+  else
+  {
+    MYR_WARN("Config file not found");
+  }
+  if (!loaded)
+  {
+    MYR_INFO("Loading config defaults");
+    config.framerate = 60;
+    config.window_config.resizable = true;
+    config.window_config.resolution = {800, 600};
+    // fullscreen doesn't seem to matter on emscripten
+    config.window_config.fullscreen = false;
+    config.window_config.vsync = true;
+
+    // Serialise the current config back to the file
+
+    s8::Serialiser s;
+    s8::PlaintextCodec codec;
+    codec.SetOptions({.pretty_print = true});
+    std::string config_out;
+    s.WriteObject(s.GetRootID(), config);
+    s8::CodecResult res = s.Serialise(codec, config_out);
+    if (res.Ok())
+    {
+      std::ofstream config_file("shared/res/config.s8");
+      config_file << config_out;
+    }
+    else
+    {
+      MYR_ERROR("Failed to serialise config to file using s8::Serialiser: %s", res.error_message.c_str());
+    }
+  }
 }
 
 void TestECS::Start()
 {
   MYR_TRACE("Starting TestECS.");
-  Myriad::Texture2D tex = engine_.Assets().GetTexture("shared/res/spritesheet.png");
+  Myriad::Texture2D tex = assets.GetTexture("shared/res/spritesheet.png");
   // MYR_TRACE("Tex is %d: %x\n", tex->GetID(), tex->GetDataPtr());
   textures[0] = tex.GetID();
 
-  fonts[0] = engine_.Assets().GetFont("shared/res/dejavu.fnt");
+  fonts[0] = assets.GetFont("shared/res/dejavu.fnt");
   MYR_TRACE("Font is %d: %x\n", fonts[0]->GetID(), fonts[0]->GetDataPtr());
 
   events.Subscribe<TestECS>((Myriad::EventPrimaryType_t)1, (Myriad::EventSubType_t)1, this, &TestECS::MyCallback);

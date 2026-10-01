@@ -1,0 +1,16 @@
+{
+  "$type": "GameEngineConfig",
+  "window_title": "Default Window Title",
+  "framerate": "60",
+  "resource_base_path": "shared/res",
+  "window_config": {
+    "borderless": "0",
+    "fullscreen": "0",
+    "vsync": "1",
+    "resizable": "1",
+    "resolution": {
+      "y": "600",
+      "x": "800"
+    }
+  }
+}
