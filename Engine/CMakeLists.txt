@@ -52,6 +52,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     # IO
     src/io/ILogger.cpp
     src/io/BasicLogger.cpp
+    #src/io/s5.cpp
     # ASSET
     src/asset/MyrAssetManager.cpp
     #src/asset/MyrTexture2D.cpp
@@ -138,6 +139,10 @@ set(WITH_PIC ON CACHE BOOL "" FORCE)
 add_subdirectory(vendor/raylib)
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/raylib/src/")
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+
+# not using cereal
+#target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/cereal/include/")
+
 
 if(MINGW)
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)

@@ -8,6 +8,7 @@
 #include "EventTypes.h"
 #include "InterfaceTypes.h"
 #include "UtilTypes.h"
+#include "s8.h"
 
 namespace Myriad
 {

@@ -33,7 +33,7 @@ namespace Myriad
         }
     }
 
-    bool Window::Open(WindowConfig config, const char *title)
+    bool Window::Open(WindowConfig config, const std::string &title)
     {
         if (window_provider_ != nullptr)
         {

@@ -1,7 +1,7 @@
 #ifndef _MYRIAD_IO_ILOGGER_H_
 #define _MYRIAD_IO_ILOGGER_H_
 
-#include "myriad.h" //ILogger and global loggers.
+// #include "myriad.h" //ILogger and global loggers.
 
 #include "io/Logging.h" // Core Engine Logging Macros
 

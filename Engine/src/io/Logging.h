@@ -1,7 +1,10 @@
 #ifndef _MYRIAD_IO_LOGGING_H_
 #define _MYRIAD_IO_LOGGING_H_
 
-#include "myriad.h" //ILogger and global loggers.
+#include "UtilTypes.h" //ILogger
+
+// Global logger is defined in the application
+extern std::shared_ptr<Myriad::ILogger> global_logger_core;
 
 #define MYR_CORE_TRACE(...)                                                    \
     global_logger_core->Log(ILogger::MyrLogLevel_t::MYR_LOGLEVEL_TRACE,        \

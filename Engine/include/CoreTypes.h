@@ -11,6 +11,9 @@
 
 #include "EngineConfig.h"
 
+#include "s8.h"
+#include <string>
+
 namespace Myriad
 {
     /* Basic Types */
@@ -34,6 +37,22 @@ namespace Myriad
         float y;
         Vector2(float x, float y) : x(x), y(y) {}
         Vector2() : Vector2(0.0f, 0.0f) {};
+
+        static std::string TypeName() { return "Vector2"; }
+
+        static bool Serialise(const Vector2 &object, s8::Serialiser &s,
+                              s8::Serialiser::NodeID_t id)
+        {
+            return s.Value(s.ScalarField(id, "x"), object.x) &&
+                   s.Value(s.ScalarField(id, "y"), object.y);
+        }
+
+        static bool Deserialise(Vector2 &object, s8::Serialiser &s,
+                                s8::Serialiser::NodeID_t id)
+        {
+            return s.ReadScalar(s.GetFieldID(id, "x"), object.x) &&
+                   s.ReadScalar(s.GetFieldID(id, "y"), object.y);
+        }
     };
 
     class Vector2i
@@ -77,12 +96,12 @@ namespace Myriad
        - Has a fixed max size (no dynamic resizing)
        - Fast to iterate, reasonable lookup by id
 
-       - Will maintain an id to index mapping, so that we can have fast lookups
-       by id.
+       - Will maintain an id to index mapping, so that we can have fast
+       lookups by id.
        - Will maintain a free list of available slots, and reuse them when
        adding new items.
-       - Will maintain a skiplist of occupied slots, so that we can iterate over
-       only occupied slots.
+       - Will maintain a skiplist of occupied slots, so that we can iterate
+       over only occupied slots.
 
        - We will use a freelist to track free slots.
        - We will use skiplists to optimise the iterator.
@@ -94,13 +113,13 @@ namespace Myriad
         static constexpr std::size_t InvalidID = MYRIAD_INVALID_ID;
 
         T array[n];
-        bool occupied[n];     // track which slots are occupied
-        std::size_t capacity; // max number of items that can be stored
-        std::size_t size;     // current number of occupied slots
-        std::size_t
-            min_used_index; // track the minimum index that has ever been used
-        std::size_t
-            max_used_index; // track the maximum index that has ever been used
+        bool occupied[n];           // track which slots are occupied
+        std::size_t capacity;       // max number of items that can be stored
+        std::size_t size;           // current number of occupied slots
+        std::size_t min_used_index; // track the minimum index that has ever
+                                    // been used
+        std::size_t max_used_index; // track the maximum index that has ever
+                                    // been used
         std::queue<std::size_t> free_slots; // queue of free slot indices
         MYR_ID_t max_used_id;
         std::unordered_map<MYR_ID_t, std::size_t>
@@ -119,7 +138,8 @@ namespace Myriad
             {
                 min_used_index = index;
             }
-            // std::cout << "Occupying " << index << ": min=" << min_used_index
+            // std::cout << "Occupying " << index << ": min=" <<
+            // min_used_index
             //           << ", max=" << max_used_index << std::endl;
         }
 
@@ -320,8 +340,8 @@ namespace Myriad
             return Exists(id) ? &array[id_to_index[id]] : nullptr;
         }
 
-        // Add an item, return the id, or InvalidID if it fails (e.g. no free
-        // slots)
+        // Add an item, return the id, or InvalidID if it fails (e.g. no
+        // free slots)
         MYR_ID_t Add(T object)
         {
             MYR_ID_t new_id = InvalidID;
@@ -377,7 +397,8 @@ namespace Myriad
                     // is wrong.
                     // assert(false, "Remove: Cannot find occupancy to "
                     //              "update min_used_index");
-                    // std::cerr << "Remove: Cannot find occupancy to update "
+                    // std::cerr << "Remove: Cannot find occupancy to update
+                    // "
                     //             "min_used_index"
                     //          << std::endl;
                 }
@@ -402,7 +423,8 @@ namespace Myriad
                     // is wrong.
                     // assert(false, "Remove: Cannot find occupancy to "
                     //              "update max_used_index");
-                    // std::cerr << "Remove: Cannot find occupancy to update "
+                    // std::cerr << "Remove: Cannot find occupancy to update
+                    // "
                     //             "max_used_index"
                     //         << std::endl;
                 }
@@ -469,6 +491,54 @@ namespace Myriad
         bool vsync;
         bool fullscreen;
         bool borderless;
+
+        static std::string TypeName() { return "WindowConfig"; }
+        static bool Serialise(const WindowConfig *obj, s8::Serialiser &s,
+                              s8::Serialiser::NodeID_t id)
+        {
+            /*
+            s.Write<Vector2>(s.ObjectField(id, "resolution"), obj->resolution);
+            s.Write<bool>(s.ScalarField(id, "resizable"), obj->resizable);
+            s.Write<bool>(s.ScalarField(id, "vsync"), obj->vsync);
+            s.Write<bool>(s.ScalarField(id, "fullscreen"), obj->fullscreen);
+            s.Write<bool>(s.ScalarField(id, "borderless"), obj->borderless);
+            */
+            return (
+                Vector2::Serialise(obj->resolution, s,
+                                   s.ObjectField(id, "resolution")) &&
+                s.Value<bool>(s.ScalarField(id, "resizable"), obj->resizable) &&
+                s.Value<bool>(s.ScalarField(id, "vsync"), obj->vsync) &&
+                s.Value<bool>(s.ScalarField(id, "fullscreen"),
+                              obj->fullscreen) &&
+                s.Value<bool>(s.ScalarField(id, "borderless"),
+                              obj->borderless));
+        }
+        static bool Deserialise(WindowConfig &obj, s8::Serialiser &d,
+                                s8::Serialiser::NodeID_t id)
+        {
+            /**
+              auto res = d.Read<Vector2>(d.GetFieldID(id, "resolution"),
+                                         obj->resolution);
+              if (!res)
+                  return res;
+              res = d.Read<bool>(d.GetFieldID(id, "resizable"), obj->resizable);
+              if (!res)
+                  return res;
+              res = d.Read<bool>(d.GetFieldID(id, "vsync"), obj->vsync);
+              if (!res)
+                  return res;
+              res = d.Read<bool>(d.GetFieldID(id, "fullscreen"),
+              obj->fullscreen); if (!res) return res; res =
+              d.Read<bool>(d.GetFieldID(id, "borderless"), obj->borderless);
+              return res;
+              */
+            return (
+                d.ReadObject(d.GetFieldID(id, "resolution"), obj.resolution) &&
+                d.ReadScalar(d.GetFieldID(id, "resizable"), obj.resizable) &&
+                d.ReadScalar(d.GetFieldID(id, "vsync"), obj.vsync) &&
+                d.ReadScalar(d.GetFieldID(id, "fullscreen"), obj.fullscreen) &&
+                d.ReadScalar(d.GetFieldID(id, "borderless"), obj.borderless));
+        }
     };
 
 } // namespace Myriad

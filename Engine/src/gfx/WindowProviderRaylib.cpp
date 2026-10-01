@@ -18,7 +18,8 @@ namespace Myriad
 
     bool WindowProviderRaylib::Shutdown() { return true; }
 
-    bool WindowProviderRaylib::Open(WindowConfig config, const char *title)
+    bool WindowProviderRaylib::Open(WindowConfig config,
+                                    const std::string &title)
     {
         window_props_ = 0;
         unsigned int raylib_props = 0;
@@ -42,13 +43,14 @@ namespace Myriad
         // window_props_ = ???;
         ::SetConfigFlags(raylib_props);
 
-        MYR_CORE_TRACE("WindowProviderRaylib::Open() - Opening %dx%d "
+        MYR_CORE_TRACE("WindowProviderRaylib::Open() - Opening %fx%f "
                        "resizable=%d vsync=%d fullscreen=%d borderless=%d",
                        config.resolution.x, config.resolution.y,
                        config.resizable, config.vsync, config.fullscreen,
                        config.borderless);
 
-        ::InitWindow(config.resolution.x, config.resolution.y, title);
+        ::InitWindow((int)config.resolution.x, (int)config.resolution.y,
+                     title.c_str());
         if (::IsWindowReady()) // This tells us if the window inited.
         {
             //::SetWindowState(::FLAG_WINDOW_RESIZABLE);

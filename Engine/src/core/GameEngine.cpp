@@ -18,17 +18,19 @@ namespace Myriad
         is_running_ = false;
         is_shutdown_ = false;
         window_opened_ = false;
+
+        assets_ = std::make_shared<MyrAssetManager>();
+        // We need the myriad namespace here because we defined
+        // methods with the same names as these classes.
+        window_ = new Myriad::Window();
+        renderer_ = new Myriad::Renderer(assets_);
     }
     GameEngine::~GameEngine() { MYR_CORE_TRACE("Game Engine destroyed"); }
 
     bool GameEngine::Init(GameEngineConfig config)
     {
         config_ = config;
-        assets_ = std::make_shared<MyrAssetManager>();
-        // We need the myriad namespace here because we defined
-        // methods with the same names as these classes.
-        window_ = new Myriad::Window();
-        renderer_ = new Myriad::Renderer(assets_);
+
         return true;
     }
 

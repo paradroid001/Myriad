@@ -2,7 +2,7 @@
 #define _MYRIAD_INTERFACETYPES_H_
 
 #include "CoreTypes.h"    //Colour, WindowConfig, Vector2, Rect2D
-#include "EngineConfig.h" //MYR_API
+#include "EngineConfig.h" //MYR_API, cereal
 
 namespace Myriad
 {
@@ -42,7 +42,7 @@ namespace Myriad
     {
       public:
         virtual ~IWindow() = 0;
-        virtual bool Open(WindowConfig config, const char *title) = 0;
+        virtual bool Open(WindowConfig config, const std::string &title) = 0;
         virtual void SetFPS(int fps) = 0;
         virtual bool Close() = 0;
 

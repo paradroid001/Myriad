@@ -10,9 +10,14 @@
 
 #include "tracy/Tracy.hpp"
 
+#include <fstream>
+
 namespace Myriad
 {
-    MyrGameApplication::MyrGameApplication() {}
+    MyrGameApplication::MyrGameApplication()
+        : engine(engine_), assets(*(engine_.assets_))
+    {
+    }
 
     MyrGameApplication::~MyrGameApplication()
     {
@@ -34,10 +39,8 @@ namespace Myriad
         {
             resource_base_path = "shared/res";
         }
-        std::strncpy(c.resource_base_path, resource_base_path,
-                     sizeof(c.resource_base_path) - 1);
-        std::strncpy(c.window_title, "Default Window Title",
-                     sizeof(c.window_title) - 1);
+        c.resource_base_path = resource_base_path;
+        c.window_title = "Default Window Title";
 
         if (engine_.Init(c)) // Sets an initial config, inits members.
         {

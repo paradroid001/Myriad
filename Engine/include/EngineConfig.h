@@ -49,6 +49,5 @@ namespace Myriad
     // Texture Limits
     const MYR_ID_t MAX_TEXTURES = 500;
     const MYR_ID_t TEXHANDLE_INVALID = MAX_TEXTURES + 1;
-
 } // namespace Myriad
 #endif

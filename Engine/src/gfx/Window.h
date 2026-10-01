@@ -17,7 +17,7 @@ namespace Myriad
         virtual ~Window();
 
         virtual bool Open(WindowConfig config,
-                          const char *title) override final;
+                          const std::string &title) override final;
         virtual void SetFPS(int fps) override final;
         virtual bool Close() override final;
 
