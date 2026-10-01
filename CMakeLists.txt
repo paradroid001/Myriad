@@ -83,7 +83,7 @@ function(myriad_apply_mingw_libgcc target_name)
 endfunction()
 
 add_subdirectory("Engine")
-#add_subdirectory("Examples/TestGame")
+add_subdirectory("Examples/TestGame")
 add_subdirectory("Examples/TestECS")
 add_subdirectory("Editor")
 # Tracy Profiler Server

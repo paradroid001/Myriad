@@ -23,7 +23,7 @@ public:
 class TestGame : public Myriad::MyrGameApplication
 {
 private:
-  Myriad::Asset *textures[5];
+  Myriad::AssetID_t textures[5];
   Myriad::Asset *fonts[5];
   Myriad::MyrIDArray<Movement, MAX_OBJECTS> positions;
 

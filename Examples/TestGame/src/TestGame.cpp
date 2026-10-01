@@ -31,11 +31,11 @@ void TestGame::Init(Myriad::GameEngineConfig &config)
 void TestGame::Start()
 {
   MYR_TRACE("Starting TestGame.");
-  Myriad::Asset *tex = engine_.Assets().GetTexture("shared/res/carrot.png");
-  MYR_TRACE("Tex is %d: %x\n", tex->GetID(), tex->GetDataPtr());
-  textures[0] = tex;
+  Myriad::Texture2D tex = assets.GetTexture("shared/res/carrot.png");
+  MYR_TRACE("Tex is %d: %x\n", tex.GetID(), tex.GetDataPtr());
+  textures[0] = tex.GetID();
 
-  fonts[0] = engine_.Assets().GetFont("shared/res/dejavu.fnt");
+  fonts[0] = assets.GetFont("shared/res/dejavu.fnt");
   MYR_TRACE("Font is %d: %x\n", fonts[0]->GetID(), fonts[0]->GetDataPtr());
 
   events.Subscribe<TestGame>((Myriad::EventPrimaryType_t)1, (Myriad::EventSubType_t)1, this, &TestGame::MyCallback);
