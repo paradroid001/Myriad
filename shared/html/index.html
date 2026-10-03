@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Myriad Dev Server</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #18211f;
+        --muted: #5d6965;
+        --line: #cdd8d3;
+        --paper: #f6f4ee;
+        --panel: #ffffff;
+        --accent: #0d766e;
+        --accent-strong: #09524d;
+        --warn: #9a5b00;
+        --ok: #12633a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family:
+          Avenir Next,
+          Avenir,
+          Segoe UI,
+          sans-serif;
+        background:
+          linear-gradient(120deg, rgba(13, 118, 110, 0.12), transparent 38%),
+          linear-gradient(0deg, rgba(24, 33, 31, 0.05), rgba(24, 33, 31, 0.05)),
+          var(--paper);
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: end;
+        padding-bottom: 28px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-family:
+          Georgia,
+          Times New Roman,
+          serif;
+        font-size: clamp(2.4rem, 6vw, 5.2rem);
+        line-height: 0.95;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 56rem;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        padding: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--muted);
+        font-size: 0.95rem;
+        white-space: nowrap;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 28px;
+      }
+
+      .card {
+        display: flex;
+        min-height: 188px;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.82);
+        text-decoration: none;
+        color: inherit;
+        transition:
+          border-color 140ms ease,
+          transform 140ms ease,
+          background 140ms ease;
+      }
+
+      .card:hover,
+      .card:focus-visible {
+        border-color: var(--accent);
+        background: var(--panel);
+        transform: translateY(-2px);
+        outline: none;
+      }
+
+      .card h2 {
+        font-size: 1.35rem;
+        line-height: 1.2;
+        letter-spacing: 0;
+      }
+
+      .card p {
+        margin-top: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .path {
+        margin-top: 24px;
+        color: var(--accent-strong);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        overflow-wrap: anywhere;
+      }
+
+      .status-panel {
+        margin-top: 16px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .status-row {
+        display: grid;
+        grid-template-columns: 180px minmax(0, 1fr);
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(205, 216, 211, 0.7);
+      }
+
+      .status-row:last-child {
+        border-bottom: 0;
+      }
+
+      .label {
+        color: var(--muted);
+      }
+
+      .value {
+        overflow-wrap: anywhere;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.92rem;
+      }
+
+      .ok {
+        color: var(--ok);
+      }
+
+      .warn {
+        color: var(--warn);
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        padding: 0 12px;
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        color: var(--accent-strong);
+        text-decoration: none;
+        background: rgba(13, 118, 110, 0.07);
+      }
+
+      .button:hover,
+      .button:focus-visible {
+        background: rgba(13, 118, 110, 0.13);
+        outline: none;
+      }
+
+      @media (max-width: 820px) {
+        header,
+        .grid,
+        .status-row {
+          grid-template-columns: 1fr;
+        }
+
+        main {
+          padding: 32px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Myriad Dev Server</h1>
+          <p class="subtitle">
+            Local documentation, project references, and build bridge service
+            details for this dev container.
+          </p>
+        </div>
+        <div class="status-pill" id="bridge-pill">Bridge status loading</div>
+      </header>
+
+      <section class="grid" aria-label="Documentation links">
+        <a class="card" href="Engine/docs/doxygen/html/index.html">
+          <span>
+            <h2>Engine Doxygen</h2>
+            <p>Generated API documentation for the Myriad engine library.</p>
+          </span>
+          <span class="path">Engine/docs/doxygen/html/index.html</span>
+        </a>
+
+        <a class="card" href="Editor/docs/doxygen/html/index.html">
+          <span>
+            <h2>Editor Doxygen</h2>
+            <p>
+              Generated API documentation for the Myriad editor application.
+            </p>
+          </span>
+          <span class="path">Editor/docs/doxygen/html/index.html</span>
+        </a>
+
+        <a class="card" href="readme.html">
+          <span>
+            <h2>Project README</h2>
+            <p>
+              Repository overview, build notes, editor configuration, and docs
+              commands.
+            </p>
+          </span>
+          <span class="path">readme.html</span>
+        </a>
+      </section>
+
+      <section class="status-panel" aria-labelledby="bridge-heading">
+        <h2 id="bridge-heading">Build Bridge</h2>
+        <div class="status-row">
+          <div class="label">State</div>
+          <div class="value" id="bridge-state">Loading</div>
+        </div>
+        <div class="status-row">
+          <div class="label">Endpoint</div>
+          <div class="value" id="bridge-endpoint">127.0.0.1:55333</div>
+        </div>
+        <div class="status-row">
+          <div class="label">PID</div>
+          <div class="value" id="bridge-pid">Loading</div>
+        </div>
+        <div class="status-row">
+          <div class="label">Last checked</div>
+          <div class="value" id="bridge-updated">Loading</div>
+        </div>
+        <div class="links">
+          <a class="button" href="log.html?log=latest-traffic"
+            >Follow Build Bridge Log</a
+          >
+          <a class="button" href="runtime_logs/docs-http-server.log"
+            >HTTP Server Log</a
+          >
+          <a class="button" href="runtime_logs/build-bridge-status.json"
+            >Status JSON</a
+          >
+          <a class="button" href="runtime_logs/">All Runtime Logs</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const state = document.getElementById("bridge-state");
+      const pill = document.getElementById("bridge-pill");
+      const endpoint = document.getElementById("bridge-endpoint");
+      const pid = document.getElementById("bridge-pid");
+      const updated = document.getElementById("bridge-updated");
+
+      fetch("runtime_logs/build-bridge-status.json", { cache: "no-store" })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Status file unavailable");
+          }
+          return response.json();
+        })
+        .then((status) => {
+          const isRunning = status.running === true;
+          const isListening = status.listening === true;
+          const label =
+            isRunning && isListening
+              ? "Running"
+              : isRunning
+                ? "Process found, port closed"
+                : "Stopped";
+          state.textContent = label;
+          state.className = `value ${isRunning && isListening ? "ok" : "warn"}`;
+          pill.textContent = `Bridge ${label.toLowerCase()}`;
+          pill.className = `status-pill ${isRunning && isListening ? "ok" : "warn"}`;
+          endpoint.textContent = `${status.host || "127.0.0.1"}:${status.port || 55333}`;
+          pid.textContent = status.pid || "Not running";
+          updated.textContent = status.checkedAt || "Unknown";
+        })
+        .catch(() => {
+          state.textContent = "Status file unavailable";
+          state.className = "value warn";
+          pill.textContent = "Bridge status unavailable";
+          pill.className = "status-pill warn";
+          pid.textContent = "Unknown";
+          updated.textContent = "Run .devcontainer/post-start.sh";
+        });
+    </script>
+  </body>
+</html>

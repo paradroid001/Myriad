@@ -19,7 +19,7 @@
   },
   {
     "name": "Emscripten",
-    "toolchainFile": "/home/myriad/emsdk-3.1.71/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+    "toolchainFile": "/home/myriad/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
     "environmentVariables": {
       "PLATFORM": "Web",
       "GLFW_BUILD_X11": "OFF",
@@ -33,6 +33,15 @@
     "environmentVariables": {
       "CC": "/usr/bin/x86_64-w64-mingw32-gcc",
       "CXX": "/usr/bin/x86_64-w64-mingw32-g++"
+    },
+    "isTrusted": true
+  },
+  {
+    "name": "G++ 11.4.0 x86_64-linux-gnu",
+    "toolchainFile": "TC-linux.cmake",
+    "environmentVariables": {
+      "CC": "/usr/bin/gcc",
+      "CXX": "/usr/bin/g++"
     },
     "isTrusted": true
   }

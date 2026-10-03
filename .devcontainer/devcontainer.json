@@ -1,22 +1,23 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "myriad_build",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "myriad_build",
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ms-vscode.cpptools",
-				"ms-vscode.cpptools-themes",
-				"ms-vscode.cpptools-extension-pack",
-				"Catppuccin.catppuccin-vsc",
-				"twxs.cmake",
-				"ms-vscode.cmake-tools",
-				"esbenp.prettier-vscode",
-				"ms-vscode.makefile-tools"
-			]
-		}
+	"name": "myriad_engine_dev",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "myriad_dev",
+  //"runArgs": ["--dns=8.8.8.8", "--dns=1.1.1.1"],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-themes",
+        "ms-vscode.cpptools-extension-pack",
+        "Catppuccin.catppuccin-vsc",
+        "twxs.cmake",
+        "ms-vscode.cmake-tools",
+        "esbenp.prettier-vscode",
+        "ms-vscode.makefile-tools"
+      ]
+
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

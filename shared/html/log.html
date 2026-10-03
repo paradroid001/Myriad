@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Myriad Build Bridge Log</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #18211f;
+        --muted: #5d6965;
+        --line: #cdd8d3;
+        --paper: #f6f4ee;
+        --panel: #ffffff;
+        --accent: #0d766e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family:
+          Avenir Next,
+          Avenir,
+          Segoe UI,
+          sans-serif;
+        background:
+          linear-gradient(120deg, rgba(13, 118, 110, 0.1), transparent 34%),
+          var(--paper);
+      }
+
+      main {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      h1,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-family:
+          Georgia,
+          Times New Roman,
+          serif;
+        font-size: clamp(2.2rem, 5vw, 4rem);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      a,
+      button,
+      select,
+      label {
+        font: inherit;
+      }
+
+      a,
+      button,
+      select {
+        min-height: 36px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.82);
+        color: var(--ink);
+      }
+
+      a,
+      button {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 12px;
+        text-decoration: none;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      select {
+        padding: 0 10px;
+      }
+
+      a:hover,
+      button:hover,
+      select:hover {
+        border-color: var(--accent);
+      }
+
+      .status {
+        margin-left: auto;
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.88rem;
+      }
+
+      pre {
+        height: min(72vh, 820px);
+        margin: 0;
+        overflow: auto;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #18211f;
+        color: #f6f4ee;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      @media (max-width: 760px) {
+        header {
+          grid-template-columns: 1fr;
+        }
+
+        .status {
+          width: 100%;
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Build Bridge Log</h1>
+          <p class="muted" id="path-label">Loading log status...</p>
+        </div>
+        <a href="index.html">Back to Dev Server</a>
+      </header>
+
+      <div class="toolbar">
+        <label>
+          Log
+          <select id="log-select">
+            <option value="runtime_logs/build-bridge-server.log">
+              Server startup log
+            </option>
+            <option value="latest-traffic">Latest bridge traffic log</option>
+            <option value="runtime_logs/docs-http-server.log">
+              HTTP server log
+            </option>
+          </select>
+        </label>
+        <button id="pause-button" type="button">Pause</button>
+        <button id="bottom-button" type="button">Jump to Bottom</button>
+        <span class="status" id="status">Waiting</span>
+      </div>
+
+      <pre id="log-output" aria-live="polite">Loading...</pre>
+    </main>
+
+    <script>
+      const output = document.getElementById("log-output");
+      const status = document.getElementById("status");
+      const pathLabel = document.getElementById("path-label");
+      const select = document.getElementById("log-select");
+      const pauseButton = document.getElementById("pause-button");
+      const bottomButton = document.getElementById("bottom-button");
+      const params = new URLSearchParams(window.location.search);
+      let currentPath = params.get("log") || "latest-traffic";
+      let latestTrafficPath = "";
+      let paused = false;
+
+      function nearBottom() {
+        return (
+          output.scrollTop + output.clientHeight >= output.scrollHeight - 24
+        );
+      }
+
+      function setCurrentPath(nextPath) {
+        currentPath = nextPath;
+        pathLabel.textContent = currentPath;
+        const url = new URL(window.location.href);
+        url.searchParams.set("log", currentPath);
+        window.history.replaceState(null, "", url);
+      }
+
+      function resolveSelectedPath() {
+        return select.value === "latest-traffic"
+          ? latestTrafficPath
+          : select.value;
+      }
+
+      function updateSelectForPath(path) {
+        if (path === latestTrafficPath && latestTrafficPath) {
+          select.value = "latest-traffic";
+          return;
+        }
+
+        for (const option of select.options) {
+          if (option.value === path) {
+            select.value = path;
+            return;
+          }
+        }
+      }
+
+      function loadStatus() {
+        return fetch("runtime_logs/build-bridge-status.json", {
+          cache: "no-store",
+        })
+          .then((response) => (response.ok ? response.json() : {}))
+          .then((bridgeStatus) => {
+            latestTrafficPath = bridgeStatus.trafficLog || latestTrafficPath;
+            if (!latestTrafficPath) {
+              select.options[1].disabled = true;
+              select.options[1].textContent =
+                "Latest bridge traffic log unavailable";
+            } else {
+              select.options[1].disabled = false;
+              select.options[1].textContent = "Latest bridge traffic log";
+            }
+            updateSelectForPath(currentPath);
+          })
+          .catch(() => {
+            select.options[1].disabled = true;
+          });
+      }
+
+      function loadLog() {
+        if (paused) {
+          return;
+        }
+
+        const shouldFollow = nearBottom();
+        fetch(currentPath, { cache: "no-store" })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`${currentPath} returned ${response.status}`);
+            }
+            return response.text();
+          })
+          .then((text) => {
+            output.textContent = text || "Log file is empty.";
+            if (shouldFollow) {
+              output.scrollTop = output.scrollHeight;
+            }
+            status.textContent = `Updated ${new Date().toLocaleTimeString()}`;
+          })
+          .catch((error) => {
+            output.textContent = error.message;
+            status.textContent = "Log unavailable";
+          });
+      }
+
+      select.addEventListener("change", () => {
+        const nextPath = resolveSelectedPath();
+        if (!nextPath) {
+          return;
+        }
+        setCurrentPath(nextPath);
+        output.textContent = "Loading...";
+        loadLog();
+      });
+
+      pauseButton.addEventListener("click", () => {
+        paused = !paused;
+        pauseButton.textContent = paused ? "Resume" : "Pause";
+        status.textContent = paused ? "Paused" : "Following";
+        if (!paused) {
+          loadLog();
+        }
+      });
+
+      bottomButton.addEventListener("click", () => {
+        output.scrollTop = output.scrollHeight;
+      });
+
+      loadStatus().then(() => {
+        if (currentPath === "latest-traffic" && latestTrafficPath) {
+          setCurrentPath(latestTrafficPath);
+          select.value = "latest-traffic";
+        } else if (currentPath === "latest-traffic") {
+          setCurrentPath("runtime_logs/build-bridge-server.log");
+          select.value = "runtime_logs/build-bridge-server.log";
+        } else {
+          updateSelectForPath(currentPath);
+          pathLabel.textContent = currentPath;
+        }
+        loadLog();
+      });
+
+      window.setInterval(() => {
+        loadStatus().then(loadLog);
+      }, 1500);
+    </script>
+  </body>
+</html>
