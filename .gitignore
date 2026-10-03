@@ -1,4 +1,5 @@
 build
+dist
 
 #Cmake ignores
 **/CMakeLists.txt.user
