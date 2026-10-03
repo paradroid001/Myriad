@@ -1232,8 +1232,9 @@ MyriadEditor::~MyriadEditor()
 
 void MyriadEditor::Init(Myriad::GameEngineConfig &config)
 {
-  std::strncpy(config.window_title, "Myriad Editor", sizeof(config.window_title) - 1);
-  config.window_title[sizeof(config.window_title) - 1] = '\0';
+  // std::strncpy(config.window_title, "Myriad Editor", sizeof(config.window_title) - 1);
+  // config.window_title[sizeof(config.window_title) - 1] = '\0';
+  config.window_title = "Myriad Editor";
   config.framerate = 30;
   config.window_config.vsync = true;
 }
@@ -3304,14 +3305,17 @@ void MyriadEditor::StartPreviewGame()
   config.window_config.resolution = {800, 600};
   config.window_config.fullscreen = false;
   config.window_config.vsync = false;
-  strncpy(config.resource_base_path, "shared/res", sizeof(config.resource_base_path) - 1);
+  config.resource_base_path = "shared/res";
+  // strncpy(config.resource_base_path, "shared/res", sizeof(config.resource_base_path) - 1);
   const std::string resources_directory = Editor::Trim(model_.settings.resources_directory);
   if (!resources_directory.empty())
   {
-    strncpy(config.resource_base_path, resources_directory.c_str(), sizeof(config.resource_base_path) - 1);
+    // strncpy(config.resource_base_path, resources_directory.c_str(), sizeof(config.resource_base_path) - 1);
+    config.resource_base_path = resources_directory;
   }
-  config.resource_base_path[sizeof(config.resource_base_path) - 1] = '\0';
-  strncpy(config.window_title, "Embedded Preview", sizeof(config.window_title) - 1);
+  // config.resource_base_path[sizeof(config.resource_base_path) - 1] = '\0';
+  // strncpy(config.window_title, "Embedded Preview", sizeof(config.window_title) - 1);
+  config.window_title = "Embedded Preview";
 
   bool started = false;
   if (model_.preview_game != nullptr)
