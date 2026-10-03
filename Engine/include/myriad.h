@@ -55,10 +55,19 @@ namespace Myriad
       protected:
         EngineConfig config_;
         EngineState_t state_;
+
+        // How much time does the update portion of the frame take?
         Util::Timer update_timer_;
+        // How much time does the render portion of the frame take?
         Util::Timer render_timer_;
+        // How much time does the entire frame take?
         Util::Timer frame_timer_;
+        // How much time has elapsed since the engine started?
         Util::Timer total_timer_;
+        Util::Timer update_delta_timer_; // How much time has elapsed since the
+                                         // last update?
+        Util::Timer render_delta_timer_; // How much time has elapsed since the
+                                         // last render?
         Util::Random rand_;
         GameApplication &app_;
 
@@ -114,11 +123,11 @@ namespace Myriad
         virtual void Start();
 
         virtual void PreUpdate();
-        virtual void Update();
+        virtual void Update(float delta_ms);
         virtual void PostUpdate();
 
         virtual void PreRender();
-        virtual void Render();
+        virtual void Render(float delta_ms);
         virtual void PostRender();
 
         virtual void PreShutdown();

@@ -62,7 +62,7 @@ namespace Myriad
     {
         // R_CORE_TRACE("GameApplication pre-update.");
     }
-    void GameApplication::Update()
+    void GameApplication::Update(float delta_ms)
     {
         // R_CORE_TRACE("GameApplication update.");
     }
@@ -75,7 +75,7 @@ namespace Myriad
     {
         // R_CORE_TRACE("GameApplication pre-render.");
     }
-    void GameApplication::Render()
+    void GameApplication::Render(float delta_ms)
     {
         // R_CORE_TRACE("GameApplication render.");
     }

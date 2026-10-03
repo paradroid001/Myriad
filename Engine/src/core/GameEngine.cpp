@@ -15,11 +15,6 @@ namespace Myriad
         MYR_CORE_TRACE("GameEngine initialized.");
         state_ = EngineState_t::RUNNING;
 
-        update_timer_.Reset();
-        render_timer_.Reset();
-        frame_timer_.Reset();
-        total_timer_.Reset();
-
         // Start the total timer to track the overall elapsed time
         total_timer_.Start();
 
@@ -34,14 +29,18 @@ namespace Myriad
         update_timer_.Start();
 
         app_.PreUpdate();
-        app_.Update();
+        update_delta_timer_.Stop();
+        app_.Update(update_delta_timer_.Time());
+        update_delta_timer_.Start();
         app_.PostUpdate();
 
         update_timer_.Stop();
         render_timer_.Start();
 
         app_.PreRender();
-        app_.Render();
+        render_delta_timer_.Stop();
+        app_.Render(render_delta_timer_.Time());
+        render_delta_timer_.Start();
         app_.PostRender();
 
         render_timer_.Stop();
