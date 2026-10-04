@@ -71,6 +71,9 @@ namespace Myriad
         Util::Random rand_;
         GameApplication &app_;
 
+        std::unique_ptr<IWindow> window_;
+        std::unique_ptr<IRenderer> renderer_;
+
       public:
         // We need to be passed an app so that during the engine's lifecycle,
         // it can communicate with the application and call the

@@ -100,7 +100,8 @@ namespace Myriad
                                   .fullscreen = false,
                                   .resizable = true,
                                   .vsync = false,
-                                  .borderless = false},
+                                  .borderless = false,
+                                  .title = "Myriad Engine"},
                 .resource_base_path = DEFAULT_RESOURCE_BASE_PATH.c_str(),
                 .target_framerate = 60,
             };
@@ -125,24 +126,9 @@ namespace Myriad
             MYR_CORE_CRITICAL("GameEngine failed to initialize.");
         }
 
-        float time_ms = 0;
-        float next_time_ms = 0;
-        float frame_time_ms;
-
         while (engine_.IsRunning())
         {
             engine_.Frame();
-            frame_time_ms = engine_.GetFrameTimer().Time();
-            time_ms += frame_time_ms;
-            if (time_ms >= 1000.0f * 1)
-            {
-                engine_.QueueShutdown();
-            }
-            else if (time_ms > next_time_ms)
-            {
-                MYR_CORE_TRACE("Total elapsed time: %f", time_ms);
-                next_time_ms += 100;
-            }
         }
 
         if (engine_.GetState() == EngineState_t::SHUTDOWN)

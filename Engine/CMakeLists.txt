@@ -38,9 +38,14 @@ target_sources(${PROJECT_NAME} PRIVATE
    src/core/GameApplication.cpp
    src/core/GameEngine.cpp
    src/core/Random.cpp
+   src/core/Renderer.cpp
+   src/core/Window.cpp
    # IO
    src/io/ILogger.cpp
    src/io/BasicLogger.cpp
+   # Providers
+   src/providers/raylib/RenderProviderRaylib.cpp
+   src/providers/raylib/WindowProviderRaylib.cpp
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

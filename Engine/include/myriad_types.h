@@ -6,6 +6,7 @@
 
 #include <chrono>  // for timers
 #include <cstdint> // int32_t
+#include <memory>  // for std::unique_ptr
 #include <random>  // for random
 #include <string>  // std::string
 
@@ -173,6 +174,101 @@ namespace Myriad
                    s.ReadScalar(s.GetFieldID(id, "target_framerate"),
                                 object.target_framerate);
         }
+    };
+
+    class Provider
+    {
+      protected:
+        bool initialized_ = false;
+        bool shutdown_ = false;
+
+      public:
+        Provider() : initialized_(false), shutdown_(false) {}
+        virtual ~Provider() = default;
+        virtual bool Init() = 0;
+        virtual void Shutdown() = 0;
+    };
+
+    class IRenderer
+    {
+      public:
+        virtual ~IRenderer() = default;
+        virtual void BeginFrame() = 0;
+        virtual void EndFrame() = 0;
+    };
+
+    class IRenderProvider : public Provider, public IRenderer
+    {
+      public:
+        IRenderProvider() = default;
+        virtual ~IRenderProvider() = default;
+
+        virtual void BeginFrame() override = 0;
+        virtual void EndFrame() override = 0;
+    };
+
+    class Renderer : public IRenderer
+    {
+      protected:
+        std::shared_ptr<IRenderProvider> rendererprovider_;
+
+      public:
+        Renderer(std::shared_ptr<IRenderProvider> provider);
+        virtual ~Renderer();
+
+        virtual void BeginFrame() override;
+        virtual void EndFrame() override;
+
+        // Various things I can draw.
+    };
+
+    // Window States.
+    enum class WindowState_t
+    {
+        OPENING,
+        READY,
+        CLOSING,
+        CLOSED
+    };
+
+    class IWindow
+    {
+      public:
+        virtual ~IWindow() = default;
+        virtual WindowState_t GetState() = 0;
+        virtual bool Open(const WindowConfig &config) = 0;
+        virtual void Close() = 0;
+    };
+
+    class IWindowProvider : public Provider, public IWindow
+    {
+      public:
+        IWindowProvider() = default;
+        virtual ~IWindowProvider() = default;
+
+        /* Provider interface */
+        virtual bool Init() override = 0;
+        virtual void Shutdown() override = 0;
+
+        /* IWindow interface */
+        virtual WindowState_t GetState() override = 0;
+        virtual bool Open(const WindowConfig &config) override = 0;
+        virtual void Close() override = 0;
+    };
+
+    class Window : public IWindow
+    {
+      protected:
+        std::unique_ptr<IWindowProvider> windowprovider_;
+
+      public:
+        Window(std::unique_ptr<IWindowProvider> provider);
+        virtual ~Window();
+
+        /* IWindow interface */
+        virtual WindowState_t GetState() override;
+        virtual bool Open(const WindowConfig &config) override;
+        virtual void Close() override;
     };
 
     namespace Util
