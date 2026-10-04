@@ -23,7 +23,7 @@ namespace Myriad
 
     void GameEngine::Frame()
     {
-        MYR_CORE_TRACE("GameEngine frame.");
+        // MYR_CORE_TRACE("GameEngine frame.");
 
         frame_timer_.Start();
         update_timer_.Start();

@@ -1,0 +1,16 @@
+{
+  "$type": "EngineConfig",
+  "target_framerate": "60",
+  "resource_base_path": "shared/res",
+  "window_config": {
+    "borderless": "0",
+    "vsync": "0",
+    "resizable": "1",
+    "title": "",
+    "fullscreen": "0",
+    "resolution": {
+      "y": "600",
+      "x": "800"
+    }
+  }
+}

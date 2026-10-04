@@ -118,6 +118,11 @@ namespace Myriad
         GameApplication();
         virtual ~GameApplication();
         virtual void Run() override;
+        virtual bool LoadConfig(const std::string &config_path,
+                                EngineConfig &config);
+        virtual bool SaveConfig(const std::string &config_path,
+                                const EngineConfig &config);
+
         // Here you can set up anything needed
         // before the first frame
         virtual void Start();

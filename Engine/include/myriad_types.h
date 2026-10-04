@@ -155,7 +155,7 @@ namespace Myriad
         {
             return WindowConfig::Serialise(
                        object.window_config, s,
-                       s.ScalarField(id, "window_config")) &&
+                       s.ObjectField(id, "window_config")) &&
                    s.Value(s.ScalarField(id, "resource_base_path"),
                            object.resource_base_path) &&
                    s.Value(s.ScalarField(id, "target_framerate"),

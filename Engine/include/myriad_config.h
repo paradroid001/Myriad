@@ -18,6 +18,7 @@
 #endif
 
 #include <cstdint>
+#include <string>
 
 namespace Myriad
 {
@@ -26,6 +27,10 @@ namespace Myriad
     // Assets are MYR_ID_t: so that's
     // things like textures, fonts, shaders, audio, etc.
     typedef MYR_ID_t AssetID_t;
+
+    const std::string DEFAULT_RESOURCE_BASE_PATH = "shared/res";
+    const std::string DEFAULT_CONFIG_PATH =
+        DEFAULT_RESOURCE_BASE_PATH + "/config.s8";
 
     // Font Limits
     const MYR_ID_t MAX_FONTS = 32;
