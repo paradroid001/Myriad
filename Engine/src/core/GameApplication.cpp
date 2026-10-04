@@ -12,6 +12,9 @@ namespace Myriad
     GameApplication::GameApplication()
         : Application(), engine_(*this, window_, renderer_)
     {
+        // TODO: One thing to consider would be inistantiating the
+        //  concrete classes for Window and Renderer here in GameApplication,
+        //  and passing through shared pointers to the engine.
         MYR_CORE_TRACE("GameApplication created.");
     }
     GameApplication::~GameApplication()
