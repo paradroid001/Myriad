@@ -9,7 +9,8 @@
 
 namespace Myriad
 {
-    GameApplication::GameApplication() : Application(), engine_(*this)
+    GameApplication::GameApplication()
+        : Application(), engine_(*this, window_, renderer_)
     {
         MYR_CORE_TRACE("GameApplication created.");
     }

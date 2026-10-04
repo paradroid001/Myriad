@@ -17,6 +17,9 @@ namespace Myriad
 
         virtual void BeginFrame() override;
         virtual void EndFrame() override;
+
+        virtual void DrawText(AssetID_t font_id, const std::string &text,
+                              Vector2 pos, int size, Colour colour) override;
     };
 } // namespace Myriad
 

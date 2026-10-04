@@ -3,11 +3,12 @@
 
 #include "providers/raylib/RenderProviderRaylib.h"
 #include "providers/raylib/WindowProviderRaylib.h"
-#include "raylib.h"
 
 namespace Myriad
 {
-    GameEngine::GameEngine(GameApplication &app) : app_(app)
+    GameEngine::GameEngine(GameApplication &app, std::shared_ptr<IWindow> &win,
+                           std::shared_ptr<IRenderer> &rend)
+        : app_(app), window_(win), renderer_(rend)
     {
         MYR_CORE_TRACE("GameEngine created.");
     }
@@ -22,13 +23,13 @@ namespace Myriad
         std::unique_ptr<IWindowProvider> wprovider =
             std::make_unique<WindowProviderRaylib>();
 
-        window_ = std::make_unique<Window>(std::move(wprovider));
+        window_ = std::make_shared<Window>(std::move(wprovider));
         window_->Open(config.window_config);
 
         std::unique_ptr<IRenderProvider> rprovider =
             std::make_unique<RenderProviderRaylib>();
 
-        renderer_ = std::make_unique<Renderer>(std::move(rprovider));
+        renderer_ = std::make_shared<Renderer>(std::move(rprovider));
 
         //  Start the total timer to track the overall elapsed time
         total_timer_.Start();

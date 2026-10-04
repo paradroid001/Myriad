@@ -71,14 +71,15 @@ namespace Myriad
         Util::Random rand_;
         GameApplication &app_;
 
-        std::unique_ptr<IWindow> window_;
-        std::unique_ptr<IRenderer> renderer_;
+        std::shared_ptr<IWindow> &window_;
+        std::shared_ptr<IRenderer> &renderer_;
 
       public:
         // We need to be passed an app so that during the engine's lifecycle,
         // it can communicate with the application and call the
         // pre/update/render/shutdown hooks.
-        GameEngine(GameApplication &app);
+        GameEngine(GameApplication &app, std::shared_ptr<IWindow> &win,
+                   std::shared_ptr<IRenderer> &rend);
         virtual ~GameEngine();
 
         // Initialise the engine
@@ -116,6 +117,8 @@ namespace Myriad
     {
       protected:
         GameEngine engine_;
+        std::shared_ptr<IWindow> window_;
+        std::shared_ptr<IRenderer> renderer_;
 
       public:
         GameApplication();

@@ -18,7 +18,7 @@ namespace Myriad
      * A class for representation of colours as
      * four 8 bit integer values, or 32 bit RGBA
      */
-    class MyrColour
+    class Colour
     {
       public:
         unsigned char r;
@@ -195,6 +195,10 @@ namespace Myriad
         virtual ~IRenderer() = default;
         virtual void BeginFrame() = 0;
         virtual void EndFrame() = 0;
+
+        // Various things I can draw.
+        virtual void DrawText(AssetID_t font_id, const std::string &text,
+                              Vector2 pos, int size, Colour colour) = 0;
     };
 
     class IRenderProvider : public Provider, public IRenderer
@@ -210,16 +214,16 @@ namespace Myriad
     class Renderer : public IRenderer
     {
       protected:
-        std::shared_ptr<IRenderProvider> rendererprovider_;
+        std::unique_ptr<IRenderProvider> rendererprovider_;
 
       public:
-        Renderer(std::shared_ptr<IRenderProvider> provider);
+        Renderer(std::unique_ptr<IRenderProvider> provider);
         virtual ~Renderer();
 
         virtual void BeginFrame() override;
         virtual void EndFrame() override;
-
-        // Various things I can draw.
+        virtual void DrawText(AssetID_t font_id, const std::string &text,
+                              Vector2 pos, int size, Colour colour);
     };
 
     // Window States.
